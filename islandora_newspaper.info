@@ -1,7 +1,7 @@
 ; $Id$
 name = Islandora Newspaper Solution Pack
 description = Content models and support code for Newspapers
-package = Islandora
+package = Islandora Solution Pack
 dependencies[] = fedora_repository
 version = 6.1
 core = 6.x
