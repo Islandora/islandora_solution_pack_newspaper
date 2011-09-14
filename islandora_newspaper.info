@@ -1,5 +1,5 @@
 ; $Id$
-name = Islandora Newspaper
+name = Islandora Newspaper Solution Pack
 description = Content models and support code for Newspapers
 package = Islandora
 dependencies[] = fedora_repository
