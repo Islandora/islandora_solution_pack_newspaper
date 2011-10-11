@@ -35,7 +35,7 @@
                         <audit:componentID/>
                         <audit:responsibility>fedoraAdmin</audit:responsibility>
                         <audit:date>2010-06-01T13:22:40.275Z</audit:date>
-                        <audit:justification>Ingested from local file /Users/aoneill/fedora_repository/plugins/newspaper/newspapers_pageCModel.xml</audit:justification>
+                        <audit:justification>Ingested from local file /Users/aoneill/islandora_repository/plugins/newspaper/newspapers_pageCModel.xml</audit:justification>
                     </audit:record>
                     <audit:record ID="AUDREC4">
                         <audit:process type="Fedora API-M"/>
