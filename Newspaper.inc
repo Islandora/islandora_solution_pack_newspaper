@@ -7,7 +7,7 @@
 class Newspaper {
 
   function __construct($pid = '') {
-    module_load_include('inc', 'islandora_repository', 'api/fedora_item');
+    module_load_include('inc', 'fedora_repository', 'api/fedora_item');
     if (!empty($pid)) {
 
       $this->pid = $pid;
@@ -45,8 +45,8 @@ class Newspaper {
      * Create fedora object
      * Add the datastreams
      */
-    module_load_include('inc', 'islandora_repository', 'MimeClass');
-    module_load_include('inc', 'islandora_repository', 'api/fedora_item');
+    module_load_include('inc', 'fedora_repository', 'MimeClass');
+    module_load_include('inc', 'fedora_repository', 'api/fedora_item');
     module_load_include('inc', 'fedora_ilives', 'book');
     $mods_list_doc = new DomDocument();
     $mods_list_doc->loadXML($form_values['mods']['mods_record']);

@@ -2,6 +2,6 @@
 name = Islandora Newspaper Solution Pack
 description = Content models and support code for Newspapers
 package = Islandora Solution Pack
-dependencies[] = islandora_repository
+dependencies[] = fedora_repository
 version = 11.2.beta2
 core = 6.x
