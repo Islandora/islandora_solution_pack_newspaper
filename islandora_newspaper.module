@@ -2,6 +2,8 @@
 
 /**
  * Implementation of hook_fedora_repository_requried_fedora_objects()
+ *
+ * @return array
  */
 function islandora_newspaper_fedora_repository_required_fedora_objects() {
   // array( 'path-to-foxml-file', 'pid', 'dsid', 'path-to-datastream-file', int dsversion, boolean required)
