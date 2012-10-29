@@ -1,9 +1,11 @@
 <?php
 
 /**
- * Implementation of hook_requried_fedora_objects()
+ * Implementation of hook_fedora_repository_requried_fedora_objects()
+ *
+ * @return array
  */
-function islandora_newspaper_required_fedora_objects() {
+function islandora_newspaper_fedora_repository_required_fedora_objects() {
   // array( 'path-to-foxml-file', 'pid', 'dsid', 'path-to-datastream-file', int dsversion, boolean required)
   $module_path = drupal_get_path('module', 'islandora_newspaper');
   
