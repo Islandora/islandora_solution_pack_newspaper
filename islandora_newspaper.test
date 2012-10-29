@@ -1,6 +1,6 @@
 <?php
 
-module_load_include('inc', 'fedora_repository', 'fedora_repository.solutionpacks');
+module_load_include('inc', 'fedora_repository', 'fedora_repository.test');
 
 /**
  * @file
@@ -26,7 +26,7 @@ class NewspaperSolutionPackTestCase extends SolutionPackTestCase {
    *
    * @return string - 'islandora_newspaper'
    */
-  protected function getModuleShortFormName() { 
+  protected function getModuleName() { 
     return 'islandora_newspaper';
   }
 
