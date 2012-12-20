@@ -1,7 +1,10 @@
-; $Id$
-name = Islandora Newspaper Solution Pack
-description = Content models and support code for Newspapers
-package = Islandora Solution Pack
-dependencies[] = fedora_repository
-version = 11.2.beta2
-core = 6.x
+name = "Islandora newspaper"
+description = "A default Islandora module to handle newspapers"
+dependencies[] = islandora
+dependencies[] = imagemagick
+package = Islandora
+version = 7.x-dev
+core = 7.x
+configure = admin/islandora/newspaper
+stylesheets[all][] = css/islandora_newspaper.base.css
+stylesheets[all][] = css/islandora_newspaper.theme.css
