@@ -56,25 +56,61 @@ function islandora_newspaper_islandora_required_objects(IslandoraTuque $connecti
   $module_path = drupal_get_path('module', 'islandora_newspaper');
 
   // Newspaper content model
-  $newspaper_content_model = $connection->repository->constructObject('islandora:sp_newspaper_cmodel');
+  $newspaper_content_model = $connection->repository->constructObject('islandora:newspaperCModel');
   $newspaper_content_model->owner = 'fedoraAdmin';
   $newspaper_content_model->label = 'Islandora newspaper content model';
   $newspaper_content_model->models = 'fedora-system:ContentModel-3.0';
   // ISLANDORACM datastream
   $datastream = $newspaper_content_model->constructDatastream('ISLANDORACM', 'X');
-  $datastream->label = 'Islandora content model';
+  $datastream->label = 'Islandora Newspaper content model';
   $datastream->mimetype = 'text/xml';
-  $datastream->setContentFromFile("$module_path/xml/islandora_sp_newspaper_cmodel.xml", FALSE);
+  $datastream->setContentFromFile("$module_path/xml/content_models/newspaperCModel.xml", FALSE);
   $newspaper_content_model->ingestDatastream($datastream);
   // DS-COMPOSITE-MODEL datastream
   $datastream = $newspaper_content_model->constructDatastream('DS-COMPOSITE-MODEL', 'X');
   $datastream->label = 'DS-COMPOSITE-MODEL';
   $datastream->mimetype = 'text/xml';
-  $datastream->setContentFromFile("$module_path/xml/islandora_newspaper_ds_composite_model.xml", FALSE);
+  $datastream->setContentFromFile("$module_path/xml/content_models/islandora_newspaper_ds_composite_model.xml", FALSE);
   $newspaper_content_model->ingestDatastream($datastream);
 
+  // Issue content model
+  $newspaper_issue_content_model = $connection->repository->constructObject('islandora:newspaperIssueCModel');
+  $newspaper_issue_content_model->owner = 'fedoraAdmin';
+  $newspaper_issue_content_model->label = 'Islandora newspaper issue content model';
+  $newspaper_issue_content_model->models = 'fedora-system:ContentModel-3.0';
+  // ISLANDORACM datastream
+  $datastream = $newspaper_issue_content_model->constructDatastream('ISLANDORACM', 'X');
+  $datastream->label = 'Islandora newspaper issue content model';
+  $datastream->mimetype = 'text/xml';
+  $datastream->setContentFromFile("$module_path/xml/content_models/newspaperIssueCModel.xml", FALSE);
+  $newspaper_issue_content_model->ingestDatastream($datastream);
+  // DS-COMPOSITE-MODEL datastream
+  $datastream = $newspaper_issue_content_model->constructDatastream('DS-COMPOSITE-MODEL', 'X');
+  $datastream->label = 'DS-COMPOSITE-MODEL';
+  $datastream->mimetype = 'text/xml';
+  $datastream->setContentFromFile("$module_path/xml/content_models/islandora_newspaper_ds_composite_model.xml", FALSE);
+  $newspaper_issue_content_model->ingestDatastream($datastream);
+
+  // Page content model
+  $newspaper_page_content_model = $connection->repository->constructObject('islandora:newspaperPageCModel');
+  $newspaper_page_content_model->owner = 'fedoraAdmin';
+  $newspaper_page_content_model->label = 'Islandora newspaper page content model';
+  $newspaper_page_content_model->models = 'fedora-system:ContentModel-3.0';
+  // ISLANDORACM datastream
+  $datastream = $newspaper_page_content_model->constructDatastream('ISLANDORACM', 'X');
+  $datastream->label = 'Islandora newspaper page content model';
+  $datastream->mimetype = 'text/xml';
+  $datastream->setContentFromFile("$module_path/xml/content_models/newspaperPageCModel.xml", FALSE);
+  $newspaper_page_content_model->ingestDatastream($datastream);
+  // DS-COMPOSITE-MODEL datastream
+  $datastream = $newspaper_page_content_model->constructDatastream('DS-COMPOSITE-MODEL', 'X');
+  $datastream->label = 'DS-COMPOSITE-MODEL';
+  $datastream->mimetype = 'text/xml';
+  $datastream->setContentFromFile("$module_path/xml/content_models/islandora_newspaper_ds_composite_model.xml", FALSE);
+  $newspaper_page_content_model->ingestDatastream($datastream);
+
   // Newspaper collection
-  $newspaper_collection = $connection->repository->constructObject('islandora:sp_newspaper_collection');
+  $newspaper_collection = $connection->repository->constructObject('islandora:newspaper_collection');
   $newspaper_collection->owner = 'fedoraAdmin';
   $newspaper_collection->label = 'Newspaper collection';
   $newspaper_collection->models = 'islandora:collectionCModel';
@@ -83,7 +119,7 @@ function islandora_newspaper_islandora_required_objects(IslandoraTuque $connecti
   $datastream = $newspaper_collection->constructDatastream('COLLECTION_POLICY', 'X');
   $datastream->label = 'Collection policy';
   $datastream->mimetype = 'text/xml';
-  $datastream->setContentFromFile("$module_path/xml/islandora_newspaper_collection_policy.xml", FALSE);
+  $datastream->setContentFromFile("$module_path/xml/collection/islandora_newspaper_collection_policy.xml", FALSE);
   $newspaper_collection->ingestDatastream($datastream);
   // TN datastream
   $datastream = $newspaper_collection->constructDatastream('TN', 'M');
@@ -97,6 +133,8 @@ function islandora_newspaper_islandora_required_objects(IslandoraTuque $connecti
       'title' => 'Islandora newspaper',
       'objects' => array(
         $newspaper_content_model,
+        $newspaper_issue_content_model,
+        $newspaper_page_content_model,
         $newspaper_collection,
       )
     )
@@ -110,7 +148,7 @@ function islandora_newspaper_islandora_xml_form_builder_forms() {
   $module_path = drupal_get_path('module', 'islandora_newspaper');
   return array(
     'Newspaper MODS form' => array(
-      'form_file' => "$module_path/xml/islandora_newspaper_form_mods.xml",
+      'form_file' => "$module_path/xml/forms/islandora_newspaper_form_mods.xml",
     ),
   );
 }
@@ -121,7 +159,7 @@ function islandora_newspaper_islandora_xml_form_builder_forms() {
 function islandora_newspaper_islandora_content_model_forms_form_associations() {
   return array(
     'islandora_newspaper_mods_form' => array(
-      'content_model' => 'islandora:sp_newspaper_cmodel',
+      'content_model' => 'islandora:newspaperCModel',
       'form_name' => 'Newspaper MODS form',
       'dsid' => 'MODS',
       'title_field' => array('titleInfo', 'title'),
@@ -134,15 +172,64 @@ function islandora_newspaper_islandora_content_model_forms_form_associations() {
 /**
  * Implements hook_CMODEL_PID_islandora_view_object().
  */
-function islandora_newspaper_islandora_sp_newspaper_cmodel_islandora_view_object($object, $page_number, $page_size) {
+function islandora_newspaper_islandora_newspapercmodel_islandora_view_object($object, $page_number, $page_size) {
+//  $output = theme('islandora_newspaper', array('islandora_object' => $object));
+/*
+  $output = 'Overview of pages comes here, sorted by sequence number.';
+  return array('' => $output);
+*/
+
+  $query = 'SELECT ?obj
+WHERE {
+  ?obj <http://islandora.ca/ontology/relsext#isPageOf> <info:fedora/' . $object->id . '>
+}
+ORDER BY ?obj';
+
+  $query_array = array(
+    'query' => $query,
+    'type' => 'sparql',
+    'pid' => $object->id,
+/*
+    'page_size' => $page_size,
+    'page_number' => $page_number
+*/
+  );
+  drupal_alter('islandora_newspaper_collection_query', $query_array);
+  try {
+    $results = $object->repository->ri->query($query_array['query'], $query_array['type']);
+  } catch (Exception $e) {
+    drupal_set_message(t('Islandora Error getting related objects for %s', array('%s' => $object->id)), 'error');
+    return '';
+  }
+dsm($results);
+  return array('', serialize($results));
+  
+}
+
+/**
+ * Implements hook_CMODEL_PID_islandora_view_object().
+ */
+function islandora_newspaper_islandora_newspaperissuecmodel_islandora_view_object($object, $page_number, $page_size) {
+/*
+  $output = theme('islandora_newspaper', array('islandora_object' => $object));
+  return array('' => $output);
+*/
+}
+
+/**
+ * Implements hook_CMODEL_PID_islandora_view_object().
+ */
+function islandora_newspaper_islandora_newspaperpagecmodel_islandora_view_object($object, $page_number, $page_size) {
   $output = theme('islandora_newspaper', array('islandora_object' => $object));
   return array('' => $output);
 }
 
+
+
 /**
  * Implements hook_CMODEL_PID_islandora_ingest_post_ingest().
  */
-function islandora_newspaper_islandora_sp_newspaper_cmodel_islandora_ingest_post_ingest($object) {
+function islandora_newspaper_islandora_newspapercmodel_islandora_ingest_post_ingest($object) {
   module_load_include('inc', 'islandora_newspaper', 'includes/islandora_newspaper.process');
   islandora_newspaper_create_all_derivatives($object);
 }
@@ -221,7 +308,7 @@ function islandora_newspaper_preprocess_islandora_newspaper(&$variables) {
 /**
  * Implements hook_islandora_ingest_steps().
  */
-function islandora_newspaper_islandora_sp_newspaper_cmodel_islandora_ingest_steps() {
+function islandora_newspaper_islandora_newspaper_cmodel_islandora_ingest_steps() {
   return array(
     'islandora_newspaper_upload' => array(
       'weight' => 10,

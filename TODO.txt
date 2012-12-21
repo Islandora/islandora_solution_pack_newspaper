@@ -4,6 +4,14 @@ TODO:
 high
 ----
 
+- provide newspaper display
+- provide issue display
+- provide page display
+
+- ingest newspapers
+- ingest issues
+- ingest pages
+
 
 medium
 ------
@@ -12,3 +20,9 @@ medium
 
 low
 ---
+
+
+done
+----
+
+- ingest correct sp objects

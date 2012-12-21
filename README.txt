@@ -1,22 +1,55 @@
-Large Image Solution Pack
-=========================
+SUMMARY
+-------
 
-The large image solution pack loads all required Fedora objects, and creates an empty collection object
-to accept tiff's and create derivatives.
+Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec pulvinar volutpat
+mi, in vestibulum lorem posuere vitae. Donec a feugiat elit. Cras faucibus
+volutpat quam non ornare. Ut ultrices, nisl eget tincidunt iaculis, orci nisi
+sagittis nisi, vitae ullamcorper justo eros sed felis. Etiam et dui in risus
+placerat eleifend at sit amet orci. In pellentesque nisi vel sem volutpat vitae
+euismod purus tincidunt. Cras auctor gravida est, laoreet ultricies cursus id.
 
-The large image solution pack is dependent on the imagemagick module. Make sure
-you have imagemagick enabled as the default image processor
+List example:
+ * Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+   Donec pulvinar volutpat mi, in vestibulum lorem posuere vitae.
+ * Donec a feugiat elit.
+   Cras faucibus volutpat quam non ornare.
 
-To successfully create derivative data streams ImageMagick (TN & JPG) and Kakadu (JP2) need to be installed on the server.
 
-To use ImageMagick you must also configure the image-tool kit on drupal use ImageMagick rather than GD otherwise (TN & JPG) data streams will not be generated.
-Goto "admin/config/media/image-toolkit" and select "ImageMagick"
+REQUIREMENTS
+------------
 
-To use Kakadu, make sure that kdu_compress and kdu_expand are avaliable in the terminal. Often users will create symbolic links from /usr/local/bin/kdu_compress to their installation of Kakadu that comes included with Adore-Djatoka (http://sourceforge.net/apps/mediawiki/djatoka/index.php?title=Installation). Make sure that the required dynamic libriraries that come with Kakadu are excessible to the
-programs kdu_compress and kdu_expand. If they are not present attempting to run either command from the terminal will inform you it's libraries are missing. You can also use a symbolic link from /usr/local/lib to include these libraries, remember to restart the terminal so your changes take affect.
+ * Islandora
+ * Imagemagick
+ * Kakadu (optional)
+ * islandora_seadragon (optional)
 
-Make sure the php settings allow for enough memory and upload size.
-(upload_max_filesize, post_max_size and memory_limit)
 
-Suggested viewers:
-- islandora_openseadragon
+INSTALLATION
+------------
+
+
+CONFIGURATION
+-------------
+
+
+CUSTOMIZATION
+-------------
+
+
+TROUBLESHOOTING
+---------------
+
+
+F.A.Q.
+------
+
+ Q: orem ipsum dolor sit amet, consectetur adipiscing elit. Donec pulvinar
+    volutpat mi, in vestibulum lorem posuere vitae. Donec a feugiat elit.
+ 
+ A: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec pulvinar
+    volutpat mi, in vestibulum lorem posuere vitae. Donec a feugiat elit. Cras
+    faucibus volutpat quam non ornare. Ut ultrices, nisl eget tincidunt iaculis,
+    orci nisi sagittis nisi.
+
+
+
