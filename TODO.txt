@@ -12,6 +12,10 @@ high
 - ingest issues
 - ingest pages
 
+- create derivatives
+
+- create batch ingest script with drush
+
 
 medium
 ------

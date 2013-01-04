@@ -67,3 +67,34 @@ body.two-sidebars .islandora-newspaper-sidebar {
   }
   
 }
+
+.islandora-newspaper-object .islandora-openseadragon {
+  height: 750px;
+}
+
+
+/* Make flexible and assure content doesn't go off the page */
+.islandora-newspaper {
+  overflow: hidden;
+  width: 100%;
+  margin: 0 auto;
+}
+
+/* Round borders on images */
+.islandora-newspaper-object dt img {
+  -webkit-border-radius: 5px;
+  -moz-border-radius: 5px;
+  border-radius: 5px;
+}
+
+/* Set space between objects */
+.islandora-newspaper-object {
+  margin: 1.5em auto;
+}
+
+/* Set space between dd items */
+.islandora-newspaper-object dd {
+  padding-top: 2px;
+  padding-bottom: 2px;
+}
+
