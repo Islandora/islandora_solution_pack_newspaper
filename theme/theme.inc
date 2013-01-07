@@ -31,7 +31,7 @@ function islandora_newspaper_preprocess_islandora_newspaper(&$variables) {
   global $base_url;
   global $base_path;
   $islandora_object = $variables['islandora_object'];
-  $results = $variables['query_results'];
+  $pages = $variables['pages'];
   try {
     $dc = $islandora_object['DC']->content;
     $dc_object = DublinCore::import_from_xml_string($dc);
@@ -40,7 +40,7 @@ function islandora_newspaper_preprocess_islandora_newspaper(&$variables) {
   }
   $page_number = (empty($_GET['page'])) ? 0 : $_GET['page'];
   $page_size = (empty($_GET['pagesize'])) ? variable_get('islandora_newspaper_page_size', '10') : $_GET['pagesize'];
-  $total_count = count($results);
+  $total_count = count($pages);
   $variables['islandora_dublin_core'] = isset($dc_object) ? $dc_object : array();
   $variables['islandora_object_label'] = $islandora_object->label;
   $display = (empty($_GET['display'])) ? 'list' : $_GET['display'];
@@ -63,7 +63,7 @@ function islandora_newspaper_preprocess_islandora_newspaper(&$variables) {
   $end = min($start + $page_size, $total_count);
 
   for ($i = $start; $i < $end; $i++) {
-    $pid = $results[$i]['object']['value'];
+    $pid = $pages[$i]['object']['value'];
     $fc_object = islandora_object_load($pid);
     if (!isset($fc_object)) {
       continue; //null object so don't show in newspaper view;
@@ -78,7 +78,7 @@ function islandora_newspaper_preprocess_islandora_newspaper(&$variables) {
     }
     $object_url = 'islandora/object/' . $pid;
     $thumbnail_img = '<img src="' . $base_path . $object_url . '/datastream/TN/view"' . '/>';
-    $title = $results[$i]['title']['value'];
+    $title = $pages[$i]['title']['value'];
     $associated_objects_array[$pid]['pid'] = $pid;
     $associated_objects_array[$pid]['path'] = $object_url;
     $associated_objects_array[$pid]['title'] = $title;
@@ -151,18 +151,65 @@ function islandora_newspaper_preprocess_islandora_newspaper_page(&$variables) {
     $variables['islandora_content'] = NULL;
   }
 
-  $newspaper_controls = array(
-    'Link to newspaper',
-    'Page dropdown',
-    'prev-next page',
-    'all pages',
-    'prev-next issue',
-    'all issues',
-    'printer friendly (basic info+TN+OCR)',
-    'PDF',
-    'Download JP2',
-    'Clip image'
-  );
+  $issue_pid = islandora_newspaper_get_issue($islandora_object);
+  $issue_object = islandora_object_load($issue_pid);
+  $pages = islandora_newspaper_get_pages($issue_object);
+
+  $newspaper_pid = islandora_newspaper_get_newspaper($issue_object);
+  $newspaper_object = islandora_object_load($newspaper_pid);
+
+  $current_sequence = islandora_newspaper_get_current_sequence($islandora_object);
+
+  $page_pager = islandora_newspaper_get_page_pager($pages, $current_sequence);
+
+  $newspaper_controls = array();
+  $newspaper_controls[] = 'Link to newspaper';
+
+
+  $page_select = islandora_newspaper_get_page_select($pages, $current_sequence);
+  if (!empty($page_select)) {
+    $newspaper_controls[] = $page_select;
+  }
+
+  $page_pager_links = islandora_newspaper_get_page_pager_links($pages, $current_sequence);
+  if (!empty($page_pager_links)) {
+    $newspaper_controls[] = $page_pager_links;
+  }
+
+
+  
+  
+  if ($issue_object) {
+    $newspaper_controls[] = l(t('All pages'), 'islandora/object/' . $issue_pid, array('attributes' => array('title' => t('All pages (@label)', array('@label' => $issue_object->label)))));
+  }
+
+  
+  
+  
+  
+  $newspaper_controls[] = 'prev-next issue';
+
+  if ($newspaper_object) {
+    $newspaper_controls[] = l(t('All issues'), 'islandora/object/' . $newspaper_pid, array('attributes' => array('title' => t('All issues (@label)', array('@label' => $newspaper_object->label)))));
+  }  
+  
+  $newspaper_controls[] = 'printer friendly (basic info+TN+OCR)';
+  
+
+  if ($islandora_object['PDF']) {
+    $pdf = $islandora_object['PDF'];
+    $newspaper_controls[] = l(t('PDF'), islandora_datastream_get_url($pdf, 'download'));
+  }
+
+  if ($islandora_object['JP2']) {
+    $jp2_ds = $islandora_object['JP2'];
+    $jp2_size = islandora_datastream_get_human_readable_size($jp2_ds);
+    $newspaper_controls[] = '<strong>' . t('Download:') . '</strong> ' . l(t('JP2 (@size)', array('@size' => $jp2_size)), islandora_datastream_get_url($jp2_ds, 'download'), array('attributes' => array('title' => 'Download JP2')));
+  }
+
+  $newspaper_controls[] = 'Clip image';
+
+
   $variables['newspaper_controls'] = $newspaper_controls;
 }
 

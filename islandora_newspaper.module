@@ -7,6 +7,14 @@
  */
 
 /**
+ * Implements hook_init().
+ */
+function islandora_newspaper_init() {
+  // @TODO: check where to best implement this
+  module_load_include('inc', 'islandora_newspaper', 'includes/controls');
+}
+
+/**
  * Implements hook_menu().
  */
 function islandora_newspaper_menu() {
@@ -190,43 +198,14 @@ function islandora_newspaper_islandora_content_model_forms_form_associations() {
 function islandora_newspaper_islandora_newspapercmodel_islandora_view_object($object, $page_number = 1, $page_size = 5) { // Check: page_number & page_size is passed in invoke_all?
   drupal_set_title($object->label);
 
-/*
-  $page_number = (empty($_GET['page'])) ? 0 : $_GET['page'];
-  $page_size = (empty($_GET['pagesize'])) ? variable_get('islandora_newsletter_page_size', '10') : $_GET['pagesize'];
-*/
-
   // all pages
-  // @TODO: this should later be split up in 2 queries. One for visible page and one for total count.
-  $query = 'SELECT ?object ?sequence ?page ?title
-WHERE {
-  ?object <http://islandora.ca/ontology/relsext#isPageOf> <info:fedora/' . $object->id . '> .
-  ?object <http://islandora.ca/ontology/relsext#isSequenceNumber> ?sequence .
-  ?object <http://islandora.ca/ontology/relsext#isPageNumber> ?page .
-  ?object <info:fedora/fedora-system:def/model#label> ?title .
-  ?object <fedora-model:state> <info:fedora/fedora-system:def/model#Active>
-}
-ORDER BY ?sequence';
-
-  $query_array = array(
-    'query' => $query,
-    'type' => 'sparql',
-    'pid' => $object->id,
-    'page_size' => $page_size,
-    'page_number' => $page_number
-  );
-  drupal_alter('islandora_newspaper_query', $query_array);
-  try {
-    $results = $object->repository->ri->query($query_array['query'], $query_array['type']);
-  } catch (Exception $e) {
-    drupal_set_message(t('Islandora Error getting related objects for %s', array('%s' => $object->id)), 'error');
-    return '';
-  }
+  $pages = islandora_newspaper_get_pages($object, $page_number, $page_size);
   
-  $total_count = count($results);
+  $total_count = count($pages);
   pager_default_initialize($total_count, $page_size);
   $newspaper_pager = theme('pager', array('quantity' => 10));
   
-  $newspaper_content = theme('islandora_newspaper', array('islandora_object' => $object, 'query_results' => $results));
+  $newspaper_content = theme('islandora_newspaper', array('islandora_object' => $object, 'pages' => $pages));
   $output = theme('islandora_newspaper_wrapper', array('islandora_object' => $object, 'newspaper_content' => $newspaper_content, 'newspaper_pager' => $newspaper_pager));
   return array('', $output);
 }
