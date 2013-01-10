@@ -27,7 +27,7 @@
 <div class="islandora-newspaper-object islandora">
   <?php if ($newspaper_controls): ?>
     <div class="islandora-newspaper-controls">
-      <?php print theme('item_list', array('items' => $newspaper_controls, NULL, 'ul', 'attributes' => array('class' => array('items', 'inline'))));?>
+      <?php print $newspaper_controls; ?>
     </div>
   <?php endif; ?>
   <div class="islandora-newspaper-content-wrapper clearfix">

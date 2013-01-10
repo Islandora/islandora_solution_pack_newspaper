@@ -109,8 +109,6 @@ function islandora_newspaper_get_page_pager_links($pages, $current_sequence) {
  * Creates page pager as a select element.
  */
 function islandora_newspaper_get_page_select($pages, $current_sequence) {
-  $path = drupal_get_path('module', 'islandora_newspaper');
-  drupal_add_js($path . '/js/islandora_newspaper.js');
   $total = count($pages);
   $options = array();
   foreach ($pages as $key => $page) {
@@ -124,7 +122,7 @@ function islandora_newspaper_get_page_select($pages, $current_sequence) {
   $variables = array(
     '#options' => $options,
     '#value' => $default,
-    '#id' => 'page-select',
+    '#attributes' => array('class' => array('page-select')),
   );
   $select = '<strong>' . t('Image') . ':</strong> ';
   $select .= theme('select', array('element' => $variables));

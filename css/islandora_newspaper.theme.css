@@ -68,6 +68,7 @@ body.two-sidebars .islandora-newspaper-sidebar {
   
 }
 
+/* In case the viewer is openseadragon */
 .islandora-newspaper-object .islandora-openseadragon {
   height: 750px;
 }

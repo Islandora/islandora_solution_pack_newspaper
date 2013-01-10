@@ -20,14 +20,14 @@ function islandora_newspaper_preprocess_islandora_newspaper_wrapper(&$variables)
 
   $newspaper_controls = array();
   // Link to newspaper
-  $newspaper_controls[] = 'Link to newspaper';
+  $newspaper_controls['newspaper'] = 'Link to newspaper';
   // Issue pager
   if ($issue_pager) {
-    $newspaper_controls[] = islandora_newspaper_get_issue_pager_links($issue_pager);
+    $newspaper_controls['issue_pager'] = islandora_newspaper_get_issue_pager_links($issue_pager);
   }
   // All issues
   if ($newspaper_object) {
-    $newspaper_controls[] = l(t('All issues'), 'islandora/object/' . $newspaper_pid, array('attributes' => array('title' => t('All issues'))));
+    $newspaper_controls['all_issues'] = l(t('All issues'), 'islandora/object/' . $newspaper_pid, array('attributes' => array('title' => t('All issues'))));
   }  
   $variables['newspaper_controls'] = $newspaper_controls;
 }
@@ -119,6 +119,9 @@ function islandora_newspaper_preprocess_islandora_newspaper_page(&$variables) {
   $repository = $islandora_object->repository;
   module_load_include('inc', 'islandora', 'includes/datastream');
   module_load_include('inc', 'islandora', 'includes/utilities');
+  $path = drupal_get_path('module', 'islandora_newspaper');
+  drupal_add_js($path . '/js/islandora_newspaper.js');
+  
   $variables['theme_hook_suggestions'][] = 'islandora_newspaper_page__' . str_replace(':', '_', $islandora_object->id);
 
   // Thumbnail
@@ -172,47 +175,61 @@ function islandora_newspaper_preprocess_islandora_newspaper_page(&$variables) {
 
   $newspaper_controls = array();
   // Link to newspaper
-  $newspaper_controls[] = 'Link to newspaper';
+  $newspaper_controls['newspaper'] = 'Link to newspaper';
 
   // Page select pager
   $page_select = islandora_newspaper_get_page_select($pages, $current_sequence);
   if (!empty($page_select)) {
-    $newspaper_controls[] = $page_select;
+    $newspaper_controls['page_select'] = $page_select;
   }
   // Page pager
   $page_pager_links = islandora_newspaper_get_page_pager_links($pages, $current_sequence);
   if (!empty($page_pager_links)) {
-    $newspaper_controls[] = $page_pager_links;
+    $newspaper_controls['page_pager'] = $page_pager_links;
   }
   // All pages  
   if ($issue_object) {
-    $newspaper_controls[] = l(t('All pages'), 'islandora/object/' . $issue_pid, array('attributes' => array('title' => t('All pages'))));
+    $newspaper_controls['all_pages'] = l(t('All pages'), 'islandora/object/' . $issue_pid, array('attributes' => array('title' => t('All pages'))));
   }
   $issue_pager = islandora_get_issue_pager($issue_pid, $newspaper_object);
   $issue_frontpage_pager = islandora_get_issue_frontpage_pager($issue_pager);
   // Front page issue pager
   if ($issue_frontpage_pager) {
-    $newspaper_controls[] = islandora_newspaper_get_issue_pager_links($issue_frontpage_pager);
+    $newspaper_controls['issue_pager'] = islandora_newspaper_get_issue_pager_links($issue_frontpage_pager);
   }
   // All issues
   if ($newspaper_object) {
-    $newspaper_controls[] = l(t('All issues'), 'islandora/object/' . $newspaper_pid, array('attributes' => array('title' => t('All issues'))));
+    $newspaper_controls['all_issues'] = l(t('All issues'), 'islandora/object/' . $newspaper_pid, array('attributes' => array('title' => t('All issues'))));
   }  
-  // Printer friendly
-  $newspaper_controls[] = 'printer friendly (basic info+TN+OCR)';
-  // PDF download
-  if ($islandora_object['PDF']) {
-    $pdf = $islandora_object['PDF'];
-    $newspaper_controls[] = l(t('PDF'), islandora_datastream_get_url($pdf, 'download'));
+  // View
+  if ($islandora_object['OCR'] || $islandora_object['PDF']) {
+    $view = array();
+    // Text view
+    if ($islandora_object['OCR']) {
+      $text = $islandora_object['OCR'];
+      $view[] = l(t('Text'), islandora_datastream_get_url($text, 'view'), array('attributes' => array('title' => t('View text'), 'class' => 'view-text')));
+    }
+    // PDF download
+    if ($islandora_object['PDF']) {
+      $pdf = $islandora_object['PDF'];
+      $view[] = l(t('PDF'), islandora_datastream_get_url($pdf, 'download'), array('attributes' => array('title' => t('Download PDF'), 'class' => 'download-pdf')));
+    }
+    $newspaper_controls['view'] = '<strong>' . t('View') . ':</strong> ' . implode(' | ', $view);
   }
+  
   // JP2 download
   if ($islandora_object['JP2']) {
     $jp2_ds = $islandora_object['JP2'];
     $jp2_size = islandora_datastream_get_human_readable_size($jp2_ds);
-    $newspaper_controls[] = '<strong>' . t('Download:') . '</strong> ' . l(t('JP2 (@size)', array('@size' => $jp2_size)), islandora_datastream_get_url($jp2_ds, 'download'), array('attributes' => array('title' => 'Download JP2')));
+    $newspaper_controls['jp2_download'] = '<strong>' . t('Download:') . '</strong> ' . l(t('JP2 (@size)', array('@size' => $jp2_size)), islandora_datastream_get_url($jp2_ds, 'download'), array('attributes' => array('title' => 'Download JP2')));
   }
   // Clip image
-  $newspaper_controls[] = 'Clip image';
-  $variables['newspaper_controls'] = $newspaper_controls;
+  $newspaper_controls['clip'] = 'Clip image';
+  $variables['newspaper_controls_array'] = $newspaper_controls;
+  $variables['newspaper_controls'] = theme('item_list', array('items' => $newspaper_controls, NULL, 'ul', 'attributes' => array('class' => array('items', 'inline'))));
+  
+  $viewer_id = islandora_get_viewer_id('islandora_newspaper_viewers');
+  if ($viewer_id) {
+    $variables['newspaper_controls_full_page'] = $variables['newspaper_controls'];
+  }
 }
-
