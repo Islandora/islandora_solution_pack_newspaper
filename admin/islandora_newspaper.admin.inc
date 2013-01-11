@@ -2,7 +2,6 @@
 
 /**
  * @file
- *
  * This file contains all admin functions
  */
 
@@ -10,7 +9,7 @@
  * Admin form definition.
  */
 function islandora_newspaper_admin($form, &$form_state) {
-  // include css
+  module_load_include('inc', 'islandora', 'includes/solution_packs');
   drupal_add_css(drupal_get_path('module', 'islandora_newspaper') . '/css/islandora_newspaper.admin.css');
 
   if (isset($form_state['values']['islandora_kakadu_url'])) {
@@ -24,7 +23,6 @@ function islandora_newspaper_admin($form, &$form_state) {
 
   $kakadu_checked = isset($form_state['values']['islandora_use_kakadu']) ? $form_state['values']['islandora_use_kakadu'] : variable_get('islandora_use_kakadu', FALSE);
   $kakadu_view = $kakadu_checked ? 'markup' : 'hidden';
-
 
   exec($kakadu_url, $output, $return_value);
   $confirmation_message = '<img src="' . url('misc/watchdog-ok.png') . '"/>'
@@ -60,10 +58,10 @@ function islandora_newspaper_admin($form, &$form_state) {
     '#type' => 'textfield',
     '#description' => t("This module requires !kakadu to create derivative files", array('!kakadu' => l(t('kakadu'), 'http://www.kakadusoftware.com/'))),
     '#default_value' => $kakadu_url,
-    '#size' => 20
+    '#size' => 20,
   );
 
-  // ajax wrapper for url checking
+  // Ajax wrapper for url checking.
   $form['wrapper'] = array(
     '#prefix' => '<div id="islandora-url">',
     '#suffix' => '</div>',
@@ -84,17 +82,14 @@ function islandora_newspaper_admin($form, &$form_state) {
     ),
   );
 
-  module_load_include('inc', 'islandora', 'includes/solution_packs');
-
-
-  // get viewer table
+  // Get viewer table.
   $viewer_table = islandora_viewers_form('islandora_newspaper_viewers', 'image/jp2');
-  // add viewer table
+  // Add viewer table.
   $form += $viewer_table;
 
-  // actions
+  // Actions.
   $form['actions'] = array(
-    '#type' => 'actions'
+    '#type' => 'actions',
   );
   $form['actions']['reset'] = array(
     '#type' => 'submit',
@@ -107,7 +102,7 @@ function islandora_newspaper_admin($form, &$form_state) {
 }
 
 /**
- * Form submit
+ * Form submit.
  */
 function islandora_newspaper_admin_submit($form, &$form_state) {
   $op = $form_state['clicked_button']['#id'];
@@ -118,6 +113,9 @@ function islandora_newspaper_admin_submit($form, &$form_state) {
   }
 }
 
+/**
+ * Callback function for kakadu ajax.
+ */
 function islandora_update_kakadu_url_div($form, $form_state) {
   unset($form_state['submit_handlers']);
   $form_state['rebuild'] = TRUE;

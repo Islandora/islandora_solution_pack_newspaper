@@ -1,6 +1,6 @@
 /**
  * @file
- * Islanodora Newspaper scripts file
+ * Islanodora Newspaper scripts file.
  */
 
 (function ($) {

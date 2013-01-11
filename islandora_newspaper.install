@@ -20,7 +20,7 @@ function islandora_newspaper_requirements($phase) {
         'title' => $t("Kakadu Image Compression"),
         'value' => $t("Not installed"),
         'severity' => REQUIREMENT_ERROR,
-        'description' => $t('Ensure that Adore-Djatoka is installed and kdu_compress is accessible to PHP.')
+        'description' => $t('Ensure that Adore-Djatoka is installed and kdu_compress is accessible to PHP.'),
       );
     }
   }

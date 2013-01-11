@@ -7,6 +7,12 @@
 
 /**
  * Returns issue object of a given page object.
+ *
+ * @param object $object
+ *   Newspaper page object
+ *
+ * @return string
+ *   Returns the PID of the issue object of which $object is a page of.
  */
 function islandora_newspaper_get_issue($object) {
   $rels = $object->relationships->get('http://islandora.ca/ontology/relsext#', 'isPageOf');
@@ -14,15 +20,13 @@ function islandora_newspaper_get_issue($object) {
 }
 
 /**
- * Returns the collection object of a given issue object
- */
-function islandora_newspaper_get_newspaper($object) {
-  $rels = $object->relationships->get('info:fedora/fedora-system:def/relations-external#', 'isMemberOfCollection'); // is this the old way of rels ext?
-  return $rels[0]['object']['value'];
-}
-
-/**
  * Returns the sequence number of a given newsletter page.
+ *
+ * @param object $object
+ *   Newspaper page object
+ *
+ * @return string
+ *   Returns the sequence number of a page in an issue.
  */
 function islandora_newspaper_get_current_sequence($object) {
   $rels = $object->relationships->get('http://islandora.ca/ontology/relsext#', 'isSequenceNumber');
@@ -30,12 +34,38 @@ function islandora_newspaper_get_current_sequence($object) {
 }
 
 /**
+ * Returns the collection object of a given issue object.
+ *
+ * @param object $object
+ *   Newspaper issue object
+ *
+ * @return string
+ *   Returns the PID of the collection of which $object is a member of.
+ */
+function islandora_newspaper_get_newspaper($object) {
+  // Is this the old way of using rels ext?
+  $rels = $object->relationships->get('info:fedora/fedora-system:def/relations-external#', 'isMemberOfCollection');
+  return $rels[0]['object']['value'];
+}
+
+/**
  * Get the pages of a newspaper issue. Mimics the basic collection functionality.
+ *
+ * @param object $object
+ *   Newspaper issue object
+ * @param int $page_number
+ *   Page offset number
+ * @param int $page_size
+ *   Amount of objects to be displayed per page
+ *
+ * @return array
+ *   An array containing the results of the query
  *
  * @see islandora_basic_collection_get_objects()
  */
 function islandora_newspaper_get_pages($object, $page_number = 1, $page_size = 5) {
-  // @TODO: this should later be split up in 2 queries. One for visible page and one for total count.
+  // @TODO: this should later be split up in 2 queries.
+  // One for visible page and one for total count.
   $query = 'SELECT ?object ?sequence ?page ?title
 WHERE {
   ?object <http://islandora.ca/ontology/relsext#isPageOf> <info:fedora/' . $object->id . '> .
@@ -51,12 +81,13 @@ ORDER BY ?sequence';
     'type' => 'sparql',
     'pid' => $object->id,
     'page_size' => $page_size,
-    'page_number' => $page_number
+    'page_number' => $page_number,
   );
   drupal_alter('islandora_newspaper_query', $query_array);
   try {
     $results = $object->repository->ri->query($query_array['query'], $query_array['type']);
-  } catch (Exception $e) {
+  }
+  catch (Exception $e) {
     drupal_set_message(t('Islandora Error getting related objects for %s', array('%s' => $object->id)), 'error');
     return '';
   }
@@ -65,6 +96,15 @@ ORDER BY ?sequence';
 
 /**
  * Returns object details for the next and previous page if available in page sequence.
+ *
+ * @param array $pages
+ *   An array containing info about all pages in a newspaper issue.
+ * @param int $current_sequence
+ *   A sequence number of the current page.
+ *
+ * @return array
+ *   Returns an array containing info about the previous and next pages relative to
+ *   the current page.
  */
 function islandora_newspaper_get_page_pager($pages, $current_sequence) {
   $total = count($pages);
@@ -84,6 +124,14 @@ function islandora_newspaper_get_page_pager($pages, $current_sequence) {
 
 /**
  * Creates rendered pager links for issue pages.
+ *
+ * @param array $pages
+ *   An array containing info about all pages in a newspaper issue.
+ * @param int $current_sequence
+ *   A sequence number of the current page.
+ *
+ * @return array
+ *   Returns an array containing the rendered previous and next pager links
  */
 function islandora_newspaper_get_page_pager_links($pages, $current_sequence) {
   $page_pager = islandora_newspaper_get_page_pager($pages, $current_sequence);
@@ -91,12 +139,12 @@ function islandora_newspaper_get_page_pager_links($pages, $current_sequence) {
     $page_pager_links = '';
     if (isset($page_pager['previous'])) {
       $prev_pid = $page_pager['previous']['object']['value'];
-      $page_pager_links .= l('Prev', 'islandora/object/' . $prev_pid, array('attributes' => array('title' => t('Previous page'), 'class' => 'page-prev')));
+      $page_pager_links .= l(t('Prev'), 'islandora/object/' . $prev_pid, array('attributes' => array('title' => t('Previous page'), 'class' => 'page-prev')));
     }
     $page_pager_links .= ' <strong>' . t('Page') . '</strong> ';
     if (isset($page_pager['next'])) {
       $next_pid = $page_pager['next']['object']['value'];
-      $page_pager_links .= l('Next', 'islandora/object/' . $next_pid, array('attributes' => array('title' => t('Next page'), 'class' => 'page-next')));
+      $page_pager_links .= l(t('Next'), 'islandora/object/' . $next_pid, array('attributes' => array('title' => t('Next page'), 'class' => 'page-next')));
     }
     return $page_pager_links;
   }
@@ -107,6 +155,14 @@ function islandora_newspaper_get_page_pager_links($pages, $current_sequence) {
 
 /**
  * Creates page pager as a select element.
+ *
+ * @param array $pages
+ *   An array containing info about all pages in a newspaper issue.
+ * @param int $current_sequence
+ *   A sequence number of the current page.
+ *
+ * @return string
+ *   Returns a rendered select item to navigate through pages.
  */
 function islandora_newspaper_get_page_select($pages, $current_sequence) {
   $total = count($pages);
@@ -127,11 +183,20 @@ function islandora_newspaper_get_page_select($pages, $current_sequence) {
   $select = '<strong>' . t('Image') . ':</strong> ';
   $select .= theme('select', array('element' => $variables));
   $select .= ' ' . t('of') . ' ' . $total;
-  return $select;  
+  return $select;
 }
 
 /**
  * Finds next and previous issues given a newspaper object and a current issue PID.
+ *
+ * @param string $issue_pid
+ *   The PID of the issue object.
+ * @param object $newspaper_object
+ *   Newspaper object - this is the parent object of issue objects.
+ *
+ * @return array
+ *   Returns an array containing info about the first previous and next issue
+ *   relative to the $issue_pid object.
  */
 function islandora_get_issue_pager($issue_pid, $newspaper_object) {
   $issues = islandora_basic_collection_get_objects($newspaper_object);
@@ -154,6 +219,13 @@ function islandora_get_issue_pager($issue_pid, $newspaper_object) {
 /**
  * Given the next and previous issues, this function changes this info into the
  * front pages of these issues instead.
+ *
+ * @param array $issue_pager
+ *   An array containing info about the first previous and next issues relative to a certain issue.
+ *
+ * @return array
+ *   Return the $issue_pager array where the issue information has been replaced by that issues'
+ *   first page.
  */
 function islandora_get_issue_frontpage_pager($issue_pager) {
   if (isset($issue_pager['next'])) {
@@ -170,7 +242,13 @@ function islandora_get_issue_frontpage_pager($issue_pager) {
 }
 
 /**
- * Returns the first page of an issue, given an issue PID.
+ * Returns the first page of an issue, given an issue object.
+ *
+ * @param object $object
+ *   An issue object
+ *
+ * @return array
+ *   An array containing query results describing the first page of a given issue.
  */
 function islandora_newspaper_get_issue_frontpage($object) {
   // We only need the front page, but with collection queries don't add amounts to the query yet. Once that's
@@ -181,18 +259,24 @@ function islandora_newspaper_get_issue_frontpage($object) {
 
 /**
  * Creates rendered pager links for issues.
+ *
+ * @param array $issue_pager
+ *   An array describing the previous and next issues relative to a certain issue.
+ *
+ * @return string
+ *   Returns rendered previous and next links.
  */
 function islandora_newspaper_get_issue_pager_links($issue_pager) {
   if (!empty($issue_pager)) {
     $issue_pager_links = '';
     if (isset($issue_pager['previous'])) {
       $prev_pid = $issue_pager['previous']['object']['value'];
-      $issue_pager_links .= l('Prev', 'islandora/object/' . $prev_pid, array('attributes' => array('title' => t('Previous issue'), 'class' => 'issue-prev')));
+      $issue_pager_links .= l(t('Prev'), 'islandora/object/' . $prev_pid, array('attributes' => array('title' => t('Previous issue'), 'class' => 'issue-prev')));
     }
     $issue_pager_links .= ' <strong>' . t('Issue') . '</strong> ';
     if (isset($issue_pager['next'])) {
       $next_pid = $issue_pager['next']['object']['value'];
-      $issue_pager_links .= l('Next', 'islandora/object/' . $next_pid, array('attributes' => array('title' => t('Next issue'), 'class' => 'issue-next')));
+      $issue_pager_links .= l(t('Next'), 'islandora/object/' . $next_pid, array('attributes' => array('title' => t('Next issue'), 'class' => 'issue-next')));
     }
     return $issue_pager_links;
   }

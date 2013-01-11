@@ -4,8 +4,6 @@
  * @file
  * Theme file for Newspaper solution pack. Includes preprocess functions.
  */
- 
- 
 
 /**
  * Implements hook_preprocess().
@@ -19,24 +17,20 @@ function islandora_newspaper_preprocess_islandora_newspaper_wrapper(&$variables)
   $issue_pager = islandora_get_issue_pager($islandora_object->id, $newspaper_object);
 
   $newspaper_controls = array();
-  // Link to newspaper
-  $newspaper_controls['newspaper'] = 'Link to newspaper';
-  // Issue pager
+  // Issue pager.
   if ($issue_pager) {
     $newspaper_controls['issue_pager'] = islandora_newspaper_get_issue_pager_links($issue_pager);
   }
-  // All issues
+  // All issues.
   if ($newspaper_object) {
     $newspaper_controls['all_issues'] = l(t('All issues'), 'islandora/object/' . $newspaper_pid, array('attributes' => array('title' => t('All issues'))));
-  }  
-  $variables['newspaper_controls'] = $newspaper_controls;
+  }
+  $variables['newspaper_controls_array'] = $newspaper_controls;
+  $variables['newspaper_controls'] = theme('item_list', array('items' => $newspaper_controls, NULL, 'ul', 'attributes' => array('class' => array('items', 'inline'))));
 }
- 
+
 /**
  * Implements hook_preprocess().
- *
- * @param array $variables
- *   an array of variables that will be passed to the theme function
  */
 function islandora_newspaper_preprocess_islandora_newspaper(&$variables) {
   global $base_url;
@@ -46,7 +40,8 @@ function islandora_newspaper_preprocess_islandora_newspaper(&$variables) {
   try {
     $dc = $islandora_object['DC']->content;
     $dc_object = DublinCore::import_from_xml_string($dc);
-  } catch (Exception $e) {
+  }
+  catch (Exception $e) {
     drupal_set_message(t('Error retrieving object %s %t', array('%s' => $islandora_object->id, '%t' => $e->getMessage())), 'error', FALSE);
   }
   $page_number = (empty($_GET['page'])) ? 0 : $_GET['page'];
@@ -77,14 +72,16 @@ function islandora_newspaper_preprocess_islandora_newspaper(&$variables) {
     $pid = $pages[$i]['object']['value'];
     $fc_object = islandora_object_load($pid);
     if (!isset($fc_object)) {
-      continue; //null object so don't show in newspaper view;
+      // NULL object so don't show in newspaper view.
+      continue;
     }
     $associated_objects_array[$pid]['object'] = $fc_object;
     try {
       $dc = $fc_object['DC']->content;
       $dc_object = DublinCore::import_from_xml_string($dc);
       $associated_objects_array[$pid]['dc_array'] = $dc_object->as_formatted_array();
-    } catch (Exception $e) {
+    }
+    catch (Exception $e) {
       drupal_set_message(t('Error retrieving object %s %t', array('%s' => $islandora_object->id, '%t' => $e->getMessage())), 'error', FALSE);
     }
     $object_url = 'islandora/object/' . $pid;
@@ -110,9 +107,6 @@ function islandora_newspaper_preprocess_islandora_newspaper(&$variables) {
 
 /**
  * Implements hook_preprocess().
- *
- * @param array $variables
- *   an array of variables that will be passed to the theme function
  */
 function islandora_newspaper_preprocess_islandora_newspaper_page(&$variables) {
   $islandora_object = $variables['islandora_object'];
@@ -121,14 +115,14 @@ function islandora_newspaper_preprocess_islandora_newspaper_page(&$variables) {
   module_load_include('inc', 'islandora', 'includes/utilities');
   $path = drupal_get_path('module', 'islandora_newspaper');
   drupal_add_js($path . '/js/islandora_newspaper.js');
-  
+
   $variables['theme_hook_suggestions'][] = 'islandora_newspaper_page__' . str_replace(':', '_', $islandora_object->id);
 
-  // Thumbnail
+  // Thumbnail.
   if (isset($islandora_object['TN'])) {
     $params = array(
       'title' => $islandora_object->label,
-      'path' => url("islandora/object/{$islandora_object->id}/datastream/TN/view")
+      'path' => url("islandora/object/{$islandora_object->id}/datastream/TN/view"),
     );
     $variables['islandora_thumbnail_img'] = theme('image', $params);
   }
@@ -141,23 +135,24 @@ function islandora_newspaper_preprocess_islandora_newspaper_page(&$variables) {
     $jp2_url = url("islandora/object/{$islandora_object->id}/datastream/JP2/view",
       array(
         'absolute' => TRUE,
-        'query' => array('token'=>$token),
+        'query' => array('token' => $token),
       ));
   }
   else {
     $jp2_url = url("islandora/object/{$islandora_object->id}/datastream/JP2/view", array('absolute' => TRUE));
   }
 
-  // Display newspaper
+  // Display newspaper.
   $viewer = islandora_get_viewer($jp2_url, 'islandora_newspaper_viewers');
   $variables['islandora_content'] = '';
   if ($viewer) {
     $variables['islandora_content'] = $viewer;
   }
-  elseif (isset($islandora_object['JPG'])) { // If no viewer is configured just show the jpeg.
+  // If no viewer is configured just show the jpeg.
+  elseif (isset($islandora_object['JPG'])) {
     $params = array(
       'title' => $islandora_object->label,
-      'path' => url("islandora/object/{$islandora_object->id}/datastream/JPG/view")
+      'path' => url("islandora/object/{$islandora_object->id}/datastream/JPG/view"),
     );
     $variables['islandora_content'] = theme('image', $params);
   }
@@ -174,57 +169,52 @@ function islandora_newspaper_preprocess_islandora_newspaper_page(&$variables) {
   $page_pager = islandora_newspaper_get_page_pager($pages, $current_sequence);
 
   $newspaper_controls = array();
-  // Link to newspaper
-  $newspaper_controls['newspaper'] = 'Link to newspaper';
-
-  // Page select pager
+  // Page select pager.
   $page_select = islandora_newspaper_get_page_select($pages, $current_sequence);
   if (!empty($page_select)) {
     $newspaper_controls['page_select'] = $page_select;
   }
-  // Page pager
+  // Page pager.
   $page_pager_links = islandora_newspaper_get_page_pager_links($pages, $current_sequence);
   if (!empty($page_pager_links)) {
     $newspaper_controls['page_pager'] = $page_pager_links;
   }
-  // All pages  
+  // All pages.
   if ($issue_object) {
     $newspaper_controls['all_pages'] = l(t('All pages'), 'islandora/object/' . $issue_pid, array('attributes' => array('title' => t('All pages'))));
   }
   $issue_pager = islandora_get_issue_pager($issue_pid, $newspaper_object);
   $issue_frontpage_pager = islandora_get_issue_frontpage_pager($issue_pager);
-  // Front page issue pager
+  // Front page issue pager.
   if ($issue_frontpage_pager) {
     $newspaper_controls['issue_pager'] = islandora_newspaper_get_issue_pager_links($issue_frontpage_pager);
   }
-  // All issues
+  // All issues.
   if ($newspaper_object) {
     $newspaper_controls['all_issues'] = l(t('All issues'), 'islandora/object/' . $newspaper_pid, array('attributes' => array('title' => t('All issues'))));
-  }  
-  // View
+  }
+  // View.
   if ($islandora_object['OCR'] || $islandora_object['PDF']) {
     $view = array();
-    // Text view
+    // Text view.
     if ($islandora_object['OCR']) {
       $text = $islandora_object['OCR'];
       $view[] = l(t('Text'), islandora_datastream_get_url($text, 'view'), array('attributes' => array('title' => t('View text'), 'class' => 'view-text')));
     }
-    // PDF download
+    // PDF download.
     if ($islandora_object['PDF']) {
       $pdf = $islandora_object['PDF'];
       $view[] = l(t('PDF'), islandora_datastream_get_url($pdf, 'download'), array('attributes' => array('title' => t('Download PDF'), 'class' => 'download-pdf')));
     }
     $newspaper_controls['view'] = '<strong>' . t('View') . ':</strong> ' . implode(' | ', $view);
   }
-  
-  // JP2 download
+
+  // JP2 download.
   if ($islandora_object['JP2']) {
     $jp2_ds = $islandora_object['JP2'];
     $jp2_size = islandora_datastream_get_human_readable_size($jp2_ds);
     $newspaper_controls['jp2_download'] = '<strong>' . t('Download:') . '</strong> ' . l(t('JP2 (@size)', array('@size' => $jp2_size)), islandora_datastream_get_url($jp2_ds, 'download'), array('attributes' => array('title' => 'Download JP2')));
   }
-  // Clip image
-  $newspaper_controls['clip'] = 'Clip image';
   $variables['newspaper_controls_array'] = $newspaper_controls;
   $variables['newspaper_controls'] = theme('item_list', array('items' => $newspaper_controls, NULL, 'ul', 'attributes' => array('class' => array('items', 'inline'))));
 }
