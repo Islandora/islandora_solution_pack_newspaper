@@ -227,9 +227,4 @@ function islandora_newspaper_preprocess_islandora_newspaper_page(&$variables) {
   $newspaper_controls['clip'] = 'Clip image';
   $variables['newspaper_controls_array'] = $newspaper_controls;
   $variables['newspaper_controls'] = theme('item_list', array('items' => $newspaper_controls, NULL, 'ul', 'attributes' => array('class' => array('items', 'inline'))));
-  
-  $viewer_id = islandora_get_viewer_id('islandora_newspaper_viewers');
-  if ($viewer_id) {
-    $variables['newspaper_controls_full_page'] = $variables['newspaper_controls'];
-  }
 }

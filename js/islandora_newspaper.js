@@ -4,15 +4,6 @@
  */
 
 (function ($) {
-  // Clone controls for full page viewer
-  Drupal.behaviors.islandoraNewspaperCloneControls = {
-    attach: function(context, settings) {
-      if (!$(".islandora-newspaper-controls").hasClass('processed')) {
-        $(".islandora-newspaper-controls").clone().appendTo("#islandora-openseadragon").css({'display': 'none'});
-        $(".islandora-newspaper-controls").addClass('processed');
-      }
-    }
-  };
   // Select page
   Drupal.behaviors.islandoraNewspaperSelectPage = {
     attach: function(context, settings) {
