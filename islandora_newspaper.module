@@ -6,7 +6,7 @@
  */
 
 // Includes helper functions for controls.
-require_once (dirname(__FILE__) . '/includes/controls.inc');
+require_once dirname(__FILE__) . '/includes/controls.inc';
 
 /**
  * Implements hook_menu().
