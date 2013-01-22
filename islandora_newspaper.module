@@ -5,13 +5,8 @@
  * Hooks and callbacks for this module.
  */
 
-/**
- * Implements hook_init().
- */
-function islandora_newspaper_init() {
-  // @TODO: check where to best implement this
-  module_load_include('inc', 'islandora_newspaper', 'includes/controls');
-}
+// Includes helper functions for controls.
+require_once dirname(__FILE__) . '/includes/controls.inc';
 
 /**
  * Implements hook_menu().
