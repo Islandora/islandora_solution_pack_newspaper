@@ -198,7 +198,7 @@ function islandora_newspaper_get_page_select($pages, $current_sequence) {
  *   Returns an array containing info about the first previous and next issue
  *   relative to the $issue_pid object.
  */
-function islandora_get_issue_pager($issue_pid, $newspaper_object) {
+function islandora_newspaper_get_issue_pager($issue_pid, $newspaper_object) {
   $issues = islandora_basic_collection_get_objects($newspaper_object);
   $total = count($issues);
   foreach ($issues as $key => $issue) {
@@ -297,7 +297,7 @@ function islandora_newspaper_get_issue_pager_links($issue_pager) {
 function islandora_newspaper_get_newspaper_controls($islandora_object) {
   $newspaper_pid = islandora_newspaper_get_newspaper($islandora_object);
   $newspaper_object = islandora_object_load($newspaper_pid);
-  $issue_pager = islandora_get_issue_pager($islandora_object->id, $newspaper_object);
+  $issue_pager = islandora_newspaper_get_issue_pager($islandora_object->id, $newspaper_object);
 
   $newspaper_controls = array();
   // Issue pager.
@@ -344,7 +344,7 @@ function islandora_newspaper_get_page_controls($islandora_object) {
   if ($issue_object) {
     $newspaper_controls['all_pages'] = l(t('All pages'), 'islandora/object/' . $issue_pid, array('attributes' => array('title' => t('All pages'))));
   }
-  $issue_pager = islandora_get_issue_pager($issue_pid, $newspaper_object);
+  $issue_pager = islandora_newspaper_get_issue_pager($issue_pid, $newspaper_object);
   $issue_frontpage_pager = islandora_get_issue_frontpage_pager($issue_pager);
   // Front page issue pager.
   if ($issue_frontpage_pager) {
