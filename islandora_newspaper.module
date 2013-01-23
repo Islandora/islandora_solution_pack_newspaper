@@ -250,3 +250,37 @@ function islandora_newspaper_islandora_newspaper_cmodel_islandora_ingest_steps()
     ),
   );
 }
+
+/**
+ * Implements hook_solr_search_results_alter()
+ *
+ * @param string $output
+ *    Solr query output after it has been converted to markup
+ * @param array $params
+ *    GET request paramters
+ */
+function islandora_newspaper_islandora_solr_search_results_alter(&$output, $params) {
+  // Make a DOM object to manipulate
+  // Wrap it in a blank div first so it's a valid tree
+  $output = "<div>" . $output . "</div>";
+  $markupDOM = new DOMDocument();
+  $markupDOM->loadXML($output);
+
+  // Search for the links in the solr-thumb dl's
+  $markupXPath = new DOMXPath($markupDOM);
+  $query = "//dl[@class='solr-thumb']/dt/a";
+  $results = $markupXPath->query($query);
+
+  // Strip 'islandora/search/' off the query parameter
+  $to_strip = "islandora/search/";
+  $search_terms = "?q=" . substr($params['q'], strlen($to_strip));
+  
+  // Jam the query parameter to the end of each link found in the query
+  foreach ($results as $result) {    
+    $link = $result->getAttribute("href") . $search_terms; 
+    $result->setAttribute("href", $link);
+  }
+
+  // Replace the markup with the new stuff
+  $output = $markupDOM->saveXML();
+}
