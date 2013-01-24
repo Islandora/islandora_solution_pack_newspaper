@@ -278,9 +278,12 @@ function islandora_newspaper_islandora_solr_search_results_alter(&$search_result
     // TODO
     // Figure out if it's newspaper's we're searching for and only do it for those
 
+    $docs = $query_processor->solrResult->response->docs;
+
     // Jam the search terms to the end of each link found in the query
-    foreach ($results as $result) {    
-      $result->setAttribute("href", $result->getAttribute("href") . "?terms=" . $query_processor->solrQuery);
+    for ($i = 0; $i < count($docs); $i++) {
+
+      $results->item($i)->setAttribute('href', $results->item($i)->getAttribute('href') . "?terms=" . $query_processor->solrQuery . "&pid=" . urlencode($docs[$i]->PID));
     }
 
     // Replace the markup with the new stuff
