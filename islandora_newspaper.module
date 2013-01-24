@@ -1,89 +1,252 @@
 <?php
 
 /**
- * Implementation of hook_fedora_repository_requried_fedora_objects()
- *
- * @return array
+ * @file
+ * Hooks and callbacks for this module.
  */
-function islandora_newspaper_fedora_repository_required_fedora_objects() {
-  // array( 'path-to-foxml-file', 'pid', 'dsid', 'path-to-datastream-file', int dsversion, boolean required)
-  $module_path = drupal_get_path('module', 'islandora_newspaper');
-  
-  // Put the form in the database
-  $result = db_result(db_query('Select name from {xml_forms} where name = "%s"', 'Islandora Newspaper MODS Form'));
-  if (!$result) {
-    $filename = "$module_path/xml/mods_audio.xml";
-    $form_as_string = file_get_contents($filename);
-    $object = new stdClass();
-    $object->name = 'Islandora Newspaper MODS Form';
-    $object->form = $form_as_string;
-    $result = drupal_write_record('xml_forms', $object);
-  }
 
-  // Associates the form with the content model
-  $result = db_result(db_query('Select content_model from {islandora_content_model_forms} where  content_model = "%s" and form_name = "%s"', 'newspapers:issueCModel', 'Islandora Newspaper MODS Form'));
-  if (!$result) {
-    $object = new stdClass();
-    $object->content_model = 'newspapers:issueCModel';
-    $object->form_name = 'Islandora Newspaper MODS Form';
-    $object->dsid = 'MODS';
-    $object->title_field = "['titleInfo']['title']";
-    $object->transform = 'mods_to_dc.xsl';
-    $result = drupal_write_record('islandora_content_model_forms', $object);
-  }
-  
+// Includes helper functions for controls.
+require_once dirname(__FILE__) . '/includes/controls.inc';
+
+/**
+ * Implements hook_menu().
+ */
+function islandora_newspaper_menu() {
+  $items['admin/islandora/newspaper'] = array(
+    'title' => 'Newspaper collection',
+    'description' => 'Configure the newspaper solution pack.',
+    'page callback' => 'drupal_get_form',
+    'access arguments' => array('administer site configuration'),
+    'page arguments' => array('islandora_newspaper_admin'),
+    'file' => 'admin/islandora_newspaper.admin.inc',
+    'type' => MENU_NORMAL_ITEM,
+  );
+  return $items;
+}
+
+/**
+ * Implements hook_theme().
+ *
+ * We supply a pattern so we can overide templates at the theme level if needed.
+ * we can append a pid to a template and the new template file will be called
+ * (the pids colon should be replaced with a dash).
+ */
+function islandora_newspaper_theme($existing, $type, $theme, $path) {
   return array(
     'islandora_newspaper' => array(
-      'module' => 'islandora_newspaper',
-      'title' => 'Islandora Newspaper',
-      'objects' => array(
-        array(
-          //'foxml_file' => "$module_path/newspapers_issueCModel.xml",
-          'pid' => 'newspapers:issueCModel',
-          'dsid' => 'ISLANDORACM',
-          'cmodel' => 'fedora-system:ContentModel-3.0',
-          'datastream_file' => "$module_path/newspapers_issueCModel_islandoracm.xml",
-          'dsversion' => 2,
-        ),
-        array(
-          'foxml_file' => "$module_path/newspapers_pageCModel.xml",
-          'pid' => 'newspapers:pageCModel',
-          'dsid' => NULL,
-          'datastream_file' => NULL,
-          'dsversion' => NULL,
-        ),
-        array(
-          'foxml_file' => "$module_path/newspapers_viewerSdep-issueCModel.xml",
-          'pid' => 'newspapers:viewerSdep-issueCModel',
-          'dsid' => NULL,
-          'datastream_file' => NULL,
-          'dsversion' => NULL,
-        ),
-        array(
-          'foxml_file' => "$module_path/newspapers_viewerSdep-pageCModel.xml",
-          'pid' => 'newspapers:viewerSdep-pageCModel',
-          'dsid' => NULL,
-          'datastream_file' => NULL,
-          'dsversion' => NULL,
-        ),
-        array(
-          'pid' => 'newspapers:collection',
-          'label' => 'Newspapers Collection',
-          'cmodel' => 'islandora:collectionCModel',
-          'parent' => 'islandora:demos',
-          'datastreams' => array(
-            array(
-              'dsid' => 'COLLECTION_POLICY',
-              'datastream_file' => "$module_path/newspapers_collection_policy.xml",
-            ),
-            array(
-              'dsid' => 'TN',
-              'datastream_file' => "$module_path/Crystal_Clear_mimetype_document.png",
-              'mimetype' => 'image/png',
-            ),
-          ),
-        ),
+      'file' => 'theme/theme.inc',
+      'template' => 'theme/islandora-newspaper',
+      // Example template with PID appended:
+      // islandora-newspaper--islandora-27.tpl.php
+      'pattern' => 'islandora_newspaper__',
+      'variables' => array(
+        'islandora_object' => NULL,
+        'query_results' => NULL,
       ),
+    ),
+    'islandora_newspaper_wrapper' => array(
+      'file' => 'theme/theme.inc',
+      'template' => 'theme/islandora-newspaper-wrapper',
+      // Example template with PID appended:
+      // islandora-newspaper-wrapper--islandora-27.tpl.php
+      'pattern' => 'islandora_newspaper_wrapper__',
+      'variables' => array(
+        'islandora_object' => NULL,
+        'newspaper_content' => NULL,
+        'newspaper_pager' => NULL,
+      ),
+    ),
+    'islandora_newspaper_page' => array(
+      'file' => 'theme/theme.inc',
+      'template' => 'theme/islandora-newspaper-page',
+       // Example template with PID appended:
+       // islandora-newspaper-page--islandora-27.tpl.php
+      'pattern' => 'islandora_newspaper_page__',
+      'variables' => array('islandora_object' => NULL),
+    ),
+  );
+}
+
+/**
+ * Implements hook_islandora_required_objects().
+ */
+function islandora_newspaper_islandora_required_objects(IslandoraTuque $connection) {
+  $module_path = drupal_get_path('module', 'islandora_newspaper');
+
+  // Newspaper content model.
+  $newspaper_content_model = $connection->repository->constructObject('islandora:newspaperCModel');
+  $newspaper_content_model->owner = 'fedoraAdmin';
+  $newspaper_content_model->label = 'Islandora newspaper content model';
+  $newspaper_content_model->models = 'fedora-system:ContentModel-3.0';
+  // ISLANDORACM datastream.
+  $datastream = $newspaper_content_model->constructDatastream('ISLANDORACM', 'X');
+  $datastream->label = 'Islandora Newspaper content model';
+  $datastream->mimetype = 'text/xml';
+  $datastream->setContentFromFile("$module_path/xml/content_models/newspaperCModel.xml", FALSE);
+  $newspaper_content_model->ingestDatastream($datastream);
+  // DS-COMPOSITE-MODEL datastream.
+  $datastream = $newspaper_content_model->constructDatastream('DS-COMPOSITE-MODEL', 'X');
+  $datastream->label = 'DS-COMPOSITE-MODEL';
+  $datastream->mimetype = 'text/xml';
+  $datastream->setContentFromFile("$module_path/xml/content_models/islandora_newspaper_ds_composite_model.xml", FALSE);
+  $newspaper_content_model->ingestDatastream($datastream);
+
+  // Issue content model.
+  $newspaper_issue_content_model = $connection->repository->constructObject('islandora:newspaperIssueCModel');
+  $newspaper_issue_content_model->owner = 'fedoraAdmin';
+  $newspaper_issue_content_model->label = 'Islandora newspaper issue content model';
+  $newspaper_issue_content_model->models = 'fedora-system:ContentModel-3.0';
+  // ISLANDORACM datastream.
+  $datastream = $newspaper_issue_content_model->constructDatastream('ISLANDORACM', 'X');
+  $datastream->label = 'Islandora newspaper issue content model';
+  $datastream->mimetype = 'text/xml';
+  $datastream->setContentFromFile("$module_path/xml/content_models/newspaperIssueCModel.xml", FALSE);
+  $newspaper_issue_content_model->ingestDatastream($datastream);
+  // DS-COMPOSITE-MODEL datastream.
+  $datastream = $newspaper_issue_content_model->constructDatastream('DS-COMPOSITE-MODEL', 'X');
+  $datastream->label = 'DS-COMPOSITE-MODEL';
+  $datastream->mimetype = 'text/xml';
+  $datastream->setContentFromFile("$module_path/xml/content_models/islandora_newspaper_ds_composite_model.xml", FALSE);
+  $newspaper_issue_content_model->ingestDatastream($datastream);
+
+  // Page content model.
+  $newspaper_page_content_model = $connection->repository->constructObject('islandora:newspaperPageCModel');
+  $newspaper_page_content_model->owner = 'fedoraAdmin';
+  $newspaper_page_content_model->label = 'Islandora newspaper page content model';
+  $newspaper_page_content_model->models = 'fedora-system:ContentModel-3.0';
+  // ISLANDORACM datastream.
+  $datastream = $newspaper_page_content_model->constructDatastream('ISLANDORACM', 'X');
+  $datastream->label = 'Islandora newspaper page content model';
+  $datastream->mimetype = 'text/xml';
+  $datastream->setContentFromFile("$module_path/xml/content_models/newspaperPageCModel.xml", FALSE);
+  $newspaper_page_content_model->ingestDatastream($datastream);
+  // DS-COMPOSITE-MODEL datastream.
+  $datastream = $newspaper_page_content_model->constructDatastream('DS-COMPOSITE-MODEL', 'X');
+  $datastream->label = 'DS-COMPOSITE-MODEL';
+  $datastream->mimetype = 'text/xml';
+  $datastream->setContentFromFile("$module_path/xml/content_models/islandora_newspaper_ds_composite_model.xml", FALSE);
+  $newspaper_page_content_model->ingestDatastream($datastream);
+
+  // Newspaper collection.
+  $newspaper_collection = $connection->repository->constructObject('islandora:newspaper_collection');
+  $newspaper_collection->owner = 'fedoraAdmin';
+  $newspaper_collection->label = 'Newspaper collection';
+  $newspaper_collection->models = 'islandora:collectionCModel';
+  $newspaper_collection->relationships->add(FEDORA_RELS_EXT_URI, 'isMemberOfCollection', 'islandora:root');
+  // Collection policy datastream.
+  $datastream = $newspaper_collection->constructDatastream('COLLECTION_POLICY', 'X');
+  $datastream->label = 'Collection policy';
+  $datastream->mimetype = 'text/xml';
+  $datastream->setContentFromFile("$module_path/xml/collection/islandora_newspaper_collection_policy.xml", FALSE);
+  $newspaper_collection->ingestDatastream($datastream);
+  // TN datastream.
+  $datastream = $newspaper_collection->constructDatastream('TN', 'M');
+  $datastream->label = 'Thumbnail';
+  $datastream->mimetype = 'image/png';
+  $datastream->setContentFromFile("$module_path/images/folder.png", FALSE);
+  $newspaper_collection->ingestDatastream($datastream);
+
+  return array(
+    'islandora_newspaper' => array(
+      'title' => 'Islandora newspaper',
+      'objects' => array(
+        $newspaper_content_model,
+        $newspaper_issue_content_model,
+        $newspaper_page_content_model,
+        $newspaper_collection,
+      ),
+    ),
+  );
+}
+
+/**
+ * Implements hook_islandora_xml_form_builder_forms().
+ */
+function islandora_newspaper_islandora_xml_form_builder_forms() {
+  $module_path = drupal_get_path('module', 'islandora_newspaper');
+  return array(
+    'Newspaper MODS form' => array(
+      'form_file' => "$module_path/xml/forms/islandora_newspaper_form_mods.xml",
+    ),
+  );
+}
+
+/**
+ * Implements hook_islandora_content_model_forms_form_associations().
+ */
+function islandora_newspaper_islandora_content_model_forms_form_associations() {
+  return array(
+    'islandora_newspaper_mods_form' => array(
+      'content_model' => 'islandora:newspaperCModel',
+      'form_name' => 'Newspaper MODS form',
+      'dsid' => 'MODS',
+      'title_field' => array('titleInfo', 'title'),
+      'transform' => 'mods_to_dc.xsl',
+      'template' => FALSE,
+    ),
+  );
+}
+
+/**
+ * Implements hook_CMODEL_PID_islandora_view_object().
+ */
+function islandora_newspaper_islandora_newspapercmodel_islandora_view_object($object, $page_number = 1, $page_size = 5) {
+  drupal_set_title($object->label);
+
+  // All pages.
+  $pages = islandora_newspaper_get_pages($object, $page_number, $page_size);
+
+  $total_count = count($pages);
+  pager_default_initialize($total_count, $page_size);
+  $newspaper_pager = theme('pager', array('quantity' => 10));
+
+  $newspaper_content = theme('islandora_newspaper', array(
+    'islandora_object' => $object,
+    'pages' => $pages,
+  ));
+  $output = theme('islandora_newspaper_wrapper', array(
+    'islandora_object' => $object,
+    'newspaper_content' => $newspaper_content,
+    'newspaper_pager' => $newspaper_pager,
+  ));
+  return array('', $output);
+}
+
+/**
+ * Implements hook_CMODEL_PID_islandora_view_object().
+ */
+function islandora_newspaper_islandora_newspaperissuecmodel_islandora_view_object($object, $page_number, $page_size) {
+
+}
+
+/**
+ * Implements hook_CMODEL_PID_islandora_view_object().
+ */
+function islandora_newspaper_islandora_pagecmodel_islandora_view_object($object, $page_number, $page_size) {
+  drupal_set_title($object->label);
+  $output = theme('islandora_newspaper_page', array('islandora_object' => $object));
+  return array('' => $output);
+}
+
+/**
+ * Implements hook_CMODEL_PID_islandora_ingest_post_ingest().
+ */
+function islandora_newspaper_islandora_newspapercmodel_islandora_ingest_post_ingest($object) {
+  module_load_include('inc', 'islandora_newspaper', 'includes/islandora_newspaper.process');
+  islandora_newspaper_create_all_derivatives($object);
+}
+
+/**
+ * Implements hook_islandora_ingest_steps().
+ */
+function islandora_newspaper_islandora_newspaper_cmodel_islandora_ingest_steps() {
+  return array(
+    'islandora_newspaper_upload' => array(
+      'weight' => 10,
+      'type' => 'form',
+      'form_id' => 'islandora_newspaper_image_upload_form',
+      'module' => 'islandora_newspaper',
+      'file' => 'includes/image_upload.form.inc',
     ),
   );
 }
