@@ -273,7 +273,7 @@ function islandora_newspaper_islandora_solr_search_results_alter(&$output, $para
 
   // Strip 'islandora/search/' off the query parameter
   $to_strip = "islandora/search/";
-  $search_terms = "?q=" . substr($params['q'], strlen($to_strip));
+  $search_terms = "?terms=" . substr($params['q'], strlen($to_strip));
   
   // Jam the query parameter to the end of each link found in the query
   foreach ($results as $result) {    
