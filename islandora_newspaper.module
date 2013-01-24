@@ -254,17 +254,17 @@ function islandora_newspaper_islandora_newspaper_cmodel_islandora_ingest_steps()
 /**
  * Implements hook_solr_search_results_alter()
  *
- * @param string $output
+ * @param string $search_results
  *    Solr query output after it has been converted to markup
  * @param array $params
  *    GET request paramters
  */
-function islandora_newspaper_islandora_solr_search_results_alter(&$output, $params) {
+function islandora_newspaper_islandora_solr_search_results_alter(&$search_results, $params) {
   // Make a DOM object to manipulate
   // Wrap it in a blank div first so it's a valid tree
-  $output = "<div>" . $output . "</div>";
+  $search_results = "<div>" . $search_results . "</div>";
   $markupDOM = new DOMDocument();
-  $markupDOM->loadXML($output);
+  $markupDOM->loadXML($search_results);
 
   // Search for the links in the solr-thumb dl's
   $markupXPath = new DOMXPath($markupDOM);
@@ -273,14 +273,14 @@ function islandora_newspaper_islandora_solr_search_results_alter(&$output, $para
 
   // Strip 'islandora/search/' off the query parameter
   $to_strip = "islandora/search/";
-  $search_terms = "?terms=" . substr($params['q'], strlen($to_strip));
-  
+  $params['terms'] = substr($params['q'], strlen($to_strip));
+  unset($params['q']);
+
   // Jam the query parameter to the end of each link found in the query
   foreach ($results as $result) {    
-    $link = $result->getAttribute("href") . $search_terms; 
-    $result->setAttribute("href", $link);
+    $result->setAttribute("href", $result->getAttribute("href") . "?" . http_build_query($params));
   }
 
   // Replace the markup with the new stuff
-  $output = $markupDOM->saveXML();
+  $search_results = $markupDOM->saveXML();
 }
