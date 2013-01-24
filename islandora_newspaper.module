@@ -256,31 +256,34 @@ function islandora_newspaper_islandora_newspaper_cmodel_islandora_ingest_steps()
  *
  * @param string $search_results
  *    Solr query output after it has been converted to markup
- * @param array $params
+ * @param array $query_processor
  *    GET request paramters
  */
-function islandora_newspaper_islandora_solr_search_results_alter(&$search_results, $params) {
-  // Make a DOM object to manipulate
-  // Wrap it in a blank div first so it's a valid tree
-  $search_results = "<div>" . $search_results . "</div>";
-  $markupDOM = new DOMDocument();
-  $markupDOM->loadXML($search_results);
+function islandora_newspaper_islandora_solr_search_results_alter(&$search_results, $query_processor) {
+  // Only do this if it's a basic search, which we know based on the solrDefType
+  // if solrDefType == 'dismax', it's a basic search
+  // if solrDefType == NULL, it's an advanced search
+  if ($query_processor->solrDefType && $query_processor->solrDefType == "dismax") {
+    // Make a DOM object to manipulate
+    // Wrap it in a blank div first so it's a valid tree
+    $search_results = "<div>" . $search_results . "</div>";
+    $markupDOM = new DOMDocument();
+    $markupDOM->loadXML($search_results);
 
-  // Search for the links in the solr-thumb dl's
-  $markupXPath = new DOMXPath($markupDOM);
-  $query = "//dl[@class='solr-thumb']/dt/a";
-  $results = $markupXPath->query($query);
+    // Search for the links in the solr-thumb dl's
+    $markupXPath = new DOMXPath($markupDOM);
+    $query = "//dl[@class='solr-thumb']/dt/a";
+    $results = $markupXPath->query($query);
 
-  // Strip 'islandora/search/' off the query parameter
-  $to_strip = "islandora/search/";
-  $params['terms'] = substr($params['q'], strlen($to_strip));
-  unset($params['q']);
+    // TODO
+    // Figure out if it's newspaper's we're searching for and only do it for those
 
-  // Jam the query parameter to the end of each link found in the query
-  foreach ($results as $result) {    
-    $result->setAttribute("href", $result->getAttribute("href") . "?" . http_build_query($params));
+    // Jam the search terms to the end of each link found in the query
+    foreach ($results as $result) {    
+      $result->setAttribute("href", $result->getAttribute("href") . "?terms=" . $query_processor->solrQuery);
+    }
+
+    // Replace the markup with the new stuff
+    $search_results = $markupDOM->saveXML();
   }
-
-  // Replace the markup with the new stuff
-  $search_results = $markupDOM->saveXML();
 }
