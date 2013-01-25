@@ -256,8 +256,8 @@ function islandora_newspaper_islandora_newspaper_cmodel_islandora_ingest_steps()
  *
  * @param string $search_results
  *    Solr query output after it has been converted to markup
- * @param array $query_processor
- *    GET request paramters
+ * @param IslandoraSolrQueryProcessor $query_processor
+ *    Used to get the search terms and returned solr docs
  */
 function islandora_newspaper_islandora_solr_search_results_alter(&$search_results, $query_processor) {
   // Only do this if it's a basic search, which we know based on the solrDefType
@@ -272,8 +272,8 @@ function islandora_newspaper_islandora_solr_search_results_alter(&$search_result
 
     // Search for the links in the solr-thumb dl's
     $markupXPath = new DOMXPath($markupDOM);
-    $query = "//dl[@class='solr-thumb']/dt/a";
-    $results = $markupXPath->query($query);
+    $xpath_query = "//dl[@class='solr-thumb']/dt/a";
+    $xpath_results = $markupXPath->query($xpath_query);
 
     // TODO
     // Figure out if it's newspaper's we're searching for and only do it for those
@@ -283,7 +283,21 @@ function islandora_newspaper_islandora_solr_search_results_alter(&$search_result
     // Jam the search terms to the end of each link found in the query
     for ($i = 0; $i < count($docs); $i++) {
 
-      $results->item($i)->setAttribute('href', $results->item($i)->getAttribute('href') . "?terms=" . $query_processor->solrQuery . "&pid=" . urlencode($docs[$i]->PID));
+      // Split url into path and params pieces
+      $url = parse_url($xpath_results->item($i)->getAttribute('href'));
+      $url_params = array();
+
+      // Split params into key/value pairs (if there are any)
+      if (array_key_exists('query', $url)) {
+        parse_str($url['query'], $url_params);
+      }
+
+      // Add search terms and pid to url params
+      $url_params['terms'] = $query_processor->solrQuery;
+      $url_params['pid'] = $docs[$i]->PID;
+
+      // Replace href attribute with reconstructed url string
+      $xpath_results->item($i)->setAttribute('href', url($url['path'], array('query' => $url_params, 'external' => TRUE)));
     }
 
     // Replace the markup with the new stuff
