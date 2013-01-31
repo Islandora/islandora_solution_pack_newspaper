@@ -131,7 +131,10 @@ function islandora_newspaper_preprocess_islandora_newspaper_page(&$variables) {
   }
 
   // Display newspaper.
-  $viewer = islandora_get_viewer($jp2_url, 'islandora_newspaper_viewers');
+  $params = array(
+    'jp2_url' => $jp2_url
+  );
+  $viewer = islandora_get_viewer($params, 'islandora_newspaper_viewers', $islandora_object);
   $variables['islandora_content'] = '';
   if ($viewer) {
     $variables['islandora_content'] = $viewer;

@@ -323,6 +323,13 @@ function islandora_newspaper_get_newspaper_controls($islandora_object) {
 function islandora_newspaper_get_page_controls($islandora_object) {
   $issue_pid = islandora_newspaper_get_issue($islandora_object);
   $issue_object = islandora_object_load($issue_pid);
+  // Print error and return if no parent object.
+  if (!$issue_object) {
+    watchdog("Missing newspaper object.", "$issue_pid is missing,
+    $islandora_object is the page that expected to find it.");
+
+    return;
+  }
   $pages = islandora_newspaper_get_pages($issue_object);
   $newspaper_pid = islandora_newspaper_get_newspaper($issue_object);
   $newspaper_object = islandora_object_load($newspaper_pid);
