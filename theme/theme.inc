@@ -117,18 +117,14 @@ function islandora_newspaper_preprocess_islandora_newspaper_page(&$variables) {
 
   module_load_include('inc', 'islandora', 'includes/solution_packs');
   // Get token to allow access to XACML protected datastreams if necessary.
-  if (isset($islandora_object['POLICY'])) {
-    module_load_include('inc', 'islandora', 'includes/islandora_authtokens');
-    $token = islandora_get_object_token($islandora_object->id, 'JP2', 2);
-    $jp2_url = url("islandora/object/{$islandora_object->id}/datastream/JP2/view",
-      array(
-        'absolute' => TRUE,
-        'query' => array('token' => $token),
-      ));
-  }
-  else {
-    $jp2_url = url("islandora/object/{$islandora_object->id}/datastream/JP2/view", array('absolute' => TRUE));
-  }
+  // Always use token authentication in case there is a global policy.
+  module_load_include('inc', 'islandora', 'includes/islandora_authtokens');
+  $token = islandora_get_object_token($islandora_object->id, 'JP2', 2);
+  $jp2_url = url("islandora/object/{$islandora_object->id}/datastream/JP2/view",
+    array(
+      'absolute' => TRUE,
+      'query' => array('token' => $token),
+    ));
 
   // Display newspaper.
   $params = array(
