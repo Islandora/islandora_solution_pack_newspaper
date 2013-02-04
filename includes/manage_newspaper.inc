@@ -25,6 +25,7 @@
  *   book objects.
  */
 function islandora_newspaper_manage_newspaper_menu(FedoraObject $object) {
+  drupal_set_title($object->label);
   return array(
     'manage_newspaper' => array(
       '#type' => 'vertical_tabs',
@@ -89,6 +90,7 @@ function islandora_newspaper_manage_newspaper_menu(FedoraObject $object) {
 function islandora_newspaper_ingest_page(FedoraObject $object) {
   module_load_include('inc', 'islandora', 'includes/utilities');
   module_load_include('inc', 'islandora', 'includes/ingest.form');
+  drupal_set_title(t('Add page to @newspaper', array('@newspaper' => $object->label)));
   return drupal_get_form('islandora_ingest_form', array(
       'newspaper' => $object->id,
       'namespace' => islandora_get_namespace($object->id),
@@ -144,6 +146,6 @@ function islandora_newspaper_manage_newspaper_delete_form_submit(array $form, ar
   module_load_include('inc', 'islandora_paged_content', 'includes/batch');
   $object = $form_state['object'];
   $pages = array_values(array_filter($form_state['values']['table']));
-  $batch = islandora_book_delete_pages_batch($object, $pages);
+  $batch = islandora_paged_content_delete_pages_batch($object, $pages);
   batch_set($batch);
 }

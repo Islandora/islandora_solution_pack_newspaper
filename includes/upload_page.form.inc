@@ -92,7 +92,7 @@ function islandora_newspaper_upload_page_form_submit(array $form, array &$form_s
   $configuration = islandora_ingest_form_get_configuration($form_state);
   $newspaper = islandora_object_load($configuration['newspaper']);
   $pages = islandora_paged_content_get_pages($newspaper);
-  $num_pages = count($pages);
+  $num_pages = count($pages) + 1;
   islandora_paged_content_set_relationship($rels_ext, ISLANDORA_RELS_EXT_URI, 'hasLanguage', $language, TRUE);
   islandora_paged_content_set_relationship($rels_ext, ISLANDORA_RELS_EXT_URI, 'preprocess', $preprocess, TRUE);
   islandora_paged_content_set_relationship($rels_ext, ISLANDORA_RELS_EXT_URI, 'isPageOf', $newspaper->id);
