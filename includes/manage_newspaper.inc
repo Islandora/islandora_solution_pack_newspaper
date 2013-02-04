@@ -141,7 +141,7 @@ function islandora_newspaper_manage_newspaper_delete_form(array $form, array &$f
  *   The Drupal form state.
  */
 function islandora_newspaper_manage_newspaper_delete_form_submit(array $form, array &$form_state) {
-  module_load_include('inc', 'islandora_book', 'includes/book.batch');
+  module_load_include('inc', 'islandora_paged_content', 'includes/batch');
   $object = $form_state['object'];
   $pages = array_values(array_filter($form_state['values']['table']));
   $batch = islandora_book_delete_pages_batch($object, $pages);
