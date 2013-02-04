@@ -264,7 +264,7 @@ function islandora_newspaper_islandora_newspaperissuecmodel_islandora_view_objec
 /**
  * Implements hook_CMODEL_PID_islandora_view_object().
  */
-function islandora_newspaper_islandora_newspapercmodel_islandora_view_object($object, $page_number, $page_size) {
+function islandora_newspaper_islandora_newspaperpagecmodel_islandora_view_object($object, $page_number, $page_size) {
   drupal_set_title($object->label);
   $output = theme('islandora_newspaper_page', array('islandora_object' => $object));
   return array('' => $output);

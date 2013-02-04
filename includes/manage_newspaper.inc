@@ -131,3 +131,19 @@ function islandora_newspaper_manage_newspaper_delete_form(array $form, array &$f
     ),
   );
 }
+
+/**
+ * Submit handler for the delete pages form.
+ *
+ * @param array $form
+ *   The Drupal form.
+ * @param array $form_state
+ *   The Drupal form state.
+ */
+function islandora_newspaper_manage_newspaper_delete_form_submit(array $form, array &$form_state) {
+  module_load_include('inc', 'islandora_book', 'includes/book.batch');
+  $object = $form_state['object'];
+  $pages = array_values(array_filter($form_state['values']['table']));
+  $batch = islandora_book_delete_pages_batch($object, $pages);
+  batch_set($batch);
+}
