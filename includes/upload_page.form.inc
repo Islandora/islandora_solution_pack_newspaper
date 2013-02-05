@@ -24,21 +24,8 @@ function islandora_newspaper_upload_page_form(array $form, array &$form_state) {
   $upload_size = min((int) ini_get('post_max_size'), (int) ini_get('upload_max_filesize'));
   $extensions = array('tiff tif');
   
-  // Handle tesseract and OCR later using Nigel's OCR Module
-  // For now, just use dummy values
-  $can_preprocess = FALSE;
-  $languages = array(
-    'eng' => t('English'),
-    'fra' => t('French'),
-    'deu-frak' => t('German'),
-    'por' => t('Portugese'),
-    'spa' => t('Spanish'),
-    'hin' => t('Hindi'),
-    'jpn' => t('Japanese'),
-    'ita' => t('Italian'),
-  );
-  //$can_preprocess = islandora_book_can_preprocess_ocr();
-  //$languages = islandora_book_get_enabled_tesseract_languages();
+  $can_preprocess = islandora_paged_content_can_preprocess_ocr();
+  $languages = islandora_paged_content_get_enabled_tesseract_languages();
 
   return array(
     'file' => array(
