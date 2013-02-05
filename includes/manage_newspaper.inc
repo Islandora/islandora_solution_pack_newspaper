@@ -47,16 +47,14 @@ function islandora_newspaper_manage_newspaper_menu(FedoraObject $object) {
         '#collapsible' => TRUE,
         '#collapsed' => TRUE,
       ),
-      /*
       'sequence' => array(
         '#access' => user_access(FEDORA_METADATA_EDIT),
         '#title' => t('Reorder Pages'),
         '#type' => 'fieldset',
-        'form' => drupal_get_form('islandora_book_manage_book_sequences_form', $object),
+        'form' => drupal_get_form('islandora_newspaper_manage_newspaper_sequences_form', $object),
         '#collapsible' => TRUE,
         '#collapsed' => TRUE,
       ),
-      */
       'delete' => array(
         '#access' => user_access(FEDORA_PURGE),
         '#title' => t('Delete Pages'),
@@ -243,6 +241,74 @@ function islandora_newspaper_manage_newspaper_images_form_submit(array $form, ar
   $pages = array_keys(islandora_paged_content_get_pages($object));
   $batch = islandora_paged_content_create_images_batch($object, $pages);
   batch_set($batch);
+}
+
+/**
+ * Form for reordering the newspaper's pages.
+ *
+ * @param array $form
+ *   The Drupal form.
+ * @param array $form_state
+ *   The Drupal form state.
+ * @param FedoraObject $object
+ *   The newspaper object to fetch the pages from.
+ *
+ * @return array
+ *   The Drupal form.
+ */
+function islandora_newspaper_manage_newspaper_sequences_form(array $form, array &$form_state, FedoraObject $object) {
+  module_load_include('inc', 'islandora_paged_content', 'includes/utilities');
+  $form_state['object'] = $object;
+  $pages = islandora_paged_content_get_pages($object);
+  $delta = count($pages);
+  $map = function($page) use($delta) {
+    return array(
+      'pid' => array('#markup' => check_plain($page['pid'])),
+      'label' => array('#markup' => check_plain($page['label'])),
+      'weight' => array(
+        '#type' => 'weight',
+        '#title' => t('Weight'),
+        '#default_value' => $page['page'],
+        '#delta' => $delta,
+        '#title-display' => 'invisible',
+      ));
+  };
+  $rows = array_map($map, $pages);
+  return array(
+    '#tree' => TRUE,
+    'table' => array(
+      '#type' => 'markup',
+      '#header' => array(t('PID'), t('Label'), t('Page')),
+      'rows' => $rows,
+    ),
+    'actions' => array(
+      '#type' => 'actions',
+      'submit' => array(
+        '#type' => 'submit',
+        '#value' => t('Save Changes'),
+      ),
+    ),
+  );
+}
+
+/**
+ * Submit handler for the sequence form.
+ *
+ * @param array $form
+ *   The Drupal form.
+ * @param array $form_state
+ *   The Drupal form state.
+ */
+function islandora_newspaper_manage_newspaper_sequences_form_submit(array $form, array &$form_state) {
+  module_load_include('inc', 'islandora_paged_content', 'includes/batch');
+  $object = $form_state['object'];
+  $pages = &$form_state['values']['table']['rows'];
+  if ($pages) {
+    uasort($pages, 'drupal_sort_weight');
+    $pages = array_keys($pages);
+    $batch = islandora_paged_content_sequence_pages_batch($object, $pages);
+    batch_set($batch);
+  }
 }
 
 /**
