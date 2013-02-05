@@ -383,5 +383,13 @@ function islandora_newspaper_get_page_controls($islandora_object) {
     $jp2_size = islandora_datastream_get_human_readable_size($jp2_ds);
     $newspaper_controls['jp2_download'] = '<strong>' . t('Download:') . '</strong> ' . l(t('JP2 (@size)', array('@size' => $jp2_size)), islandora_datastream_get_url($jp2_ds, 'download'), array('attributes' => array('title' => 'Download JP2')));
   }
+
+  // TIFF download.
+  if ($islandora_object['OBJ']) {
+    $tiff_ds = $islandora_object['OBJ'];
+    $tiff_size = islandora_datastream_get_human_readable_size($tiff_ds);
+    $newspaper_controls['tiff_download'] = '<strong>' . t('Download:') . '</strong> ' . l(t('TIFF (@size)', array('@size' => $tiff_size)), islandora_datastream_get_url($tiff_ds, 'download'), array('attributes' => array('title' => 'Download TIFF')));
+  }
+
   return $newspaper_controls;
 }
