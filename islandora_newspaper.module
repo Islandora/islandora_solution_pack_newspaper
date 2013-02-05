@@ -263,7 +263,7 @@ function islandora_newspaper_islandora_solr_search_results_alter(&$search_result
   // Only do this if it's a basic search, which we know based on the solrDefType
   // if solrDefType == 'dismax', it's a basic search
   // if solrDefType == NULL, it's an advanced search
-  if ($query_processor->solrDefType && $query_processor->solrDefType == "dismax") {
+  if ($query_processor->solrDefType && ($query_processor->solrDefType == "dismax" || $query_processor->solrDefType == "edismax")) {
     // Make a DOM object to manipulate
     // Wrap it in a blank div first so it's a valid tree
     $search_results = "<div>" . $search_results . "</div>";
