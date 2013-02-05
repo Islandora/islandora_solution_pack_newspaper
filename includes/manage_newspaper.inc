@@ -6,7 +6,6 @@
  * contains several forms for managing book objects and their pages.
  *
  * Management Forms:
- *  Create PDF.
  *  Create OCR.
  *  Create Images.
  *  Update Book Thumbnail.
@@ -39,16 +38,16 @@ function islandora_newspaper_manage_newspaper_menu(FedoraObject $object) {
         '#collapsible' => TRUE,
         '#collapsed' => TRUE,
       ),
-      /*
       'images' => array(
         '#access' => user_access(FEDORA_ADD_DS),
         '#title' => t('Create Images'),
         '#type' => 'fieldset',
-        'form_1' => drupal_get_form('islandora_book_manage_book_thumbnail_form', $object),
-        'form_2' => drupal_get_form('islandora_book_manage_book_images_form', $object),
+        'form_1' => drupal_get_form('islandora_newspaper_manage_newspaper_thumbnail_form', $object),
+        'form_2' => drupal_get_form('islandora_newspaper_manage_newspaper_images_form', $object),
         '#collapsible' => TRUE,
         '#collapsed' => TRUE,
       ),
+      /*
       'sequence' => array(
         '#access' => user_access(FEDORA_METADATA_EDIT),
         '#title' => t('Reorder Pages'),
@@ -146,6 +145,7 @@ function islandora_newspaper_manage_newspaper_ocr_form(array $form, array &$form
  */
 function islandora_newspaper_manage_newspaper_ocr_form_submit(array $form, array &$form_state) {
   module_load_include('inc', 'islandora_paged_content', 'includes/batch');
+  module_load_include('inc', 'islandora_paged_content', 'includes/utilities');
   $object = $form_state['object'];
   $pages = array_keys(islandora_paged_content_get_pages($object));
   $options = array(
@@ -153,6 +153,95 @@ function islandora_newspaper_manage_newspaper_ocr_form_submit(array $form, array
     'preprocess' => (bool) $form_state['values']['preprocess'],
   );
   $batch = islandora_paged_content_create_ocr_batch($object, $pages, $options);
+  batch_set($batch);
+}
+
+/**
+ * Updates the newspaper's thumbnail from the first page in the newspaper.
+ *
+ * @param array $form
+ *   The Drupal form.
+ * @param array $form_state
+ *   The Drupal form state.
+ * @param FedoraObject $object
+ *   The object to update.
+ *
+ * @return array
+ *   The Drupal form.
+ */
+function islandora_newspaper_manage_newspaper_thumbnail_form(array $form, array &$form_state, FedoraObject $object) {
+  module_load_include('inc', 'islandora_paged_content', 'includes/utilities');
+  $form_state['object'] = $object;
+  return array(
+    'description' => array(
+      '#type' => 'item',
+      '#description' => t("Update the newspaper's thumbnail image. The newspaper must have pages and the first page must have a TN datastream."),
+    ),
+    'submit' => array(
+      '#disabled' => !islandora_paged_content_can_update_paged_content_thumbnail($object),
+      '#type' => 'submit',
+      '#value' => t('Update Thumbnail'),
+    ),
+  );
+}
+
+/**
+ * The submit handler for the update thumbnail form.
+ *
+ * @param array $form
+ *   The Drupal form.
+ * @param array $form_state
+ *   The Drupal form state.
+ */
+function islandora_paged_content_manage_paged_content_thumbnail_form_submit(array $form, array &$form_state) {
+  module_load_include('inc', 'islandora_paged_content', 'includes/utilities');
+  islandora_paged_content_update_paged_content_thumbnail($form_state['object']);
+}
+
+/**
+ * Derives the image datastreams for each page object.
+ *
+ * @param array $form
+ *   The Drupal form.
+ * @param array $form_state
+ *   The Drupal form state.
+ * @param FedoraObject $object
+ *   The object to fetch the pages from.
+ *
+ * @return array
+ *   The Drupal form.
+ */
+function islandora_newspaper_manage_newspaper_images_form(array $form, array &$form_state, FedoraObject $object) {
+  module_load_include('inc', 'islandora_paged_content', 'includes/utilities');
+  $form_state['object'] = $object;
+  $can_derive = islandora_paged_content_can_create_images();
+  return array(
+    'description' => array(
+      '#type' => 'item',
+      '#description' => t('You must have the <b>Large Image Solution Pack</b> installed to perform create images.<br/> This will update the TN, JPG, and JP2 datastreams for each Page object.'),
+    ),
+    'submit' => array(
+      '#disabled' => !$can_derive,
+      '#type' => 'submit',
+      '#value' => t('Create Images'),
+    ),
+  );
+}
+
+/**
+ * Triggers a batch to derive image datastreams in each page object.
+ *
+ * @param array $form
+ *   The Drupal form.
+ * @param array $form_state
+ *   The Drupal form state.
+ */
+function islandora_newspaper_manage_newspaper_images_form_submit(array $form, array &$form_state) {
+  module_load_include('inc', 'islandora_paged_content', 'includes/batch');
+  module_load_include('inc', 'islandora_paged_content', 'includes/utilities');
+  $object = $form_state['object'];
+  $pages = array_keys(islandora_paged_content_get_pages($object));
+  $batch = islandora_paged_content_create_images_batch($object, $pages);
   batch_set($batch);
 }
 
