@@ -102,11 +102,10 @@ function islandora_newspaper_ingest_page(FedoraObject $object) {
  *   The Drupal form.
  */
 function islandora_newspaper_manage_newspaper_ocr_form(array $form, array &$form_state, FedoraObject $object) {
-  module_load_include('inc', 'islandora_paged_content', 'includes/utilities');
+  module_load_include('inc', 'islandora_ocr', 'includes/utilities');
   $form_state['object'] = $object;
-  $can_derive = islandora_paged_content_can_create_ocr();
-  $can_preprocess = islandora_paged_content_can_preprocess_ocr();
-  $languages = islandora_paged_content_get_enabled_tesseract_languages();
+  $can_derive = islandora_ocr_can_derive_ocr();
+  $languages = islandora_ocr_get_enabled_tesseract_languages();
   return array(
     'description' => array(
       '#type' => 'item',
@@ -117,13 +116,6 @@ function islandora_newspaper_manage_newspaper_ocr_form(array $form, array &$form
       '#type' => 'select',
       '#description' => t('Please select the language that the page is written in.'),
       '#options' => $languages,
-    ),
-    'preprocess' => array(
-      '#disabled' => !$can_preprocess,
-      '#title' => t('Preprocessing for typescripts?'),
-      '#type' => 'checkbox',
-      '#description' => t('Will add additional processing for typewritten text. This script grayscales and sharpens the uploaded ingested TIFF before performing OCR processes.<br/>This has been shown to improve OCR results for some images. Use with caution. Process can be lengthly and is resource intensive.<br/>'),
-      '#default_value' => $can_preprocess,
     ),
     'submit' => array(
       '#disabled' => !$can_derive,
@@ -148,7 +140,7 @@ function islandora_newspaper_manage_newspaper_ocr_form_submit(array $form, array
   $pages = array_keys(islandora_paged_content_get_pages($object));
   $options = array(
     'language' => $form_state['values']['language'],
-    'preprocess' => (bool) $form_state['values']['preprocess'],
+    'preprocess' => FALSE,
   );
   $batch = islandora_paged_content_create_ocr_batch($object, $pages, $options);
   batch_set($batch);

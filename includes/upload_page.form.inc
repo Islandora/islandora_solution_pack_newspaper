@@ -17,15 +17,14 @@
  *   The Drupal form state.
  */
 function islandora_newspaper_upload_page_form(array $form, array &$form_state) {
-  module_load_include('inc', 'islandora_paged_content', 'includes/utilities');
+  module_load_include('inc', 'islandora_ocr', 'includes/utilities');
   $get_default_value = function($name, $default) use(&$form_state) {
     return isset($form_state['values'][$name]) ? $form_state['values'][$name] : $default;
   };
   $upload_size = min((int) ini_get('post_max_size'), (int) ini_get('upload_max_filesize'));
   $extensions = array('tiff tif');
   
-  $can_preprocess = islandora_paged_content_can_preprocess_ocr();
-  $languages = islandora_paged_content_get_enabled_tesseract_languages();
+  $languages = islandora_ocr_get_enabled_tesseract_languages();
 
   return array(
     'file' => array(
@@ -46,13 +45,6 @@ function islandora_newspaper_upload_page_form(array $form, array &$form_state) {
       '#description' => t('Please select the language that the page is written in.'),
       '#options' => $languages,
       '#default_value' => $get_default_value('language', NULL),
-    ),
-    'preprocess' => array(
-      '#disabled' => !$can_preprocess,
-      '#title' => t('Preprocessing for typescripts?'),
-      '#type' => 'checkbox',
-      '#description' => t('Will add additional processing for typewritten text. This script grayscales and sharpens the archival TIFF before performing OCR processes.<br/>This has been shown to improve OCR results for some images. Use with caution. Process can be lengthly and is resource intensive.<br/>'),
-      '#default_value' => $get_default_value('preprocess', $can_preprocess),
     ),
   );
 }

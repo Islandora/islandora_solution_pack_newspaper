@@ -309,7 +309,7 @@ function islandora_newspaper_islandora_newspaperpagecmodel_islandora_object_inge
 /**
  * Implements hook_islandora_ingest_steps().
  */
-function islandora_newspaper_islandora_newspaperpagecmodel_islandora_ingest_steps() {
+function islandora_newspaper_islandora_newspaperpagecmodel_islandora_ingest_steps(array $form_state) {
   return array(
     'islandora_newspaper_upload_pages' => array(
       'weight' => 10,
