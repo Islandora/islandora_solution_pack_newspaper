@@ -25,19 +25,11 @@
  */
 function islandora_newspaper_manage_newspaper_menu(FedoraObject $object) {
   drupal_set_title($object->label);
-  return array(
+  $out = array(
     'manage_newspaper' => array(
       '#type' => 'vertical_tabs',
       '#weight' => 0,
       '#prefix' => '',
-      'ocr' => array(
-        '#access' => user_access(FEDORA_ADD_DS),
-        '#title' => t('Perform OCR'),
-        '#type' => 'fieldset',
-        'form' => drupal_get_form('islandora_newspaper_manage_newspaper_ocr_form', $object),
-        '#collapsible' => TRUE,
-        '#collapsed' => TRUE,
-      ),
       'images' => array(
         '#access' => user_access(FEDORA_ADD_DS),
         '#title' => t('Create Images'),
@@ -65,6 +57,19 @@ function islandora_newspaper_manage_newspaper_menu(FedoraObject $object) {
       ),
     ),
   );
+
+  if (module_exists('islandora_ocr')) {
+    $out['manage_newspaper']['ocr'] = array( 
+        '#access' => user_access(FEDORA_ADD_DS),
+        '#title' => t('Perform OCR'),
+        '#type' => 'fieldset',
+        'form' => drupal_get_form('islandora_newspaper_manage_newspaper_ocr_form', $object),
+        '#collapsible' => TRUE,
+        '#collapsed' => TRUE,
+    );
+  }
+
+  return $out;
 }
 
 /**
@@ -102,20 +107,14 @@ function islandora_newspaper_ingest_page(FedoraObject $object) {
  *   The Drupal form.
  */
 function islandora_newspaper_manage_newspaper_ocr_form(array $form, array &$form_state, FedoraObject $object) {
-  module_load_include('inc', 'islandora_ocr', 'includes/utilities');
+  module_load_include('inc', 'islandora_paged_content', 'includes/utilities');
   $form_state['object'] = $object;
-  $can_derive = islandora_ocr_can_derive_ocr();
-  $languages = islandora_ocr_get_enabled_tesseract_languages();
-  return array(
+  $can_derive = islandora_paged_content_can_derive_ocr();
+
+  $out = array(
     'description' => array(
       '#type' => 'item',
       '#description' => t('You must have the <b>Tesseract</b> installed to perform OCR, and <b>Gimp</b> to preprocess OCR.<br/> This will update the OCR and HOCR datastreams for each Page object.'),
-    ),
-    'language' => array(
-      '#title' => t('Language'),
-      '#type' => 'select',
-      '#description' => t('Please select the language that the page is written in.'),
-      '#options' => $languages,
     ),
     'submit' => array(
       '#disabled' => !$can_derive,
@@ -123,7 +122,20 @@ function islandora_newspaper_manage_newspaper_ocr_form(array $form, array &$form
       '#value' => t('Create OCR'),
     ),
   );
-}
+
+  // Sanity check for the ocr module before adding language stuffs
+  // We should never fail this check, but you never know... 
+  if (module_exists('islandora_ocr')) {
+    module_load_include('inc', 'islandora_ocr', 'includes/utilities');
+    $languages = islandora_ocr_get_enabled_tesseract_languages();
+    $out['language'] = array(
+      '#title' => t('Language'),
+      '#type' => 'select',
+      '#description' => t('Please select the language that the page is written in.'),
+      '#options' => $languages,
+    );
+  }
+  return $out;
 
 /**
  * Triggers a batch to derive the OCR datastreams in each page object.

@@ -285,6 +285,9 @@ function islandora_newspaper_islandora_newspaperpagecmodel_islandora_object_inge
   module_load_include('inc', 'islandora_paged_content', 'includes/utilities');
   $success = TRUE;
   $derive = islandora_paged_content_get_enabled_ingest_derivatives("islandora_newspaper");
+  if ($derive['pdf']) {
+    $success &= islandora_paged_content_can_derive($object, 'PDF') && islandora_paged_content_page_derive_pdf_datastream($object);
+  }
   if ($derive['image']) {
     $can_derive = islandora_paged_content_can_derive($object, 'JP2');
     $derivation_results = islandora_paged_content_page_derive_image_datastreams($object);

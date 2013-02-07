@@ -17,16 +17,13 @@
  *   The Drupal form state.
  */
 function islandora_newspaper_upload_page_form(array $form, array &$form_state) {
-  module_load_include('inc', 'islandora_ocr', 'includes/utilities');
   $get_default_value = function($name, $default) use(&$form_state) {
     return isset($form_state['values'][$name]) ? $form_state['values'][$name] : $default;
   };
   $upload_size = min((int) ini_get('post_max_size'), (int) ini_get('upload_max_filesize'));
   $extensions = array('tiff tif');
   
-  $languages = islandora_ocr_get_enabled_tesseract_languages();
-
-  return array(
+  $out = array(
     'file' => array(
       '#title' => t('Page'),
       '#type' => 'managed_file',
@@ -38,15 +35,23 @@ function islandora_newspaper_upload_page_form(array $form, array &$form_state) {
         'file_validate_extensions' => $extensions,
         'file_validate_size' => array($upload_size * 1024 * 1024),
       ),
-    ),
-    'language' => array(
+    )
+  );
+
+  // Don't bring up languages if the ocr module is not enabled
+  if (module_exists('islandora_ocr')) {
+    module_load_include('inc', 'islandora_ocr', 'includes/utilities');
+    $languages = islandora_ocr_get_enabled_tesseract_languages();
+    $out['language'] = array(
       '#title' => t('Language'),
       '#type' => 'select',
       '#description' => t('Please select the language that the page is written in.'),
       '#options' => $languages,
       '#default_value' => $get_default_value('language', NULL),
-    ),
-  );
+    );
+  }
+
+  return $out;
 }
 
 /**
@@ -67,13 +72,13 @@ function islandora_newspaper_upload_page_form_submit(array $form, array &$form_s
   // end of the book.
   $rels_ext = $object->relationships;
   $language = $form_state['values']['language'];
-  $preprocess = $form_state['values']['preprocess'] ? 'true' : 'false';
   $configuration = islandora_ingest_form_get_configuration($form_state);
   $newspaper = islandora_object_load($configuration['newspaper']);
   $pages = islandora_paged_content_get_pages($newspaper);
   $num_pages = count($pages) + 1;
-  islandora_paged_content_set_relationship($rels_ext, ISLANDORA_RELS_EXT_URI, 'hasLanguage', $language, TRUE);
-  islandora_paged_content_set_relationship($rels_ext, ISLANDORA_RELS_EXT_URI, 'preprocess', $preprocess, TRUE);
+  if ($language) {
+    islandora_paged_content_set_relationship($rels_ext, ISLANDORA_RELS_EXT_URI, 'hasLanguage', $language, TRUE);
+  }
   islandora_paged_content_set_relationship($rels_ext, ISLANDORA_RELS_EXT_URI, 'isPageOf', $newspaper->id);
   islandora_paged_content_set_relationship($rels_ext, ISLANDORA_RELS_EXT_URI, 'isSequenceNumber', (string) $num_pages, TRUE);
   islandora_paged_content_set_relationship($rels_ext, ISLANDORA_RELS_EXT_URI, 'isPageNumber', (string) $num_pages, TRUE);
