@@ -30,6 +30,14 @@ function islandora_newspaper_manage_newspaper_menu(FedoraObject $object) {
       '#type' => 'vertical_tabs',
       '#weight' => 0,
       '#prefix' => '',
+      'pdf' => array(
+        '#access' => user_access(FEDORA_ADD_DS),
+        '#title' => t('Create PDF'),
+        '#type' => 'fieldset',
+        'form' => drupal_get_form('islandora_newspaper_manage_newspaper_pdf_form', $object),
+        '#collapsible' => TRUE,
+        '#collapsed' => FALSE,
+      ),
       'images' => array(
         '#access' => user_access(FEDORA_ADD_DS),
         '#title' => t('Create Images'),
@@ -91,6 +99,68 @@ function islandora_newspaper_ingest_page(FedoraObject $object) {
       'models' => array('islandora:newspaperPageCModel'),
     )
   );
+}
+
+/**
+ * Creates a PDF of the book.
+ *
+ * Generates a PDF file for each page and then combines them into a single PDF.
+ *
+ * @param array $form
+ *   The Drupal form.
+ * @param array $form_state
+ *   The Drupal form state.
+ * @param FedoraObject $object
+ *   The object to fetch the pages from.
+ *
+ * @return array
+ *   The Drupal form.
+ */
+function islandora_newspaper_manage_newspaper_pdf_form(array $form, array &$form_state, FedoraObject $object) {
+  module_load_include('inc', 'islandora_paged_content', 'includes/utilities');
+  $form_state['object'] = $object;
+  $can_derive = islandora_paged_content_can_derive($object, 'PDF');
+  return array(
+    'description' => array(
+      '#type' => 'item',
+      '#description' => t('You must have the <b>ImageMagick</b> and <b>GhostScript</b> installed to create/combine PDF files.<br/> This will also update the PDF datastreams for each Page object.'),
+    ),
+    'dpi' => array(
+      '#type' => 'select',
+      '#title' => t('DPI - Dots Per Inch'),
+      '#description' => t('Set the DPI for the generated PDF. The higher the resolution the longer the process will take.'),
+      '#options' => drupal_map_assoc(array('72', '96', '300', '600')),
+    ),
+    'submit' => array(
+      '#disabled' => !$can_derive,
+      '#type' => 'submit',
+      '#value' => t('Create PDF'),
+    ),
+  );
+}
+
+/**
+ * Creates a PDF of the book and a PDF of every page.
+ *
+ * Triggers a batch to derive a PDF datastreams in each page object.then
+ * combined them into a single PDF which is stored in the book object.
+ *
+ * @param array $form
+ *   The Drupal form.
+ * @param array $form_state
+ *   The Drupal form state.
+ */
+function islandora_newspaper_manage_newspaper_pdf_form_submit(array $form, array &$form_state) {
+  module_load_include('inc', 'islandora_paged_content', 'includes/utilities');
+  module_load_include('inc', 'islandora_paged_content', 'includes/batch');
+  $object = $form_state['object'];
+  $pages = array_keys(islandora_paged_content_get_pages($object));
+  $options = array(
+    '-density' => $form_state['values']['dpi'],
+    '-compress' => 'LZW',
+  );
+  $batch = islandora_paged_content_create_pdf_batch($object, $pages, $options);
+  batch_set($batch);
 }
 
 /**
