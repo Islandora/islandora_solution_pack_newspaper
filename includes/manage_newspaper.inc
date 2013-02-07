@@ -84,7 +84,7 @@ function islandora_newspaper_manage_newspaper_menu(FedoraObject $object) {
  * Local menu action, that gets the ingest page form.
  *
  * @param FedoraObject $object
- *   The book to ingest into.
+ *   The newspaper to ingest into.
  *
  * @return sting
  *   The HTML repersentation of the ingest page form.
@@ -102,7 +102,7 @@ function islandora_newspaper_ingest_page(FedoraObject $object) {
 }
 
 /**
- * Creates a PDF of the book.
+ * Creates a PDF of the newspaper.
  *
  * Generates a PDF file for each page and then combines them into a single PDF.
  *
@@ -140,10 +140,10 @@ function islandora_newspaper_manage_newspaper_pdf_form(array $form, array &$form
 }
 
 /**
- * Creates a PDF of the book and a PDF of every page.
+ * Creates a PDF of the newspaper and a PDF of every page.
  *
  * Triggers a batch to derive a PDF datastreams in each page object.then
- * combined them into a single PDF which is stored in the book object.
+ * combined them into a single PDF which is stored in the newspaper object.
  *
  * @param array $form
  *   The Drupal form.
@@ -164,7 +164,7 @@ function islandora_newspaper_manage_newspaper_pdf_form_submit(array $form, array
 }
 
 /**
- * Derives the OCR datastreams in each page of the book.
+ * Derives the OCR datastreams in each page of the newspaper.
  *
  * @param array $form
  *   The Drupal form.
@@ -177,26 +177,20 @@ function islandora_newspaper_manage_newspaper_pdf_form_submit(array $form, array
  *   The Drupal form.
  */
 function islandora_newspaper_manage_newspaper_ocr_form(array $form, array &$form_state, FedoraObject $object) {
-  module_load_include('inc', 'islandora_paged_content', 'includes/utilities');
+  module_load_include('inc', 'islandora_ocr', 'includes/utilities');
   $form_state['object'] = $object;
-  $can_derive = islandora_paged_content_can_derive_ocr();
+  $can_derive = islandora_ocr_can_derive_ocr();
 
   $out = array(
     'description' => array(
       '#type' => 'item',
       '#description' => t('You must have the <b>Tesseract</b> installed to perform OCR, and <b>Gimp</b> to preprocess OCR.<br/> This will update the OCR and HOCR datastreams for each Page object.'),
     ),
-    'submit' => array(
-      '#disabled' => !$can_derive,
-      '#type' => 'submit',
-      '#value' => t('Create OCR'),
-    ),
   );
 
   // Sanity check for the ocr module before adding language stuffs
   // We should never fail this check, but you never know...
   if (module_exists('islandora_ocr')) {
-    module_load_include('inc', 'islandora_ocr', 'includes/utilities');
     $languages = islandora_ocr_get_enabled_tesseract_languages();
     $out['language'] = array(
       '#title' => t('Language'),
@@ -205,6 +199,13 @@ function islandora_newspaper_manage_newspaper_ocr_form(array $form, array &$form
       '#options' => $languages,
     );
   }
+
+  $out['submit'] = array(
+    '#disabled' => !$can_derive,
+    '#type' => 'submit',
+    '#value' => t('Create OCR'),
+  );
+
   return $out;
 }
 
