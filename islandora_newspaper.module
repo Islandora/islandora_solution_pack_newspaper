@@ -291,7 +291,7 @@ function islandora_newspaper_islandora_newspaperpagecmodel_islandora_object_inge
   if ($derive['image']) {
     $can_derive = islandora_paged_content_can_derive($object, 'JP2');
     $derivation_results = islandora_paged_content_page_derive_image_datastreams($object);
-    $derived_images =  $can_derive && $derivation_results;
+    $derived_images = $can_derive && $derivation_results;
     if ($derived_images) {
       $paged_object = islandora_paged_content_get_relationship($object->relationships, FEDORA_RELS_EXT_URI, 'isMemberOf', NULL);
       islandora_paged_content_update_paged_content_thumbnail(islandora_object_load($paged_object));

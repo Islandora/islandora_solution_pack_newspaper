@@ -14,7 +14,20 @@ function islandora_newspaper_preprocess_islandora_newspaper_wrapper(&$variables)
   $islandora_object = $variables['islandora_object'];
 
   $variables['newspaper_controls_array'] = islandora_newspaper_get_newspaper_controls($islandora_object);
-  $variables['newspaper_controls'] = theme('item_list', array('items' => $variables['newspaper_controls_array'], NULL, 'ul', 'attributes' => array('class' => array('items', 'inline'))));
+  $variables['newspaper_controls'] = theme(
+    'item_list',
+    array(
+      'items' => $variables['newspaper_controls_array'],
+      NULL,
+      'ul',
+      'attributes' => array(
+        'class' => array(
+          'items',
+          'inline',
+        ),
+      ),
+    )
+  );
 }
 
 /**
@@ -128,7 +141,7 @@ function islandora_newspaper_preprocess_islandora_newspaper_page(&$variables) {
 
   // Display newspaper.
   $params = array(
-    'jp2_url' => $jp2_url
+    'jp2_url' => $jp2_url,
   );
   $viewer = islandora_get_viewer($params, 'islandora_newspaper_viewers', $islandora_object);
   $variables['islandora_content'] = '';
@@ -148,5 +161,18 @@ function islandora_newspaper_preprocess_islandora_newspaper_page(&$variables) {
   }
 
   $variables['newspaper_controls_array'] = islandora_newspaper_get_page_controls($islandora_object);
-  $variables['newspaper_controls'] = theme('item_list', array('items' => $variables['newspaper_controls_array'], NULL, 'ul', 'attributes' => array('class' => array('items', 'inline'))));
+  $variables['newspaper_controls'] = theme(
+    'item_list',
+    array(
+      'items' => $variables['newspaper_controls_array'],
+      NULL,
+      'ul',
+      'attributes' => array(
+        'class' => array(
+          'items',
+          'inline',
+        ),
+      ),
+    )
+  );
 }

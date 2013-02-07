@@ -59,13 +59,13 @@ function islandora_newspaper_manage_newspaper_menu(FedoraObject $object) {
   );
 
   if (module_exists('islandora_ocr')) {
-    $out['manage_newspaper']['ocr'] = array( 
-        '#access' => user_access(FEDORA_ADD_DS),
-        '#title' => t('Perform OCR'),
-        '#type' => 'fieldset',
-        'form' => drupal_get_form('islandora_newspaper_manage_newspaper_ocr_form', $object),
-        '#collapsible' => TRUE,
-        '#collapsed' => TRUE,
+    $out['manage_newspaper']['ocr'] = array(
+      '#access' => user_access(FEDORA_ADD_DS),
+      '#title' => t('Perform OCR'),
+      '#type' => 'fieldset',
+      'form' => drupal_get_form('islandora_newspaper_manage_newspaper_ocr_form', $object),
+      '#collapsible' => TRUE,
+      '#collapsed' => TRUE,
     );
   }
 
@@ -124,7 +124,7 @@ function islandora_newspaper_manage_newspaper_ocr_form(array $form, array &$form
   );
 
   // Sanity check for the ocr module before adding language stuffs
-  // We should never fail this check, but you never know... 
+  // We should never fail this check, but you never know...
   if (module_exists('islandora_ocr')) {
     module_load_include('inc', 'islandora_ocr', 'includes/utilities');
     $languages = islandora_ocr_get_enabled_tesseract_languages();
@@ -136,6 +136,7 @@ function islandora_newspaper_manage_newspaper_ocr_form(array $form, array &$form
     );
   }
   return $out;
+}
 
 /**
  * Triggers a batch to derive the OCR datastreams in each page object.

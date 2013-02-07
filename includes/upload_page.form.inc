@@ -22,7 +22,7 @@ function islandora_newspaper_upload_page_form(array $form, array &$form_state) {
   };
   $upload_size = min((int) ini_get('post_max_size'), (int) ini_get('upload_max_filesize'));
   $extensions = array('tiff tif');
-  
+
   $out = array(
     'file' => array(
       '#title' => t('Page'),
@@ -35,10 +35,10 @@ function islandora_newspaper_upload_page_form(array $form, array &$form_state) {
         'file_validate_extensions' => $extensions,
         'file_validate_size' => array($upload_size * 1024 * 1024),
       ),
-    )
+    ),
   );
 
-  // Don't bring up languages if the ocr module is not enabled
+  // Don't bring up languages if the ocr module is not enabled.
   if (module_exists('islandora_ocr')) {
     module_load_include('inc', 'islandora_ocr', 'includes/utilities');
     $languages = islandora_ocr_get_enabled_tesseract_languages();
