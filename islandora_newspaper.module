@@ -281,9 +281,10 @@ function islandora_newspaper_islandora_newspaperpagecmodel_islandora_view_object
 }
 
 /**
- * Implements hook_CMODEL_PID_islandora_ingest_post_ingest().
+ * Implements hook_CMODEL_PID_islandora_object_ingested().
  */
 function islandora_newspaper_islandora_newspapercmodel_islandora_object_ingested($object) {
+<<<<<<< HEAD
   module_load_include('inc', 'islandora_paged_content', 'includes/utilities');
   islandora_paged_content_create_all_derivatives($object);
 }
@@ -317,6 +318,10 @@ function islandora_newspaper_islandora_newspaperpagecmodel_islandora_object_inge
     drupal_set_message($msg, 'error');
     return FALSE;
   }
+=======
+  module_load_include('inc', 'islandora_newspaper', 'includes/islandora_newspaper.process');
+  islandora_newspaper_create_all_derivatives($object);
+>>>>>>> 7.x
 }
 
 /**
@@ -332,4 +337,17 @@ function islandora_newspaper_islandora_newspaperpagecmodel_islandora_ingest_step
       'file' => 'includes/upload_page.form.inc',
     ),
   );
+}
+
+/**
+ * Implements hook_CMODEL_PID_islandora_solr_object_result_alter().
+ * Puts the Solr query terms into the object URL so that viewers can use them
+ * for highlighting.
+ */
+function islandora_newspaper_islandora_pageCModel_islandora_solr_object_result_alter(&$search_results, $query_processor) {
+  if ($query_processor->solrDefType &&
+       ($query_processor->solrDefType == "dismax" ||
+          $query_processor->solrDefType == "edismax")) {
+    $search_results['object_url_params']['terms'] = $query_processor->solrQuery;
+  }
 }
