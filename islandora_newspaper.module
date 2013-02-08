@@ -229,9 +229,9 @@ function islandora_newspaper_islandora_pagecmodel_islandora_view_object($object,
 }
 
 /**
- * Implements hook_CMODEL_PID_islandora_ingest_post_ingest().
+ * Implements hook_CMODEL_PID_islandora_object_ingested().
  */
-function islandora_newspaper_islandora_newspapercmodel_islandora_ingest_post_ingest($object) {
+function islandora_newspaper_islandora_newspapercmodel_islandora_object_ingested($object) {
   module_load_include('inc', 'islandora_newspaper', 'includes/islandora_newspaper.process');
   islandora_newspaper_create_all_derivatives($object);
 }
@@ -252,55 +252,14 @@ function islandora_newspaper_islandora_newspaper_cmodel_islandora_ingest_steps()
 }
 
 /**
- * Implements hook_solr_search_results_alter()
- *
- * @param string $search_results
- *    Solr query output after it has been converted to markup
- * @param IslandoraSolrQueryProcessor $query_processor
- *    Used to get the search terms and returned solr docs
+ * Implements hook_CMODEL_PID_islandora_solr_object_result_alter().
+ * Puts the Solr query terms into the object URL so that viewers can use them
+ * for highlighting.
  */
-function islandora_newspaper_islandora_solr_search_results_alter(&$search_results, $query_processor) {
-  // Only do this if it's a basic search, which we know based on the solrDefType
-  // if solrDefType == 'dismax', it's a basic search
-  // if solrDefType == NULL, it's an advanced search
-  if ($query_processor->solrDefType && ($query_processor->solrDefType == "dismax" || $query_processor->solrDefType == "edismax")) {
-    // Make a DOM object to manipulate
-    // Wrap it in a blank div first so it's a valid tree
-    $search_results = "<div>" . $search_results . "</div>";
-    $markupDOM = new DOMDocument();
-    $markupDOM->loadXML($search_results);
-
-    // Search for the links in the solr-thumb dl's
-    $markupXPath = new DOMXPath($markupDOM);
-    $xpath_query = "//dl[@class='solr-thumb']/dt/a";
-    $xpath_results = $markupXPath->query($xpath_query);
-
-    // TODO
-    // Figure out if it's newspaper's we're searching for and only do it for those
-
-    $docs = $query_processor->solrResult->response->docs;
-
-    // Jam the search terms to the end of each link found in the query
-    for ($i = 0; $i < count($docs); $i++) {
-
-      // Split url into path and params pieces
-      $url = parse_url($xpath_results->item($i)->getAttribute('href'));
-      $url_params = array();
-
-      // Split params into key/value pairs (if there are any)
-      if (array_key_exists('query', $url)) {
-        parse_str($url['query'], $url_params);
-      }
-
-      // Add search terms and pid to url params
-      $url_params['terms'] = $query_processor->solrQuery;
-      $url_params['pid'] = $docs[$i]->PID;
-
-      // Replace href attribute with reconstructed url string
-      $xpath_results->item($i)->setAttribute('href', url($url['path'], array('query' => $url_params, 'external' => TRUE)));
-    }
-
-    // Replace the markup with the new stuff
-    $search_results = $markupDOM->saveXML();
+function islandora_newspaper_islandora_pageCModel_islandora_solr_object_result_alter(&$search_results, $query_processor) {
+  if ($query_processor->solrDefType &&
+       ($query_processor->solrDefType == "dismax" ||
+          $query_processor->solrDefType == "edismax")) {
+    $search_results['object_url_params']['terms'] = $query_processor->solrQuery;
   }
 }
