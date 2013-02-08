@@ -361,22 +361,21 @@ function islandora_newspaper_get_page_controls($islandora_object) {
   if ($newspaper_object) {
     $newspaper_controls['all_issues'] = l(t('All issues'), 'islandora/object/' . $newspaper_pid, array('attributes' => array('title' => t('All issues'))));
   }
-  // View.
-  if ($islandora_object['OCR'] || $islandora_object['PDF']) {
-    $view = array();
-    // Text view.
-    if ($islandora_object['OCR']) {
-      $text = $islandora_object['OCR'];
-      $view[] = l(t('Text'), islandora_datastream_get_url($text, 'view'), array('attributes' => array('title' => t('View text'), 'class' => 'view-text')));
-    }
-    // PDF download.
-    if ($islandora_object['PDF']) {
-      $pdf = $islandora_object['PDF'];
-      $view[] = l(t('PDF'), islandora_datastream_get_url($pdf, 'download'), array('attributes' => array('title' => t('Download PDF'), 'class' => 'download-pdf')));
-    }
-    $newspaper_controls['view'] = '<strong>' . t('View') . ':</strong> ' . implode(' | ', $view);
+
+  // Text view.
+  if ($islandora_object['OCR']) {
+    $text = $islandora_object['OCR'];
+    $view= l(t('Text'), islandora_datastream_get_url($text, 'view'), array('attributes' => array('title' => t('View text'), 'class' => 'view-text')));
+    $newspaper_controls['view'] = '<strong>' . t('View') . ':</strong> ' . $view;
   }
 
+
+  // PDF download.
+  if ($islandora_object['PDF']) {
+    $pdf = $islandora_object['PDF'];
+    $pdf_size = islandora_datastream_get_human_readable_size($pdf);
+    $newspaper_controls['pdf_download'] = '<strong>' . t('Download:') . '</strong> ' . l(t('pdf (@size)', array('@size' => $pdf_size)), islandora_datastream_get_url($pdf, 'download'), array('attributes' => array('title' => 'Download PDF')));
+  }
   // JP2 download.
   if ($islandora_object['JP2']) {
     $jp2_ds = $islandora_object['JP2'];
