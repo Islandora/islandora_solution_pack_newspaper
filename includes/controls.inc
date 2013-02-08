@@ -49,7 +49,8 @@ function islandora_newspaper_get_newspaper($object) {
 }
 
 /**
- * Get the pages of a newspaper issue. Mimics the basic collection functionality.
+ * Get the pages of a newspaper issue. Mimics the basic collection
+ * functionality.
  *
  * @param object $object
  *   Newspaper issue object
@@ -95,7 +96,8 @@ ORDER BY ?sequence';
 }
 
 /**
- * Returns object details for the next and previous page if available in page sequence.
+ * Returns object details for the next and previous page if available in page
+ * sequence.
  *
  * @param array $pages
  *   An array containing info about all pages in a newspaper issue.
@@ -103,8 +105,8 @@ ORDER BY ?sequence';
  *   A sequence number of the current page.
  *
  * @return array
- *   Returns an array containing info about the previous and next pages relative to
- *   the current page.
+ *   Returns an array containing info about the previous and next pages relative
+ *   to the current page.
  */
 function islandora_newspaper_get_page_pager($pages, $current_sequence) {
   $total = count($pages);
@@ -187,7 +189,8 @@ function islandora_newspaper_get_page_select($pages, $current_sequence) {
 }
 
 /**
- * Finds next and previous issues given a newspaper object and a current issue PID.
+ * Finds next and previous issues given a newspaper object and a current issue
+ * PID.
  *
  * @param string $issue_pid
  *   The PID of the issue object.
@@ -221,11 +224,12 @@ function islandora_newspaper_get_issue_pager($issue_pid, $newspaper_object) {
  * front pages of these issues instead.
  *
  * @param array $issue_pager
- *   An array containing info about the first previous and next issues relative to a certain issue.
+ *   An array containing info about the first previous and next issues relative
+ *   to a certain issue.
  *
  * @return array
- *   Return the $issue_pager array where the issue information has been replaced by that issues'
- *   first page.
+ *   Return the $issue_pager array where the issue information has been replaced
+ *   by that issues' first page.
  */
 function islandora_get_issue_frontpage_pager($issue_pager) {
   if (isset($issue_pager['next'])) {
@@ -248,11 +252,13 @@ function islandora_get_issue_frontpage_pager($issue_pager) {
  *   An issue object
  *
  * @return array
- *   An array containing query results describing the first page of a given issue.
+ *   An array containing query results describing the first page of a given
+ *   issue.
  */
 function islandora_newspaper_get_issue_frontpage($object) {
-  // We only need the front page, but with collection queries don't add amounts to the query yet. Once that's
-  // in place, we'd need to change this in islandora_newspaper_get_pages() too.
+  // We only need the front page, but with collection queries don't add amounts
+  // to the query yet. Once that's in place, we'd need to change this in
+  // islandora_newspaper_get_pages() too.
   $pages = islandora_newspaper_get_pages($object);
   return $pages[0];
 }
@@ -261,7 +267,8 @@ function islandora_newspaper_get_issue_frontpage($object) {
  * Creates rendered pager links for issues.
  *
  * @param array $issue_pager
- *   An array describing the previous and next issues relative to a certain issue.
+ *   An array describing the previous and next issues relative to a certain
+ *   issue.
  *
  * @return string
  *   Returns rendered previous and next links.
@@ -382,5 +389,13 @@ function islandora_newspaper_get_page_controls($islandora_object) {
     $jp2_size = islandora_datastream_get_human_readable_size($jp2_ds);
     $newspaper_controls['jp2_download'] = '<strong>' . t('Download:') . '</strong> ' . l(t('JP2 (@size)', array('@size' => $jp2_size)), islandora_datastream_get_url($jp2_ds, 'download'), array('attributes' => array('title' => 'Download JP2')));
   }
+
+  // TIFF download.
+  if ($islandora_object['OBJ']) {
+    $tiff_ds = $islandora_object['OBJ'];
+    $tiff_size = islandora_datastream_get_human_readable_size($tiff_ds);
+    $newspaper_controls['tiff_download'] = '<strong>' . t('Download:') . '</strong> ' . l(t('TIFF (@size)', array('@size' => $tiff_size)), islandora_datastream_get_url($tiff_ds, 'download'), array('attributes' => array('title' => 'Download TIFF')));
+  }
+
   return $newspaper_controls;
 }
