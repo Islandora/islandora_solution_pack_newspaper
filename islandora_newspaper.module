@@ -18,8 +18,8 @@ function islandora_newspaper_menu() {
       'description' => 'Configure the newspaper solution pack.',
       'page callback' => 'drupal_get_form',
       'access arguments' => array('administer site configuration'),
-      'page arguments' => array('islandora_newspaper_admin'),
-      'file' => 'admin/islandora_newspaper.admin.inc',
+      'page arguments' => array('islandora_newspaper_admin_settings_form'),
+      'file' => 'includes/admin.form.inc',
       'type' => MENU_NORMAL_ITEM,
     ),
     'islandora/object/%islandora_object/manage/newspaper' => array(
