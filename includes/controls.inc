@@ -260,7 +260,7 @@ function islandora_newspaper_get_issue_frontpage($object) {
   // to the query yet. Once that's in place, we'd need to change this in
   // islandora_newspaper_get_pages() too.
   $pages = islandora_newspaper_get_pages($object);
-  return $pages[0];
+  return count($pages) ? $pages[0] : NULL;
 }
 
 /**
