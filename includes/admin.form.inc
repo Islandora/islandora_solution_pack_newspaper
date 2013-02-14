@@ -2,123 +2,78 @@
 
 /**
  * @file
- * This file contains all admin functions
+ * Handles the display/submission of the admin settings form for this module.
  */
 
 /**
- * Admin form definition.
+ * Defines the admin settings form.
+ *
+ * @param array $form
+ *   The Drupal form definition.
+ * @param array $form_state
+ *   The Drupal form state.
+ *
+ * @return array
+ *   The Drupal form definition.
  */
-function islandora_newspaper_admin($form, &$form_state) {
+function islandora_newspaper_admin_settings_form(array $form, array &$form_state) {
+  $get_default_value = function($name, $default) use(&$form_state) {
+    return isset($form_state['values'][$name]) ? $form_state['values'][$name] : variable_get($name, $default);
+  };
+  $form = array(
+    'local_derivative_settings' => array(
+      '#type' => 'fieldset',
+      '#title' => t('Create Page Derivatives Locally'),
+      '#description' => t('When ingesting pages automatically create derivative datastreams on this server. If you intend to only use microservices to generate derivatives you should not have any of these settings enabled.'),
+      'islandora_newspaper_ingest_derivatives' => array(
+        '#type' => 'checkboxes',
+        '#element_validate' => array('islandora_newspaper_admin_settings_form_ingest_derivatives_validate'),
+        '#options' => array(
+          'pdf' => t('PDF datastream. <b>Requires</b> <i>ImageMagick</i>'),
+          'image' => t('Image datastreams (TN, JPEG, JP2). <b>Requires</b> <i>Large Image Solution Pack</i>'),
+          'ocr' => t('OCR datastreams (OCR, HOCR). <b>Requires</b> <i>Islandora OCR Module</i>'),
+        ),
+        '#default_value' => $get_default_value('islandora_newspaper_ingest_derivatives', drupal_map_assoc(
+                            array('pdf', 'image', 'ocr'))),
+      ),
+    ),
+  );
   module_load_include('inc', 'islandora', 'includes/solution_packs');
-  drupal_add_css(drupal_get_path('module', 'islandora_newspaper') . '/css/islandora_newspaper.admin.css');
-
-  if (isset($form_state['values']['islandora_kakadu_url'])) {
-    $kakadu_url = $form_state['values']['islandora_kakadu_url'];
-  }
-  else {
-    $kakadu_url = variable_get('islandora_kakadu_url', '/usr/bin/kdu_compress');
-  }
-
-  $lossless = variable_get('islandora_lossless', FALSE);
-
-  $kakadu_checked = isset($form_state['values']['islandora_use_kakadu']) ? $form_state['values']['islandora_use_kakadu'] : variable_get('islandora_use_kakadu', FALSE);
-  $kakadu_view = $kakadu_checked ? 'markup' : 'hidden';
-
-  exec($kakadu_url, $output, $return_value);
-  $confirmation_message = '<img src="' . url('misc/watchdog-ok.png') . '"/>'
-      . t('kakadu executable found at !kakadu_url', array('!kakadu_url' => "<strong>$kakadu_url</strong>"));
-  if ($return_value != 0) {
-    $confirmation_message = '<img src="' . url('misc/watchdog-error.png') . '"/> '
-        . t('Unable to find kakadu executable at !kakadu_url', array('!kakadu_url' => "<strong>$kakadu_url</strong>"));
-  }
-  $form = array();
-  $form['islandora_lossless'] = array(
-    '#title' => t("Lossless Derivative Creation?"),
-    '#default_value' => $lossless,
-    '#description' => t('Lossless derivative are of higher quality, but will adversely affect browser performance.'),
-    '#type' => 'checkbox',
-  );
-
-  $form['islandora_use_kakadu'] = array(
-    '#title' => t("Use Kakadu for image compression?"),
-    '#default_value' => $kakadu_checked,
-    '#description' => t("!kakadu offers faster derivative creation than the standard ImageMagick package.", array('!kakadu' => l(t('kakadu'), 'http://www.kakadusoftware.com/'))),
-    '#type' => 'checkbox',
-    '#ajax' => array(
-      'callback' => 'islandora_update_kakadu_url_div',
-      'wrapper' => 'islandora-url',
-      'effect' => 'fade',
-      'progress' => array('type' => 'throbber'),
-    ),
-  );
-
-  $forms['islandora_kakadu_url'] = array(
-    '#prefix' => '<div id = "kakadu_url">',
-    '#suffix' => '</div>',
-    '#type' => 'textfield',
-    '#description' => t("This module requires !kakadu to create derivative files", array('!kakadu' => l(t('kakadu'), 'http://www.kakadusoftware.com/'))),
-    '#default_value' => $kakadu_url,
-    '#size' => 20,
-  );
-
-  // Ajax wrapper for url checking.
-  $form['wrapper'] = array(
-    '#prefix' => '<div id="islandora-url">',
-    '#suffix' => '</div>',
-    '#type' => $kakadu_view,
-  );
-
-  $form['wrapper']['islandora_kakadu_url'] = array(
-    '#type' => 'textfield',
-    '#title' => t("Path to kakadu"),
-    '#default_value' => $kakadu_url,
-    '#description' => t('Path to kakadu <br /> !confirmation_message', array('!confirmation_message' => $confirmation_message)),
-    '#ajax' => array(
-      'callback' => 'islandora_update_kakadu_url_div',
-      'wrapper' => 'islandora-url',
-      'effect' => 'fade',
-      'event' => 'blur',
-      'progress' => array('type' => 'throbber'),
-    ),
-  );
-
-  // Get viewer table.
-  $viewer_table = islandora_viewers_form('islandora_newspaper_viewers', 'image/jp2');
-  // Add viewer table.
-  $form += $viewer_table;
-
-  // Actions.
-  $form['actions'] = array(
-    '#type' => 'actions',
-  );
-  $form['actions']['reset'] = array(
-    '#type' => 'submit',
-    '#value' => t('Reset to defaults'),
-    '#weight' => 1,
-    '#submit' => array('islandora_newspaper_admin_submit'),
-  );
-
+  $form += islandora_viewers_form('islandora_newspaper_page_viewers', 'image/jp2');
+  $form['page_viewers'] = $form['viewers'];
+  $form['page_viewers']['#title'] = t('Page Viewers');
+  unset($form['viewers']);
   return system_settings_form($form);
 }
 
 /**
- * Form submit.
+ * Check if the required resouces are enabled.
+ *
+ * @param array $element
+ *   The element to check.
+ * @param array $form_state
+ *   The Drupal form state.
+ * @param array $form
+ *   The Drupal form definition.
  */
-function islandora_newspaper_admin_submit($form, &$form_state) {
-  $op = $form_state['clicked_button']['#id'];
-  switch ($op) {
-    case 'edit-reset':
-      variable_del('islandora_newspaper_viewers');
-      break;
+function islandora_newspaper_admin_settings_form_ingest_derivatives_validate(array $element, array &$form_state, array $form) {
+  module_load_include('inc', 'islandora_paged_content', 'includes/utilities');
+  // form_error() doesn't seem to work here, it prevents the submit but
+  // also prevents the value from being set. So we are using
+  // drupal_set_message().
+  if (array_key_exists('pdf', $element['#value']) && !islandora_paged_content_can_create_pdf()) {
+    $element['#value']['pdf'] = 0;
+    form_set_value($element, $element['#value'], $form_state);
+    drupal_set_message(t('ImagicMagick must be enabled to derive the PDF datastream.'), 'error');
   }
-}
-
-/**
- * Callback function for kakadu ajax.
- */
-function islandora_update_kakadu_url_div($form, $form_state) {
-  unset($form_state['submit_handlers']);
-  $form_state['rebuild'] = TRUE;
-
-  return $form['wrapper'];
+  if (array_key_exists('image', $element['#value']) && !islandora_paged_content_can_create_images()) {
+    $element['#value']['image'] = 0;
+    form_set_value($element, $element['#value'], $form_state);
+    drupal_set_message(t('The Large Image solution pack must be enabled to derive image datastreams.'), 'error');
+  }
+  if (array_key_exists('ocr', $element['#value']) && !(module_exists('islandora_ocr'))) {
+    $element['#value']['ocr'] = 0;
+    form_set_value($element, $element['#value'], $form_state);
+    drupal_set_message(t('The Islandora OCR Module must be enabled to derive OCR datastreams.'), 'error');
+  }
 }
