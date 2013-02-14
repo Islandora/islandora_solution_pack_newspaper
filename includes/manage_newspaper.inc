@@ -267,7 +267,7 @@ function islandora_newspaper_manage_newspaper_thumbnail_form(array $form, array 
  * @param array $form_state
  *   The Drupal form state.
  */
-function islandora_newspaper_content_manage_paged_content_thumbnail_form_submit(array $form, array &$form_state) {
+function islandora_newspaper_manage_newspaper_thumbnail_form_submit(array $form, array &$form_state) {
   module_load_include('inc', 'islandora_paged_content', 'includes/utilities');
   if (islandora_paged_content_update_paged_content_thumbnail($form_state['object'])) {
     drupal_set_message(t('Thumbnail successfully updated.'), 'status');
