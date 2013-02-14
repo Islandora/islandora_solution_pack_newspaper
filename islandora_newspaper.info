@@ -1,7 +1,6 @@
 name = "Islandora newspaper"
 description = "A default Islandora module to handle newspapers"
 dependencies[] = islandora
-dependencies[] = imagemagick
 dependencies[] = islandora_paged_content
 package = Islandora
 version = 7.x-dev

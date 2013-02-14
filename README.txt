@@ -7,6 +7,5 @@ REQUIREMENTS
 ------------
 
  * Islandora
- * Imagemagick
- * Kakadu (optional)
+ * Islandora Paged Content
  * islandora_seadragon (optional)
