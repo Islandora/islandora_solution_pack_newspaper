@@ -269,7 +269,12 @@ function islandora_newspaper_manage_newspaper_thumbnail_form(array $form, array 
  */
 function islandora_paged_content_manage_paged_content_thumbnail_form_submit(array $form, array &$form_state) {
   module_load_include('inc', 'islandora_paged_content', 'includes/utilities');
-  islandora_paged_content_update_paged_content_thumbnail($form_state['object']);
+  if (islandora_paged_content_update_paged_content_thumbnail($form_state['object'])) {
+    drupal_set_message(t('Thumbnail successfully updated.'), 'status');
+  }
+  else {
+    drupal_set_message(t('Failed to update thumbnail'), 'error');
+  }
 }
 
 /**
