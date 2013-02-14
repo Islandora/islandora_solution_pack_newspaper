@@ -40,7 +40,7 @@ function islandora_newspaper_preprocess_islandora_newspaper(&$variables) {
   $pages = $variables['pages'];
   try {
     $dc = $islandora_object['DC']->content;
-    $dc_object = DublinCore::import_from_xml_string($dc);
+    $dc_object = DublinCore::importFromXMLString($dc);
   }
   catch (Exception $e) {
     drupal_set_message(t('Error retrieving object %s %t', array('%s' => $islandora_object->id, '%t' => $e->getMessage())), 'error', FALSE);
@@ -79,8 +79,8 @@ function islandora_newspaper_preprocess_islandora_newspaper(&$variables) {
     $associated_objects_array[$pid]['object'] = $fc_object;
     try {
       $dc = $fc_object['DC']->content;
-      $dc_object = DublinCore::import_from_xml_string($dc);
-      $associated_objects_array[$pid]['dc_array'] = $dc_object->as_formatted_array();
+      $dc_object = DublinCore::importFromXMLString($dc);
+      $associated_objects_array[$pid]['dc_array'] = $dc_object->asArray();
     }
     catch (Exception $e) {
       drupal_set_message(t('Error retrieving object %s %t', array('%s' => $islandora_object->id, '%t' => $e->getMessage())), 'error', FALSE);
@@ -131,7 +131,7 @@ function islandora_newspaper_preprocess_islandora_newspaper_page(&$variables) {
   module_load_include('inc', 'islandora', 'includes/solution_packs');
   // Get token to allow access to XACML protected datastreams if necessary.
   // Always use token authentication in case there is a global policy.
-  module_load_include('inc', 'islandora', 'includes/islandora_authtokens');
+  module_load_include('inc', 'islandora', 'includes/authtokens');
   $token = islandora_get_object_token($islandora_object->id, 'JP2', 2);
   $jp2_url = url("islandora/object/{$islandora_object->id}/datastream/JP2/view",
     array(
