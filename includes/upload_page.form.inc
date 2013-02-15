@@ -72,8 +72,8 @@ function islandora_newspaper_upload_page_form_submit(array $form, array &$form_s
   // end of the book.
   $rels_ext = $object->relationships;
   $language = $form_state['values']['language'];
-  $configuration = islandora_ingest_form_get_configuration($form_state);
-  $newspaper = islandora_object_load($configuration['newspaper']);
+  $shared_storage = islandora_ingest_form_get_shared_storage($form_state);
+  $newspaper = islandora_object_load($shared_storage['newspaper']);
   $pages = islandora_paged_content_get_pages($newspaper);
   $num_pages = count($pages) + 1;
   if ($language) {
