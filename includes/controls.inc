@@ -15,7 +15,7 @@
  *   Returns the PID of the issue object of which $object is a page of.
  */
 function islandora_newspaper_get_issue($object) {
-  $rels = $object->relationships->get('http://islandora.ca/ontology/relsext#', 'isPageOf');
+  $rels = $object->relationships->get(FEDORA_RELS_EXT_URI, 'isMemberOf');
   return $rels[0]['object']['value'];
 }
 
@@ -29,7 +29,7 @@ function islandora_newspaper_get_issue($object) {
  *   Returns the sequence number of a page in an issue.
  */
 function islandora_newspaper_get_current_sequence($object) {
-  $rels = $object->relationships->get('http://islandora.ca/ontology/relsext#', 'isSequenceNumber');
+  $rels = $object->relationships->get(ISLANDORA_RELS_EXT_URI, 'isSequenceNumber');
   return $rels[0]['object']['value'];
 }
 
@@ -44,55 +44,8 @@ function islandora_newspaper_get_current_sequence($object) {
  */
 function islandora_newspaper_get_newspaper($object) {
   // Is this the old way of using rels ext?
-  $rels = $object->relationships->get('info:fedora/fedora-system:def/relations-external#', 'isMemberOfCollection');
+  $rels = $object->relationships->get(FEDORA_RELS_EXT_URI, 'isMemberOfCollection');
   return $rels[0]['object']['value'];
-}
-
-/**
- * Get the pages of a newspaper issue. Mimics the basic collection
- * functionality.
- *
- * @param object $object
- *   Newspaper issue object
- * @param int $page_number
- *   Page offset number
- * @param int $page_size
- *   Amount of objects to be displayed per page
- *
- * @return array
- *   An array containing the results of the query
- *
- * @see islandora_basic_collection_get_objects()
- */
-function islandora_newspaper_get_pages($object, $page_number = 1, $page_size = 5) {
-  // @TODO: this should later be split up in 2 queries.
-  // One for visible page and one for total count.
-  $query = 'SELECT ?object ?sequence ?page ?title
-WHERE {
-  ?object <http://islandora.ca/ontology/relsext#isPageOf> <info:fedora/' . $object->id . '> .
-  ?object <http://islandora.ca/ontology/relsext#isSequenceNumber> ?sequence .
-  ?object <http://islandora.ca/ontology/relsext#isPageNumber> ?page .
-  ?object <info:fedora/fedora-system:def/model#label> ?title .
-  ?object <fedora-model:state> <info:fedora/fedora-system:def/model#Active>
-}
-ORDER BY ?sequence';
-
-  $query_array = array(
-    'query' => $query,
-    'type' => 'sparql',
-    'pid' => $object->id,
-    'page_size' => $page_size,
-    'page_number' => $page_number,
-  );
-  drupal_alter('islandora_newspaper_query', $query_array);
-  try {
-    $results = $object->repository->ri->query($query_array['query'], $query_array['type']);
-  }
-  catch (Exception $e) {
-    drupal_set_message(t('Islandora Error getting related objects for %s', array('%s' => $object->id)), 'error');
-    return '';
-  }
-  return $results;
 }
 
 /**
@@ -110,14 +63,24 @@ ORDER BY ?sequence';
  */
 function islandora_newspaper_get_page_pager($pages, $current_sequence) {
   $total = count($pages);
-  foreach ($pages as $key => $page) {
-    if ($page['sequence']['value'] == $current_sequence) {
+
+  // Array for the order in which the PIDs occur
+  $pid_values = array_keys($pages);
+  // Reversed, to map PIDs to their order, to easily find the next or the previous.
+  $pid_lookup = array_flip($pid_values);
+  foreach ($pages as $pid => $page) {
+    $key = $page['page'];
+    if ($key == $current_sequence) {
       $page_pager = array();
-      if ($key + 1 <= $total - 1) {
-        $page_pager['next'] = $pages[$key + 1];
+
+      $next = $pid_lookup[$pid] + 1;
+      if ($next < $total) {
+        $page_pager['next'] = $pages[$pid_values[$next]];
       }
-      if ($key - 1 >= 0) {
-        $page_pager['previous'] = $pages[$key - 1];
+
+      $prev = $pid_lookup[$pid] - 1;
+      if ($prev >= 0) {
+        $page_pager['previous'] = $pages[$pid_values[$prev]];
       }
       return $page_pager;
     }
@@ -140,13 +103,21 @@ function islandora_newspaper_get_page_pager_links($pages, $current_sequence) {
   if (!empty($page_pager)) {
     $page_pager_links = '';
     if (isset($page_pager['previous'])) {
-      $prev_pid = $page_pager['previous']['object']['value'];
-      $page_pager_links .= l(t('Prev'), 'islandora/object/' . $prev_pid, array('attributes' => array('title' => t('Previous page'), 'class' => 'page-prev')));
+      $prev_pid = $page_pager['previous']['pid'];
+      $page_pager_links .= l(t('Prev'), 'islandora/object/' . $prev_pid, array('attributes' => array(
+        'title' => t('Previous page'),
+        'class' => array(
+          'page-prev',
+      ))));
     }
     $page_pager_links .= ' <strong>' . t('Page') . '</strong> ';
     if (isset($page_pager['next'])) {
-      $next_pid = $page_pager['next']['object']['value'];
-      $page_pager_links .= l(t('Next'), 'islandora/object/' . $next_pid, array('attributes' => array('title' => t('Next page'), 'class' => 'page-next')));
+      $next_pid = $page_pager['next']['pid'];
+      $page_pager_links .= l(t('Next'), 'islandora/object/' . $next_pid, array('attributes' => array(
+        'title' => t('Next page'),
+        'class' => array(
+          'page-next',
+      ))));
     }
     return $page_pager_links;
   }
@@ -169,22 +140,22 @@ function islandora_newspaper_get_page_pager_links($pages, $current_sequence) {
 function islandora_newspaper_get_page_select($pages, $current_sequence) {
   $total = count($pages);
   $options = array();
-  foreach ($pages as $key => $page) {
-    $pid = $page['object']['value'];
-    $sequence = $page['sequence']['value'];
-    $options[$pid] = $sequence;
-    if ($sequence == $current_sequence) {
-      $default = $pid;
-    }
-  }
   $variables = array(
     '#options' => $options,
-    '#value' => $default,
     '#attributes' => array('class' => array('page-select')),
   );
+  foreach ($pages as $pid => $page) {
+    $sequence = $page['page'];
+    $variables['#options'][$pid] = $sequence;
+    if ($sequence == $current_sequence) {
+      $variables['#value'] = $pid;
+    }
+  }
   $select = '<strong>' . t('Image') . ':</strong> ';
-  $select .= theme('select', array('element' => $variables));
-  $select .= ' ' . t('of') . ' ' . $total;
+  $select .= t('!page_selector of @total', array(
+    '!page_selector' => theme('select', array('element' => $variables)),
+    '@total' => $total,
+  ));
   return $select;
 }
 
@@ -233,12 +204,12 @@ function islandora_newspaper_get_issue_pager($issue_pid, $newspaper_object) {
  */
 function islandora_get_issue_frontpage_pager($issue_pager) {
   if (isset($issue_pager['next'])) {
-    $issue_object = $object = islandora_object_load($issue_pager['next']['object']['value']);
+    $issue_object = $object = islandora_object_load($issue_pager['next']['pid']);
     $front_page = islandora_newspaper_get_issue_frontpage($issue_object);
     $issue_pager['next'] = $front_page;
   }
   if (isset($issue_pager['previous'])) {
-    $issue_object = $object = islandora_object_load($issue_pager['previous']['object']['value']);
+    $issue_object = $object = islandora_object_load($issue_pager['previous']['pid']);
     $front_page = islandora_newspaper_get_issue_frontpage($issue_object);
     $issue_pager['previous'] = $front_page;
   }
@@ -258,9 +229,10 @@ function islandora_get_issue_frontpage_pager($issue_pager) {
 function islandora_newspaper_get_issue_frontpage($object) {
   // We only need the front page, but with collection queries don't add amounts
   // to the query yet. Once that's in place, we'd need to change this in
-  // islandora_newspaper_get_pages() too.
-  $pages = islandora_newspaper_get_pages($object);
-  return count($pages) ? $pages[0] : NULL;
+  // islandora_paged_content_get_pages() too.
+  module_load_include('inc', 'islandora_paged_content', 'includes/utilities');
+  $pages = islandora_paged_content_get_pages($object);
+  return reset($pages);
 }
 
 /**
@@ -278,12 +250,20 @@ function islandora_newspaper_get_issue_pager_links($issue_pager) {
     $issue_pager_links = '';
     if (isset($issue_pager['previous'])) {
       $prev_pid = $issue_pager['previous']['object']['value'];
-      $issue_pager_links .= l(t('Prev'), 'islandora/object/' . $prev_pid, array('attributes' => array('title' => t('Previous issue'), 'class' => 'issue-prev')));
+      $issue_pager_links .= l(t('Prev'), 'islandora/object/' . $prev_pid, array('attributes' => array(
+        'title' => t('Previous issue'),
+        'class' => array(
+          'issue-prev',
+      ))));
     }
     $issue_pager_links .= ' <strong>' . t('Issue') . '</strong> ';
     if (isset($issue_pager['next'])) {
       $next_pid = $issue_pager['next']['object']['value'];
-      $issue_pager_links .= l(t('Next'), 'islandora/object/' . $next_pid, array('attributes' => array('title' => t('Next issue'), 'class' => 'issue-next')));
+      $issue_pager_links .= l(t('Next'), 'islandora/object/' . $next_pid, array('attributes' => array(
+        'title' => t('Next issue'),
+        'class' => array(
+          'issue-next',
+      ))));
     }
     return $issue_pager_links;
   }
@@ -332,12 +312,17 @@ function islandora_newspaper_get_page_controls($islandora_object) {
   $issue_object = islandora_object_load($issue_pid);
   // Print error and return if no parent object.
   if (!$issue_object) {
-    watchdog("Missing newspaper object.", "$issue_pid is missing,
-    $islandora_object is the page that expected to find it.");
+    watchdog('Islandora Newspaper', "@issue_pid is missing, @page_pid is ' .
+      'the page that expected to find it.", array(
+        '@issue_pid' => $issue_pid,
+        '@page_pid' => $islandora_object,
+    ));
 
     return;
   }
-  $pages = islandora_newspaper_get_pages($issue_object);
+
+  module_load_include('inc', 'islandora_paged_content', 'includes/utilities');
+  $pages = islandora_paged_content_get_pages($issue_object);
   $newspaper_pid = islandora_newspaper_get_newspaper($issue_object);
   $newspaper_object = islandora_object_load($newspaper_pid);
   $current_sequence = islandora_newspaper_get_current_sequence($islandora_object);
@@ -372,7 +357,9 @@ function islandora_newspaper_get_page_controls($islandora_object) {
   // Text view.
   if ($islandora_object['OCR']) {
     $text = $islandora_object['OCR'];
-    $view= l(t('Text'), islandora_datastream_get_url($text, 'view'), array('attributes' => array('title' => t('View text'), 'class' => 'view-text')));
+    $view= l(t('Text'), islandora_datastream_get_url($text, 'view'), array('attributes' => array('title' => t('View text'), 'class' => array(
+      'view-text',
+    ))));
     $newspaper_controls['view'] = '<strong>' . t('View') . ':</strong> ' . $view;
   }
 
