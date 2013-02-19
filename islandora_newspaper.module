@@ -246,7 +246,8 @@ function islandora_newspaper_islandora_newspapercmodel_islandora_view_object($ob
   drupal_set_title($object->label);
 
   // All pages.
-  $pages = islandora_newspaper_get_pages($object, $page_number, $page_size);
+  module_load_include('inc', 'islandora_paged_content', 'includes/utilities');
+  $pages = islandora_paged_content_get_pages($object);
 
   $total_count = count($pages);
   pager_default_initialize($total_count, $page_size);
@@ -294,7 +295,10 @@ function islandora_newspaper_islandora_newspaperpagecmodel_islandora_object_inge
     $derived_images = islandora_paged_content_can_derive($object, 'JP2') && islandora_paged_content_page_derive_image_datastreams($object);
     if ($derived_images) {
       $paged_object = islandora_paged_content_get_relationship($object->relationships, FEDORA_RELS_EXT_URI, 'isMemberOf', NULL);
-      islandora_paged_content_update_paged_content_thumbnail(islandora_object_load($paged_object));
+      $paged_object = islandora_object_load($paged_object);
+      if ($paged_object) {
+        islandora_paged_content_update_paged_content_thumbnail($paged_object);
+      }
     }
     $success = $success && $derived_images;
   }
