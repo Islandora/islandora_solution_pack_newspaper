@@ -212,12 +212,12 @@ function islandora_newspaper_get_issue_pager($issue_pid, $newspaper_object) {
  */
 function islandora_get_issue_frontpage_pager($issue_pager) {
   if (isset($issue_pager['next'])) {
-    $issue_object = $object = islandora_object_load($issue_pager['next']['object']['value']);
+    $issue_object = $object = islandora_object_load($issue_pager['next']['pid']);
     $front_page = islandora_newspaper_get_issue_frontpage($issue_object);
     $issue_pager['next'] = $front_page;
   }
   if (isset($issue_pager['previous'])) {
-    $issue_object = $object = islandora_object_load($issue_pager['previous']['object']['value']);
+    $issue_object = $object = islandora_object_load($issue_pager['previous']['pid']);
     $front_page = islandora_newspaper_get_issue_frontpage($issue_object);
     $issue_pager['previous'] = $front_page;
   }
