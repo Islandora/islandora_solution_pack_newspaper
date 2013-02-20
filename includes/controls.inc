@@ -185,7 +185,15 @@ function islandora_newspaper_get_issue_pager($issue_pid, $newspaper_object) {
       if ($key - 1 >= 0) {
         $issue_pager['previous'] = $issues[$key - 1];
       }
-      return $issue_pager;
+
+      $map = function($o) {
+        return array(
+          'label' => $o['title']['value'],
+          'pid' => $o['object']['value'],
+       );
+      };
+
+      return array_map($map, $issue_pager);
     }
   }
 }
@@ -204,12 +212,12 @@ function islandora_newspaper_get_issue_pager($issue_pid, $newspaper_object) {
  */
 function islandora_get_issue_frontpage_pager($issue_pager) {
   if (isset($issue_pager['next'])) {
-    $issue_object = $object = islandora_object_load($issue_pager['next']['pid']);
+    $issue_object = $object = islandora_object_load($issue_pager['next']['object']['value']);
     $front_page = islandora_newspaper_get_issue_frontpage($issue_object);
     $issue_pager['next'] = $front_page;
   }
   if (isset($issue_pager['previous'])) {
-    $issue_object = $object = islandora_object_load($issue_pager['previous']['pid']);
+    $issue_object = $object = islandora_object_load($issue_pager['previous']['object']['value']);
     $front_page = islandora_newspaper_get_issue_frontpage($issue_object);
     $issue_pager['previous'] = $front_page;
   }
@@ -249,7 +257,7 @@ function islandora_newspaper_get_issue_pager_links($issue_pager) {
   if (!empty($issue_pager)) {
     $issue_pager_links = '';
     if (isset($issue_pager['previous'])) {
-      $prev_pid = $issue_pager['previous']['object']['value'];
+      $prev_pid = $issue_pager['previous']['pid'];
       $issue_pager_links .= l(t('Prev'), 'islandora/object/' . $prev_pid, array('attributes' => array(
         'title' => t('Previous issue'),
         'class' => array(
@@ -258,7 +266,7 @@ function islandora_newspaper_get_issue_pager_links($issue_pager) {
     }
     $issue_pager_links .= ' <strong>' . t('Issue') . '</strong> ';
     if (isset($issue_pager['next'])) {
-      $next_pid = $issue_pager['next']['object']['value'];
+      $next_pid = $issue_pager['next']['pid'];
       $issue_pager_links .= l(t('Next'), 'islandora/object/' . $next_pid, array('attributes' => array(
         'title' => t('Next issue'),
         'class' => array(
