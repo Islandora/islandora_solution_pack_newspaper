@@ -348,7 +348,7 @@ function islandora_newspaper_islandora_newspaperpagecmodel_islandora_solr_object
      // First remove any NOT that may be present.
      $terms = preg_replace('/-\((.*)\)/', '', $query_processor->solrQuery);
      // Next remove any ANDs, ORs, (s or )s.
-     $terms = str_replace(array(' &&', ' ||', ')', '('), '', $terms);
+     $terms = str_replace(array(' &&', ' ||', '"', ')', '('), '', $terms);
      $search_results['object_url_params']['terms'] = $terms;
     }
   }
