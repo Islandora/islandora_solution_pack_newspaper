@@ -73,7 +73,12 @@ function islandora_newspaper_manage_newspaper_access_callback($object = NULL) {
     FEDORA_INGEST,
   );
   $is_newspaper = in_array('islandora:newspaperCModel', $object->models);
-  return $is_newspaper && islandora_object_access_callback($manage_actions, $object);
+  $can_access = function($perm) use($object) {
+    return islandora_object_access_callback($perm, $object);
+  };
+  $can_manage = count(array_filter($manage_actions, $can_access));
+  $is_newspaper = in_array('islandora:newspaperCModel', $object->models);
+  return $is_newspaper && $can_manage;
 }
 
 /**
@@ -246,7 +251,8 @@ function islandora_newspaper_islandora_newspapercmodel_islandora_view_object($ob
   drupal_set_title($object->label);
 
   // All pages.
-  $pages = islandora_newspaper_get_pages($object, $page_number, $page_size);
+  module_load_include('inc', 'islandora_paged_content', 'includes/utilities');
+  $pages = islandora_paged_content_get_pages($object);
 
   $total_count = count($pages);
   pager_default_initialize($total_count, $page_size);
@@ -294,7 +300,10 @@ function islandora_newspaper_islandora_newspaperpagecmodel_islandora_object_inge
     $derived_images = islandora_paged_content_can_derive($object, 'JP2') && islandora_paged_content_page_derive_image_datastreams($object);
     if ($derived_images) {
       $paged_object = islandora_paged_content_get_relationship($object->relationships, FEDORA_RELS_EXT_URI, 'isMemberOf', NULL);
-      islandora_paged_content_update_paged_content_thumbnail(islandora_object_load($paged_object));
+      $paged_object = islandora_object_load($paged_object);
+      if ($paged_object) {
+        islandora_paged_content_update_paged_content_thumbnail($paged_object);
+      }
     }
     $success = $success && $derived_images;
   }
@@ -329,10 +338,18 @@ function islandora_newspaper_islandora_newspaperpagecmodel_islandora_ingest_step
  * Puts the Solr query terms into the object URL so that viewers can use them
  * for highlighting.
  */
-function islandora_newspaper_islandora_pageCModel_islandora_solr_object_result_alter(&$search_results, $query_processor) {
-  if ($query_processor->solrDefType &&
-       ($query_processor->solrDefType == "dismax" ||
-          $query_processor->solrDefType == "edismax")) {
-    $search_results['object_url_params']['terms'] = $query_processor->solrQuery;
+function islandora_newspaper_islandora_newspaperpagecmodel_islandora_solr_object_result_alter(&$search_results, $query_processor) {
+  if ($query_processor->solrDefType) {
+    if ($query_processor->solrDefType == "dismax") {
+      $search_results['object_url_params']['terms'] = $query_processor->solrQuery;
+    }
+    else {
+      $query_string = $query_processor->solrQuery;
+     // First remove any NOT that may be present.
+     $terms = preg_replace('/-\((.*)\)/', '', $query_processor->solrQuery);
+     // Next remove any ANDs, ORs, (s or )s.
+     $terms = str_replace(array(' &&', ' ||', '"', ')', '('), '', $terms);
+     $search_results['object_url_params']['terms'] = $terms;
+    }
   }
 }

@@ -69,8 +69,7 @@ function islandora_newspaper_preprocess_islandora_newspaper(&$variables) {
   $start = $page_size * ($page_number);
   $end = min($start + $page_size, $total_count);
 
-  for ($i = $start; $i < $end; $i++) {
-    $pid = $pages[$i]['object']['value'];
+  foreach (array_slice($pages, $start, $end) as $pid => $page) {
     $fc_object = islandora_object_load($pid);
     if (!isset($fc_object)) {
       // NULL object so don't show in newspaper view.
@@ -87,11 +86,11 @@ function islandora_newspaper_preprocess_islandora_newspaper(&$variables) {
     }
     $object_url = 'islandora/object/' . $pid;
     $thumbnail_img = '<img src="' . $base_path . $object_url . '/datastream/TN/view"' . '/>';
-    $title = $pages[$i]['title']['value'];
+    $title = $page['label'];
     $associated_objects_array[$pid]['pid'] = $pid;
     $associated_objects_array[$pid]['path'] = $object_url;
     $associated_objects_array[$pid]['title'] = $title;
-    $associated_objects_array[$pid]['class'] = drupal_strtolower(preg_replace('/[^A-Za-z0-9]/', '-', $pid));
+    $associated_objects_array[$pid]['class'][] = drupal_strtolower(preg_replace('/[^A-Za-z0-9]/', '-', $pid));
     if (isset($fc_object['TN'])) {
       $thumbnail_img = '<img src="' . $base_path . $object_url . '/datastream/TN/view"' . '/>';
     }
