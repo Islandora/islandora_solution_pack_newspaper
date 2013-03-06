@@ -346,11 +346,11 @@ function islandora_newspaper_islandora_newspaperpagecmodel_islandora_solr_object
     }
     else {
       $query_string = $query_processor->solrQuery;
-     // First remove any not that may be presented
-     $terms = preg_replace('/-\((.*)\)/', '', $query_processor->solrQuery);
-     // Next remove any ANDs and ORs
-     $terms = str_replace(array(' &&', ' ||', '"', ')', '('), '', $terms);
-     $search_results['object_url_params']['terms'] = $terms;
+      // First remove any NOT that may be present.
+      $terms = preg_replace('/-\((.*)\)/', '', $query_processor->solrQuery);
+      // Next remove any ANDs, ORs, (s or )s.
+      $terms = str_replace(array(' &&', ' ||', '"', ')', '('), '', $terms);
+      $search_results['object_url_params']['terms'] = $terms;
     }
   }
 }
