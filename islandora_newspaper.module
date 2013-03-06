@@ -248,8 +248,6 @@ function islandora_newspaper_islandora_content_model_forms_form_associations() {
  * Implements hook_CMODEL_PID_islandora_view_object().
  */
 function islandora_newspaper_islandora_newspapercmodel_islandora_view_object($object, $page_number = 1, $page_size = 5) {
-  drupal_set_title($object->label);
-
   // All pages.
   module_load_include('inc', 'islandora_paged_content', 'includes/utilities');
   $pages = islandora_paged_content_get_pages($object);
@@ -281,7 +279,6 @@ function islandora_newspaper_islandora_newspaperissuecmodel_islandora_view_objec
  * Implements hook_CMODEL_PID_islandora_view_object().
  */
 function islandora_newspaper_islandora_newspaperpagecmodel_islandora_view_object($object, $page_number, $page_size) {
-  drupal_set_title($object->label);
   $output = theme('islandora_newspaper_page', array('islandora_object' => $object));
   return array('' => $output);
 }
@@ -352,5 +349,19 @@ function islandora_newspaper_islandora_newspaperpagecmodel_islandora_solr_object
       $terms = str_replace(array(' &&', ' ||', '"', ')', '('), '', $terms);
       $search_results['object_url_params']['terms'] = $terms;
     }
+  }
+}
+
+/**
+ * Implements hook_process_theme().
+ */
+function islandora_newspaper_preprocess_islandora_object_print(array &$variables) {
+  $object = $variables['object'];
+  if (in_array('islandora:newspaperPageCModel', $object->models)) {
+    $url = url("islandora/object/{$object->id}", array('absolute' => TRUE));
+    $variables['content']['link'] = array(
+      '#weight' => -10,
+      '#markup' => t('Persistent link: ') . l($url, $url),
+    );
   }
 }
