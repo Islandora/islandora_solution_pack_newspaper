@@ -335,13 +335,22 @@ function islandora_newspaper_islandora_newspaperpagecmodel_islandora_ingest_step
 
 /**
  * Implements hook_CMODEL_PID_islandora_solr_object_result_alter().
+ *
  * Puts the Solr query terms into the object URL so that viewers can use them
  * for highlighting.
  */
 function islandora_newspaper_islandora_newspaperpagecmodel_islandora_solr_object_result_alter(&$search_results, $query_processor) {
-  if ($query_processor->solrDefType &&
-       ($query_processor->solrDefType == "dismax" ||
-          $query_processor->solrDefType == "edismax")) {
-    $search_results['object_url_params']['terms'] = $query_processor->solrQuery;
+  if ($query_processor->solrDefType) {
+    if ($query_processor->solrDefType == "dismax") {
+      $search_results['object_url_params']['terms'] = $query_processor->solrQuery;
+    }
+    else {
+      $query_string = $query_processor->solrQuery;
+     // First remove any not that may be presented
+     $terms = preg_replace('/-\((.*)\)/', '', $query_processor->solrQuery);
+     // Next remove any ANDs and ORs
+     $terms = str_replace(array(' &&', ' ||', '"', ')', '('), '', $terms);
+     $search_results['object_url_params']['terms'] = $terms;
+    }
   }
 }
