@@ -65,6 +65,9 @@
     <exec executable="doxygen">
       <arg line="${basedir}/build/Doxyfile" />
     </exec>
+    <exec executable="git">
+      <arg line="checkout ${basedir}/build/Doxyfile"/>
+    </exec>
   </target>
 
   <target name="phpcb" description="Aggregate tool output with PHP_CodeBrowser">
