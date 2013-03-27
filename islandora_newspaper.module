@@ -5,10 +5,6 @@
  * Hooks and callbacks for this module.
  */
 
-// Controls should probably be included conditionally.
-// Includes helper functions for controls.
-require_once dirname(__FILE__) . '/includes/controls.inc';
-
 /**
  * Implements hook_menu().
  */
@@ -90,21 +86,9 @@ function islandora_newspaper_theme($existing, $type, $theme, $path) {
   return array(
     'islandora_newspaper' => array(
       'file' => 'theme/theme.inc',
-      'template' => 'theme/islandora-newspaper',
       'pattern' => 'islandora_newspaper__',
       'variables' => array(
-        'islandora_object' => NULL,
-        'query_results' => NULL,
-      ),
-    ),
-    'islandora_newspaper_wrapper' => array(
-      'file' => 'theme/theme.inc',
-      'template' => 'theme/islandora-newspaper-wrapper',
-      'pattern' => 'islandora_newspaper_wrapper__',
-      'variables' => array(
-        'islandora_object' => NULL,
-        'newspaper_content' => NULL,
-        'newspaper_pager' => NULL,
+        'object' => NULL,
       ),
     ),
     'islandora_newspaper_issue' => array(
@@ -112,15 +96,29 @@ function islandora_newspaper_theme($existing, $type, $theme, $path) {
       'template' => 'theme/islandora-newspaper-issue',
       'pattern' => 'islandora_newspaper_issue__',
       'variables' => array(
-        'islandora_object' => NULL,
-        'query_results' => NULL,
+        'object' => NULL,
+      ),
+    ),
+    'islandora_newspaper_issue_navigator' => array(
+      'file' => 'theme/theme.inc',
+      'variables' => array(
+        'object' => NULL,
       ),
     ),
     'islandora_newspaper_page' => array(
       'file' => 'theme/theme.inc',
       'template' => 'theme/islandora-newspaper-page',
       'pattern' => 'islandora_newspaper_page__',
-      'variables' => array('islandora_object' => NULL),
+      'variables' => array('object' => NULL),
+    ),
+    'islandora_newspaper_page_select' => array(
+      'file' => 'theme/theme.inc',
+      'variables' => array('object' => NULL),
+    ),
+    'islandora_newspaper_page_controls' => array(
+      'file' => 'theme/theme.inc',
+      'template' => 'theme/islandora-newspaper-page-controls',
+      'variables' => array('object' => NULL),
     ),
   );
 }
@@ -130,7 +128,6 @@ function islandora_newspaper_theme($existing, $type, $theme, $path) {
  */
 function islandora_newspaper_islandora_required_objects(IslandoraTuque $connection) {
   $module_path = drupal_get_path('module', 'islandora_newspaper');
-
   // Newspaper content model.
   $newspaper_content_model = $connection->repository->constructObject('islandora:newspaperCModel');
   $newspaper_content_model->owner = 'fedoraAdmin';
@@ -259,37 +256,29 @@ function islandora_newspaper_islandora_content_model_forms_form_associations() {
 /**
  * Implements hook_CMODEL_PID_islandora_view_object().
  */
-function islandora_newspaper_islandora_newspapercmodel_islandora_view_object($object, $page_number, $page_size) {
-
+function islandora_newspaper_islandora_newspapercmodel_islandora_view_object(FedoraObject $newspaper) {
+  $output = theme('islandora_newspaper', array('object' => $newspaper));
+  return array(
+    'islandora_newspaper' => $output,
+  );
 }
 
 /**
  * Implements hook_CMODEL_PID_islandora_view_object().
  */
-function islandora_newspaper_islandora_newspaperissuecmodel_islandora_view_object($object, $page_number = 1, $page_size = 5) {
-  module_load_include('inc', 'islandora_paged_content', 'includes/utilities');
-  $pages = islandora_paged_content_get_pages($object);
-  $total_count = count($pages);
-  pager_default_initialize($total_count, $page_size);
-  $newspaper_pager = theme('pager', array('quantity' => 10));
-  $newspaper_content = theme('islandora_newspaper', array(
-    'islandora_object' => $object,
-    'pages' => $pages,
-  ));
-  $output = theme('islandora_newspaper_wrapper', array(
-              'islandora_object' => $object,
-              'newspaper_content' => $newspaper_content,
-              'newspaper_pager' => $newspaper_pager,
-            ));
-  return array('', $output);
+function islandora_newspaper_islandora_newspaperissuecmodel_islandora_view_object(FedoraObject $issue) {
+  $output = theme('islandora_newspaper_issue', array('object' => $issue));
+  return array(
+    'islandora_newspaper' => $output,
+  );
 }
 
 /**
  * Implements hook_CMODEL_PID_islandora_view_object().
  */
 function islandora_newspaper_islandora_newspaperpagecmodel_islandora_view_object($object, $page_number, $page_size) {
-  $output = theme('islandora_newspaper_page', array('islandora_object' => $object));
-  return array('' => $output);
+  $output = theme('islandora_newspaper_page', array('object' => $object));
+  return array('islandora_newspaper' => $output);
 }
 
 /**
@@ -342,6 +331,32 @@ function islandora_newspaper_islandora_newspaperpagecmodel_islandora_ingest_step
 }
 
 /**
+ * Implements hook_cmodel_dsid_islandora_datastream_ingested().
+ *
+ * This updates the RELS-EXT such that the date issued matches the mods.
+ */
+function islandora_newspaper_islandora_newspaperissuecmodel_mods_islandora_datastream_ingested(FedoraObject $object, FedoraDatastream $datastream) {
+  module_load_include('inc', 'islandora_newspaper', 'includes/utilities');
+  $date_issued = islandora_newspaper_get_date_issued_from_mods($datastream);
+  if ($date_issued) {
+    islandora_newspaper_set_date_issued($object, $date_issued);
+  }
+}
+
+/**
+ * Implements hook_cmodel_dsid_islandora_datastream_ingested().
+ *
+ * This updates the RELS-EXT such that the date issued matches the mods.
+ */
+function islandora_newspaper_islandora_newspaperissuecmodel_mods_islandora_datastream_modified(FedoraObject $object, FedoraDatastream $datastream) {
+  module_load_include('inc', 'islandora_newspaper', 'includes/utilities');
+  $date_issued = islandora_newspaper_get_date_issued_from_mods($datastream);
+  if ($date_issued) {
+    islandora_newspaper_set_date_issued($object, $date_issued);
+  }
+}
+
+/**
  * Implements hook_CMODEL_PID_islandora_solr_object_result_alter().
  *
  * Puts the Solr query terms into the object URL so that viewers can use them
@@ -367,4 +382,3 @@ function islandora_newspaper_preprocess_islandora_object_print(array &$variables
     );
   }
 }
-

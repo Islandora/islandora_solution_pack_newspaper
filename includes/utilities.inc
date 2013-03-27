@@ -15,7 +15,7 @@
  *   Returns the PID of the issue object of which $object is a page of.
  */
 function islandora_newspaper_get_issue($object) {
-  $rels = $object->relationships->get(FEDORA_RELS_EXT_URI, 'isMemberOf');
+  $rels = $object->relationships->get(ISLANDORA_RELS_EXT_URI, 'isPageOf');
   return $rels[0]['object']['value'];
 }
 
@@ -43,6 +43,155 @@ function islandora_newspaper_get_current_sequence($object) {
  *   Returns the PID of the collection of which $object is a member of.
  */
 function islandora_newspaper_get_newspaper($object) {
-  $rels = $object->relationships->get(FEDORA_RELS_EXT_URI, 'isMemberOf');
+  $rels = $object->relationships->get(ISLANDORA_RELS_EXT_URI, 'isIssueOf');
   return $rels[0]['object']['value'];
+}
+
+/**
+ * Gets all the issues that the given newspaper owns.
+ *
+ * The results are ordered by thier RELS-EXT isSequenceNumber property.
+ *
+ * @param AbstractFedoraDatastream $object
+ *   The datastream containing MODS.
+ *
+ * @return array
+ *   An associative array in the form of:
+ *   - pid: The unique persistent identifier for the issue.
+ *     - pid: The unique persistent identifier for the issue.
+ *     - label: A descriptive label for the issue.
+ *     - sequence: The sequence number of the issue, starts at 1.
+ *     - issued: A DateTime object repersenting the date the issue was released.
+ */
+function islandora_newspaper_get_issues(FedoraObject $object) {
+  $query = <<<EOQ
+PREFIX islandora-rels-ext: <http://islandora.ca/ontology/relsext#>
+SELECT ?pid ?sequence ?label ?issued
+FROM <#ri>
+WHERE {
+  ?pid islandora-rels-ext:isIssueOf <info:fedora/{$object->id}> ;
+       islandora-rels-ext:isSequenceNumber ?sequence ;
+       <fedora-model:label> ?label .
+  OPTIONAL {
+    ?pid islandora-rels-ext:dateIssued ?issued .
+  }
+}
+ORDER BY ?sequence
+EOQ;
+  $results = $object->repository->ri->sparqlQuery($query);
+  $map_results = function($o) {
+    try {
+      @$issued = new DateTime($o['issued']['value']);
+    }
+    catch(Exception $e) {
+      // Use the current time as a place holder.
+      $issued = new DateTime();
+      $msg  = 'Failed to get issued date from Sparql Query for @pid';
+      $vars = array('@pid' => $o['pid']['value']);
+      watchdog_exception('islandora_newspaper', $e, $msg, $vars, WATCHDOG_ERROR);
+    }
+    return array(
+      'pid' => $o['pid']['value'],
+      'label' => $o['label']['value'],
+      'sequence' => $o['sequence']['value'],
+      'issued' => $issued,
+    );
+  };
+  $issues = array_map($map_results, $results);
+  // Grab the PIDs...
+  $get_pid = function($o) {
+    return $o['pid'];
+  };
+  $pids = array_map($get_pid, $issues);
+  // Make the PIDs the keys.
+  return count($pids) ? array_combine($pids, $issues) : array();
+}
+
+/**
+ * Groups the issues by their relvant dates.
+ *
+ * @param array $issues
+ *   Expected to be in the format as returned by islandora_newspaper_get_issues.
+ *
+ * @return array
+ *   An associative array where the issues are grouped like so:
+ *   - 1989: The year of the grouped issues.
+ *     - 01: The month of the grouped issues.
+ *       - 28: The day of the grouped issues contains actual issue descriptions.
+ */
+function islandora_newspaper_group_issues(array $issues) {
+  $output = array();
+  foreach ($issues as $issue) {
+    $year = $issue['issued']->format('Y');
+    $month = $issue['issued']->format('m');
+    $day = $issue['issued']->format('d');
+    $output[$year][$month][$day] = $issue;
+  }
+  return $output;
+}
+
+/**
+ * Attempts to get the date issued from the mods document.
+ *
+ * @param AbstractFedoraDatastream $datastream
+ *   The datastream containing MODS.
+ *
+ * @return DateTime
+ *   The date issued if found, otherwise the current time.
+ */
+function islandora_newspaper_get_date_issued_from_mods(AbstractFedoraDatastream $datastream) {
+  $out = FALSE;
+  $file = file_create_filename("{$datastream->parent->id}_{$datastream->id}.xml", 'temporary://');
+  $datastream->getContent($file);
+  @$doc = simplexml_load_file($file);
+  if ($doc) {
+    $doc->registerXPathNamespace('ns', 'http://www.loc.gov/mods/v3');
+    // Assumes the canonical date issued exists in the first mods document under
+    // origin info and is not specified as a point, additional logic could be
+    // added to process different encodings.
+    $result = (string) reset($doc->xpath('//ns:mods[1]/ns:originInfo/ns:dateIssued[not(@point)][1]'));
+    try {
+      if (empty($result)) {
+        throw new Exception('mods:dateIssued element was empty.');
+      }
+      $out = new DateTime($result);
+    }
+    catch(Exception $e) {
+      $msg  = 'Failed to get issued date from MODS for @pid';
+      $vars = array('@pid' => $datastream->parent->id);
+      watchdog_exception('islandora_newspaper', $e, $msg, $vars, WATCHDOG_ERROR);
+    }
+  }
+  file_unmanaged_delete($file);
+  return $out;
+}
+
+/**
+ * Set's the date issued literal in the objects RELS-EXT.
+ *
+ * @param AbstractFedoraObject $object
+ *   Newspaper issue object
+ * @param DateTime $date
+ *   The date issued, will be stored in ISO-8601 YYYY-MM-DD format.
+ */
+function islandora_newspaper_set_date_issued(AbstractFedoraObject $object, DateTime $date) {
+  $object->relationships->remove(ISLANDORA_RELS_EXT_URI, 'dateIssued', NULL, TRUE);
+  $object->relationships->add(ISLANDORA_RELS_EXT_URI, 'dateIssued', $date->format("Y-m-d"), TRUE);
+}
+
+/**
+ * Fetchs the date issued from the objects RELS-EXT.
+ *
+ * If the date issue is not defined the current time is returned.
+ *
+ * @param AbstractFedoraObject $object
+ *   Newspaper issue object
+ *
+ * @return DateTime
+ *   The date issued. If the date issue is not defined the current time is used.
+ */
+function islandora_newspaper_get_date_issued(AbstractFedoraObject $object) {
+  $results = $object->relationships->get(ISLANDORA_RELS_EXT_URI, 'dateIssued', NULL, TRUE);
+  $date = empty($results) ? new DateTime() : new DateTime($results[0]['object']['value']);
+  return $date;
 }
