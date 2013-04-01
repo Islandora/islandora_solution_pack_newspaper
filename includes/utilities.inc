@@ -73,11 +73,13 @@ WHERE {
   ?pid islandora-rels-ext:isIssueOf <info:fedora/{$object->id}> ;
     <fedora-model:label> ?label
   OPTIONAL {
-    ?pid islandora-rels-ext:dateIssued ?issued ;
-    islandora-rels-ext:isSequenceNumber ?sequence
+    ?pid islandora-rels-ext:dateIssued ?issued .
+  } .
+  OPTIONAL {
+    ?pid islandora-rels-ext:isSequenceNumber ?sequence
   }
 }
-ORDER BY ?sequence
+ORDER BY ?issued
 EOQ;
   $results = $object->repository->ri->sparqlQuery($query);
   // Map the results using a default Datetime for missing issued dates.
@@ -100,11 +102,6 @@ EOQ;
     );
   };
   $issues = array_map($map_results, $results);
-  // Sort the issues by their issued date.
-  $sort_results = function($a, $b) {
-    return ($a['issued'] < $b['issued']) ? -1 : 1;
-  };
-  usort($issues, $sort_results);
   // Grab the PIDs...
   $get_pid = function($o) {
     return $o['pid'];
