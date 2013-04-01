@@ -141,6 +141,7 @@ function theme_islandora_newspaper_issue_navigator(array $variables) {
  * Theme the page selector.
  */
 function theme_islandora_newspaper_page_select(array $variables) {
+  module_load_include('inc', 'islandora_paged_content', 'includes/utilities');
   $path = drupal_get_path('module', 'islandora_newspaper');
   drupal_add_js($path . '/js/islandora_newspaper.js');
   $object = $variables['object'];
