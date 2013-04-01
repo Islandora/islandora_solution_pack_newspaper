@@ -50,7 +50,8 @@ function islandora_newspaper_get_newspaper($object) {
 /**
  * Gets all the issues that the given newspaper owns.
  *
- * The results are ordered by thier RELS-EXT isSequenceNumber property.
+ * The results are ordered by their RELS-EXT dateIssued property.
+ * Older to newer.
  *
  * @param AbstractFedoraDatastream $object
  *   The datastream containing MODS.
@@ -70,15 +71,16 @@ SELECT ?pid ?sequence ?label ?issued
 FROM <#ri>
 WHERE {
   ?pid islandora-rels-ext:isIssueOf <info:fedora/{$object->id}> ;
-       islandora-rels-ext:isSequenceNumber ?sequence ;
-       <fedora-model:label> ?label .
+    <fedora-model:label> ?label
   OPTIONAL {
-    ?pid islandora-rels-ext:dateIssued ?issued .
+    ?pid islandora-rels-ext:dateIssued ?issued ;
+    islandora-rels-ext:isSequenceNumber ?sequence
   }
 }
 ORDER BY ?sequence
 EOQ;
   $results = $object->repository->ri->sparqlQuery($query);
+  // Map the results using a default Datetime for missing issued dates.
   $map_results = function($o) {
     try {
       @$issued = new DateTime($o['issued']['value']);
@@ -98,6 +100,11 @@ EOQ;
     );
   };
   $issues = array_map($map_results, $results);
+  // Sort the issues by their issued date.
+  $sort_results = function($a, $b) {
+    return ($a['issued'] < $b['issued']) ? -1 : 1;
+  };
+  usort($issues, $sort_results);
   // Grab the PIDs...
   $get_pid = function($o) {
     return $o['pid'];
