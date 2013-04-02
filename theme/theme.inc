@@ -5,173 +5,256 @@
  * Theme file for Newspaper solution pack. Includes preprocess functions.
  */
 
+require_once dirname(__FILE__) . '/../includes/utilities.inc';
+
 /**
  * Implements hook_preprocess().
  */
-function islandora_newspaper_preprocess_islandora_newspaper_wrapper(&$variables) {
-  global $base_url;
-
-  $islandora_object = $variables['islandora_object'];
-
-  $variables['newspaper_controls_array'] = islandora_newspaper_get_newspaper_controls($islandora_object);
-  $variables['newspaper_controls'] = theme(
-    'item_list',
-    array(
-      'items' => $variables['newspaper_controls_array'],
-      NULL,
-      'ul',
-      'attributes' => array(
-        'class' => array(
-          'items',
-          'inline',
+function theme_islandora_newspaper(array $variables) {
+  drupal_add_js('misc/collapse.js');
+  $object = $variables['object'];
+  $issues = islandora_newspaper_get_issues($object);
+  $grouped_issues = islandora_newspaper_group_issues($issues);
+  $output = array(
+    'controls' => array(
+      '#theme' => 'links',
+      '#attributes' => array(
+        'class' => array('links', 'inline'),
+      ),
+      '#links' => array(
+        array(
+          'title' => t('Expand all Months'),
+          'href' => "javascript://void(0)",
+          'html' => TRUE,
+          'external' => TRUE,
+          'attributes' => array(
+            'onclick' => "Drupal.toggleFieldset(jQuery('fieldset.month.collapsed'));",
+          ),
+        ),
+        array(
+          'title' => t('Collapse all Months'),
+          'href' => "javascript://void(0)",
+          'html' => TRUE,
+          'external' => TRUE,
+          'attributes' => array(
+            'onclick' => "Drupal.toggleFieldset(jQuery('fieldset.month:not(.collapsed)'));",
+          ),
         ),
       ),
-    )
+    ),
+    'tabs' => array(
+      '#type' => 'vertical_tabs',
+    ),
   );
+  $tabs = &$output['tabs'];
+  foreach ($grouped_issues as $year => $months) {
+    $tabs[$year] = array(
+      '#title' => $year,
+      '#type' => 'fieldset',
+    );
+    foreach ($months as $month => $days) {
+      $month_name = t(date("F", mktime(0, 0, 0, $month, 1, 2000)));
+      $tabs[$year][$month] = array(
+        '#title' => $month_name,
+        '#type' => 'fieldset',
+        '#attributes' => array(
+          'class' => array('collapsible', 'collapsed', 'month'),
+        ),
+      );
+      foreach ($days as $day => $issue) {
+        $tabs[$year][$month][$day] = array(
+          '#theme' => 'link',
+          '#prefix' => '<div>',
+          '#suffix' => '</div>',
+          '#text' => t("@month @day, @year", array(
+                     '@year' => $year,
+                     '@month' => $month_name,
+                     '@day' => $day,
+                   )),
+          '#path' => "islandora/object/{$issue['pid']}",
+          '#options' => array(
+            'attributes' => array(),
+            'html' => FALSE,
+          ),
+        );
+      }
+      ksort($tabs[$year][$month]);
+    }
+    ksort($tabs[$year]);
+  }
+  ksort($tabs);
+  return drupal_render($output);
 }
 
 /**
  * Implements hook_preprocess().
  */
-function islandora_newspaper_preprocess_islandora_newspaper(&$variables) {
-  global $base_url;
-  global $base_path;
-  $islandora_object = $variables['islandora_object'];
-  $pages = $variables['pages'];
-  try {
-    $dc = $islandora_object['DC']->content;
-    $dc_object = DublinCore::importFromXMLString($dc);
-  }
-  catch (Exception $e) {
-    drupal_set_message(t('Error retrieving object %s %t', array('%s' => $islandora_object->id, '%t' => $e->getMessage())), 'error', FALSE);
-  }
-  $page_number = (empty($_GET['page'])) ? 0 : $_GET['page'];
-  $page_size = (empty($_GET['pagesize'])) ? variable_get('islandora_newspaper_page_size', '10') : $_GET['pagesize'];
-  $total_count = count($pages);
-  $variables['islandora_dublin_core'] = isset($dc_object) ? $dc_object : array();
-  $variables['islandora_object_label'] = $islandora_object->label;
-  $display = (empty($_GET['display'])) ? 'list' : $_GET['display'];
-  $variables['theme_hook_suggestions'][] = 'islandora_newspaper__' . str_replace(':', '_', $islandora_object->id);
-  if (isset($islandora_object['OBJ'])) {
-    $full_size_url = $base_url . '/islandora/object/' . $islandora_object->id . '/datastream/OBJ/view';
-    $variables['islandora_full_img'] = '<img src="' . $full_size_url . '"/>';
-  }
-  if (isset($islandora_object['TN'])) {
-    $thumbnail_size_url = $base_url . '/islandora/object/' . $islandora_object->id . '/datastream/TN/view';
-    $variables['islandora_thumbnail_img'] = '<img src="' . $thumbnail_size_url . '"/>';
-  }
-  if (isset($islandora_object['MEDIUM_SIZE'])) {
-    $medium_size_url = $base_url . '/islandora/object/' . $islandora_object->id . '/datastream/MEDIUM_SIZE/view';
-    $variables['islandora_medium_img'] = '<img src="' . $medium_size_url . '"/>';
-  }
-
-  $associated_objects_array = array();
-  $start = $page_size * ($page_number);
-  $end = min($start + $page_size, $total_count);
-
-  foreach (array_slice($pages, $start, $end) as $pid => $page) {
-    $fc_object = islandora_object_load($pid);
-    if (!isset($fc_object)) {
-      // NULL object so don't show in newspaper view.
-      continue;
-    }
-    $associated_objects_array[$pid]['object'] = $fc_object;
-    try {
-      $dc = $fc_object['DC']->content;
-      $dc_object = DublinCore::importFromXMLString($dc);
-      $associated_objects_array[$pid]['dc_array'] = $dc_object->asArray();
-    }
-    catch (Exception $e) {
-      drupal_set_message(t('Error retrieving object %s %t', array('%s' => $islandora_object->id, '%t' => $e->getMessage())), 'error', FALSE);
-    }
-    $object_url = 'islandora/object/' . $pid;
-    $thumbnail_img = '<img src="' . $base_path . $object_url . '/datastream/TN/view"' . '/>';
-    $title = $page['label'];
-    $associated_objects_array[$pid]['pid'] = $pid;
-    $associated_objects_array[$pid]['path'] = $object_url;
-    $associated_objects_array[$pid]['title'] = $title;
-    $associated_objects_array[$pid]['class'][] = drupal_strtolower(preg_replace('/[^A-Za-z0-9]/', '-', $pid));
-    if (isset($fc_object['TN'])) {
-      $thumbnail_img = '<img src="' . $base_path . $object_url . '/datastream/TN/view"' . '/>';
-    }
-    else {
-      $image_path = drupal_get_path('module', 'islandora');
-      $thumbnail_img = '<img src="' . $base_path . $image_path . '/images/folder.png"/>';
-    }
-    $associated_objects_array[$pid]['thumbnail'] = $thumbnail_img;
-    $associated_objects_array[$pid]['title_link'] = l($title, $object_url, array('html' => TRUE, 'attributes' => array('title' => $title)));
-    $associated_objects_array[$pid]['thumb_link'] = l($thumbnail_img, $object_url, array('html' => TRUE, 'attributes' => array('title' => $title)));
-  }
-  $variables['associated_objects_array'] = $associated_objects_array;
+function islandora_newspaper_preprocess_islandora_newspaper_issue(array &$variables) {
+  module_load_include('inc', 'islandora_paged_content', 'includes/utilities');
+  $object = $variables['object'];
+  $pages = islandora_paged_content_get_pages($object);
+  $variables['pages'] = array_keys($pages);
 }
 
 /**
- * Implements hook_preprocess().
+ * Theme the issue navigator.
  */
-function islandora_newspaper_preprocess_islandora_newspaper_page(&$variables) {
-  $islandora_object = $variables['islandora_object'];
-  $repository = $islandora_object->repository;
-  module_load_include('inc', 'islandora', 'includes/datastream');
-  module_load_include('inc', 'islandora', 'includes/utilities');
+function theme_islandora_newspaper_issue_navigator(array $variables) {
+  $object = $variables['object'];
+  $newspaper = islandora_newspaper_get_newspaper($object);
+  $newspaper = islandora_object_load($newspaper);
+  $issues = islandora_newspaper_get_issues($newspaper);
+  $issues = array_keys($issues);
+  $index = array_search($object->id, $issues);
+  $previous_issue = isset($issues[$index - 1]) ? $issues[$index - 1] : NULL;
+  $next_issue = isset($issues[$index + 1]) ? $issues[$index + 1] : NULL;
+  $links = array();
+  if (isset($issues[$index - 1])) {
+    $previous_issue = $issues[$index - 1];
+    $links[] = array(
+      'title' => t('Prev'),
+      'href' => url("islandora/object/{$previous_issue}", array('absolute' => TRUE)),
+    );
+  }
+  if (count($issues) > 1) {
+    $links[] = array(
+      'title' => '<strong>' . t('Issue') . '</strong>',
+      'html' => TRUE,
+    );
+  }
+  if (isset($issues[$index + 1])) {
+    $next_issue = $issues[$index + 1];
+    $links[] = array(
+      'title' => t('Next'),
+      'href' => url("islandora/object/{$next_issue}", array('absolute' => TRUE)),
+    );
+  }
+  $links[] = array(
+    'title' => t('All Issues'),
+    'href' => url("islandora/object/{$newspaper->id}", array('absolute' => TRUE)),
+  );
+  $attributes = array('class' => array('links', 'inline'));
+  return theme('links', array('links' => $links, 'attributes' => $attributes));
+}
+
+/**
+ * Theme the page selector.
+ */
+function theme_islandora_newspaper_page_select(array $variables) {
+  module_load_include('inc', 'islandora_paged_content', 'includes/utilities');
   $path = drupal_get_path('module', 'islandora_newspaper');
   drupal_add_js($path . '/js/islandora_newspaper.js');
-
-  $variables['theme_hook_suggestions'][] = 'islandora_newspaper_page__' . str_replace(':', '_', $islandora_object->id);
-
-  // Thumbnail.
-  if (isset($islandora_object['TN'])) {
-    $params = array(
-      'title' => $islandora_object->label,
-      'path' => url("islandora/object/{$islandora_object->id}/datastream/TN/view"),
-    );
-    $variables['islandora_thumbnail_img'] = theme('image', $params);
+  $object = $variables['object'];
+  $results = $object->relationships->get(ISLANDORA_RELS_EXT_URI, 'isPageOf');
+  $parent = islandora_object_load($results[0]['object']['value']);
+  $pages = islandora_paged_content_get_pages($parent);
+  $variables = array(
+    '#options' => array(),
+    '#attributes' => array('class' => array('page-select')),
+  );
+  foreach ($pages as $pid => $page) {
+    $variables['#options'][$pid] = $page['page'];
   }
+  $variables['#value'] = $object->id;
+  $prefix = '<strong>' . t('Image') . ':</strong> ';
+  return $prefix . t('!page_selector of @total', array(
+      '!page_selector' => theme('select', array('element' => $variables)),
+      '@total' => count($pages),
+    ));
+}
 
-  module_load_include('inc', 'islandora', 'includes/solution_packs');
+/**
+ * Theme a newspaper pages controls.
+ */
+function islandora_newspaper_preprocess_islandora_newspaper_page_controls(array &$variables) {
+  module_load_include('inc', 'islandora', 'includes/datastream');
+  module_load_include('inc', 'islandora', 'includes/utilities');
+  $view_prefix = '<strong>' . t('View: ') . '</strong>';
+  $download_prefix = '<strong>' . t('Download: ') . '</strong>';
+  $object = $variables['object'];
+  $issue = islandora_newspaper_get_issue($object);
+  $issue = islandora_object_load($issue);
+  $controls = array(
+    'page_select' => theme('islandora_newspaper_page_select', array('object' => $object)),
+    'page_pager' => theme('islandora_paged_content_page_navigator', array('object' => $object)),
+    'issue_pager' => theme('islandora_newspaper_issue_navigator', array('object' => $issue)),
+  );
+  // Text view.
+  if ($object['OCR']) {
+    $url = islandora_datastream_get_url($object['OCR'], 'view');
+    $attributes = array('attributes' => array('title' => t('View text')));
+    $controls['text_view'] = $view_prefix . l(t('Text'), $url, $attributes);
+  }
+  // PDF download.
+  if ($object['PDF']) {
+    $size = islandora_datastream_get_human_readable_size($object['PDF']);
+    $text = t('PDF (@size)', array('@size' => $size));
+    $url = islandora_datastream_get_url($object['PDF'], 'download');
+    $attributes = array('attributes' => array('title' => t('Download PDF')));
+    $controls['pdf_download'] = $download_prefix . l($text, $url, $attributes);
+  }
+  // JP2 download.
+  if ($object['JP2']) {
+    $size = islandora_datastream_get_human_readable_size($object['JP2']);
+    $text = t('JP2 (@size)', array('@size' => $size));
+    $url = islandora_datastream_get_url($object['JP2'], 'download');
+    $attributes = array('attributes' => array('title' => t('Download JP2')));
+    $controls['jp2_download'] = $download_prefix . l($text, $url, $attributes);
+  }
+  // TIFF download.
+  if ($object['OBJ']) {
+    $size = islandora_datastream_get_human_readable_size($object['OBJ']);
+    $text = t('TIFF (@size)', array('@size' => $size));
+    $url = islandora_datastream_get_url($object['OBJ'], 'download');
+    $attributes = array('attributes' => array('title' => t('Download TIFF')));
+    $controls['tiff_download'] = $download_prefix . l($text, $url, $attributes);
+  }
+  // JP2 Clip.
+  if ($object['JP2']) {
+    $jp2_ds = $object['JP2'];
+    $text = t('Clip Image');
+    $url = "islandora/object/{$object->id}/print";
+    $attributes = array('attributes' => array('title' => t('Clip Image'), 'id' => 'clip'));
+    $controls['clip'] = l($text, $url, $attributes);
+  }
+  $variables['controls'] = $controls;
+}
+
+/**
+ * Implements hook_preprocess().
+ */
+function islandora_newspaper_preprocess_islandora_newspaper_page(array &$variables) {
+  module_load_include('inc', 'islandora', 'includes/datastream');
+  module_load_include('inc', 'islandora', 'includes/utilities');
+  $object = $variables['object'];
   // Get token to allow access to XACML protected datastreams if necessary.
   // Always use token authentication in case there is a global policy.
   module_load_include('inc', 'islandora', 'includes/authtokens');
-  $token = islandora_get_object_token($islandora_object->id, 'JP2', 2);
-  $jp2_url = url("islandora/object/{$islandora_object->id}/datastream/JP2/view",
+  $token = islandora_get_object_token($object->id, 'JP2', 2);
+  $jp2_url = url("islandora/object/{$object->id}/datastream/JP2/view",
     array(
       'absolute' => TRUE,
       'query' => array('token' => $token),
     ));
-
   // Display newspaper.
+  module_load_include('inc', 'islandora', 'includes/solution_packs');
   $params = array(
     'jp2_url' => $jp2_url,
   );
-  $viewer = islandora_get_viewer($params, 'islandora_newspaper_page_viewers', $islandora_object);
-  $variables['islandora_content'] = '';
+  $viewer = islandora_get_viewer($params, 'islandora_newspaper_page_viewers', $object);
+  $variables['content'] = '';
   if ($viewer) {
-    $variables['islandora_content'] = $viewer;
+    $variables['content'] = $viewer;
   }
   // If no viewer is configured just show the jpeg.
-  elseif (isset($islandora_object['JPG'])) {
+  elseif (isset($object['JPG'])) {
     $params = array(
-      'title' => $islandora_object->label,
-      'path' => url("islandora/object/{$islandora_object->id}/datastream/JPG/view"),
+      'title' => $object->label,
+      'path' => url("islandora/object/{$object->id}/datastream/JPG/view"),
     );
-    $variables['islandora_content'] = theme('image', $params);
+    $variables['content'] = theme('image', $params);
   }
   else {
-    $variables['islandora_content'] = NULL;
+    $variables['content'] = NULL;
   }
-
-  $variables['newspaper_controls_array'] = islandora_newspaper_get_page_controls($islandora_object);
-  $variables['newspaper_controls'] = theme(
-    'item_list',
-    array(
-      'items' => $variables['newspaper_controls_array'],
-      NULL,
-      'ul',
-      'attributes' => array(
-        'class' => array(
-          'items',
-          'inline',
-        ),
-      ),
-    )
-  );
 }
