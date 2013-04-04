@@ -24,7 +24,7 @@ function islandora_newspaper_admin_settings_form(array $form, array &$form_state
     'local_derivative_settings' => array(
       '#type' => 'fieldset',
       '#title' => t('Create Page Derivatives Locally'),
-      '#description' => t('When ingesting pages automatically create derivative datastreams on this server. If you intend to only use microservices to generate derivatives you should not have any of these settings enabled.'),
+      '#description' => t('These options allow you to create derivatives automatically when ingesting pages, using this server. If you intend to only use microservices to generate derivatives, you should not have any of these settings enabled.'),
       'islandora_newspaper_ingest_derivatives' => array(
         '#type' => 'checkboxes',
         '#element_validate' => array('islandora_newspaper_admin_settings_form_ingest_derivatives_validate'),
@@ -64,16 +64,16 @@ function islandora_newspaper_admin_settings_form_ingest_derivatives_validate(arr
   if (array_key_exists('pdf', $element['#value']) && !islandora_paged_content_can_create_pdf()) {
     $element['#value']['pdf'] = 0;
     form_set_value($element, $element['#value'], $form_state);
-    drupal_set_message(t('ImagicMagick must be enabled to derive the PDF datastream.'), 'error');
+    drupal_set_message(t('ImageMagick must be enabled to derive the PDF datastream.'), 'error');
   }
   if (array_key_exists('image', $element['#value']) && !islandora_paged_content_can_create_images()) {
     $element['#value']['image'] = 0;
     form_set_value($element, $element['#value'], $form_state);
-    drupal_set_message(t('The Large Image solution pack must be enabled to derive image datastreams.'), 'error');
+    drupal_set_message(t('The Large Image Solution Pack must be enabled to derive image datastreams.'), 'error');
   }
   if (array_key_exists('ocr', $element['#value']) && !(module_exists('islandora_ocr'))) {
     $element['#value']['ocr'] = 0;
     form_set_value($element, $element['#value'], $form_state);
-    drupal_set_message(t('The Islandora OCR Module must be enabled to derive OCR datastreams.'), 'error');
+    drupal_set_message(t('The Islandora OCR module must be enabled to derive OCR datastreams.'), 'error');
   }
 }

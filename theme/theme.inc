@@ -23,7 +23,7 @@ function theme_islandora_newspaper(array $variables) {
       ),
       '#links' => array(
         array(
-          'title' => t('Expand all Months'),
+          'title' => t('Expand all months'),
           'href' => "javascript://void(0)",
           'html' => TRUE,
           'external' => TRUE,
@@ -32,7 +32,7 @@ function theme_islandora_newspaper(array $variables) {
           ),
         ),
         array(
-          'title' => t('Collapse all Months'),
+          'title' => t('Collapse all months'),
           'href' => "javascript://void(0)",
           'html' => TRUE,
           'external' => TRUE,

@@ -90,7 +90,7 @@ EOQ;
     catch(Exception $e) {
       // Use the current time as a place holder.
       $issued = new DateTime();
-      $msg  = 'Failed to get issued date from Sparql Query for @pid';
+      $msg  = 'Failed to get issued date from SPARQL query for @pid';
       $vars = array('@pid' => $o['pid']['value']);
       watchdog_exception('islandora_newspaper', $e, $msg, $vars, WATCHDOG_ERROR);
     }
