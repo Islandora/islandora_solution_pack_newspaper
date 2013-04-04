@@ -33,8 +33,8 @@ function islandora_newspaper_menu() {
   );
   return array(
     'admin/islandora/newspaper' => array(
-      'title' => 'Newspaper collection',
-      'description' => 'Configure the newspaper solution pack.',
+      'title' => 'Newspaper Collection',
+      'description' => 'Configure the Newspaper Solution Pack.',
       'page callback' => 'drupal_get_form',
       'access arguments' => array('administer site configuration'),
       'page arguments' => array('islandora_newspaper_admin_settings_form'),
@@ -131,11 +131,11 @@ function islandora_newspaper_islandora_required_objects(IslandoraTuque $connecti
   // Newspaper content model.
   $newspaper_content_model = $connection->repository->constructObject('islandora:newspaperCModel');
   $newspaper_content_model->owner = 'fedoraAdmin';
-  $newspaper_content_model->label = 'Islandora newspaper content model';
+  $newspaper_content_model->label = 'Islandora Newspaper Content Model';
   $newspaper_content_model->models = 'fedora-system:ContentModel-3.0';
   // ISLANDORACM datastream.
   $datastream = $newspaper_content_model->constructDatastream('ISLANDORACM', 'X');
-  $datastream->label = 'Islandora Newspaper content model';
+  $datastream->label = 'Islandora Newspaper Content Model';
   $datastream->mimetype = 'text/xml';
   $datastream->setContentFromFile("$module_path/xml/content_models/newspaperCModel.xml", FALSE);
   $newspaper_content_model->ingestDatastream($datastream);
@@ -149,11 +149,11 @@ function islandora_newspaper_islandora_required_objects(IslandoraTuque $connecti
   // Issue content model.
   $newspaper_issue_content_model = $connection->repository->constructObject('islandora:newspaperIssueCModel');
   $newspaper_issue_content_model->owner = 'fedoraAdmin';
-  $newspaper_issue_content_model->label = 'Islandora newspaper issue content model';
+  $newspaper_issue_content_model->label = 'Islandora Newspaper Issue Content Model';
   $newspaper_issue_content_model->models = 'fedora-system:ContentModel-3.0';
   // ISLANDORACM datastream.
   $datastream = $newspaper_issue_content_model->constructDatastream('ISLANDORACM', 'X');
-  $datastream->label = 'Islandora newspaper issue content model';
+  $datastream->label = 'Islandora Newspaper Issue Content Model';
   $datastream->mimetype = 'text/xml';
   $datastream->setContentFromFile("$module_path/xml/content_models/newspaperIssueCModel.xml", FALSE);
   $newspaper_issue_content_model->ingestDatastream($datastream);
@@ -167,11 +167,11 @@ function islandora_newspaper_islandora_required_objects(IslandoraTuque $connecti
   // Page content model.
   $newspaper_page_content_model = $connection->repository->constructObject('islandora:newspaperPageCModel');
   $newspaper_page_content_model->owner = 'fedoraAdmin';
-  $newspaper_page_content_model->label = 'Islandora newspaper page content model';
+  $newspaper_page_content_model->label = 'Islandora Newspaper Page Content Model';
   $newspaper_page_content_model->models = 'fedora-system:ContentModel-3.0';
   // ISLANDORACM datastream.
   $datastream = $newspaper_page_content_model->constructDatastream('ISLANDORACM', 'X');
-  $datastream->label = 'Islandora newspaper page content model';
+  $datastream->label = 'Islandora Newspaper Page Content Model';
   $datastream->mimetype = 'text/xml';
   $datastream->setContentFromFile("$module_path/xml/content_models/newspaperPageCModel.xml", FALSE);
   $newspaper_page_content_model->ingestDatastream($datastream);
@@ -185,7 +185,7 @@ function islandora_newspaper_islandora_required_objects(IslandoraTuque $connecti
   // Newspaper collection.
   $newspaper_collection = $connection->repository->constructObject('islandora:newspaper_collection');
   $newspaper_collection->owner = 'fedoraAdmin';
-  $newspaper_collection->label = 'Newspaper collection';
+  $newspaper_collection->label = 'Newspaper Collection';
   $newspaper_collection->models = 'islandora:collectionCModel';
   $newspaper_collection->relationships->add(FEDORA_RELS_EXT_URI, 'isMemberOfCollection', 'islandora:root');
   // Collection policy datastream.
@@ -203,7 +203,7 @@ function islandora_newspaper_islandora_required_objects(IslandoraTuque $connecti
 
   return array(
     'islandora_newspaper' => array(
-      'title' => 'Islandora newspaper',
+      'title' => 'Islandora Newspaper',
       'objects' => array(
         $newspaper_content_model,
         $newspaper_issue_content_model,
@@ -306,7 +306,7 @@ function islandora_newspaper_islandora_newspaperpagecmodel_islandora_object_inge
     $success = $success && islandora_paged_content_can_derive($object, 'OCR') && islandora_paged_content_page_derive_ocr_datastreams($object);
   }
   if (!$success) {
-    $msg = t('Could not create all derivatives for %s, For more information please check the logs.', array(
+    $msg = t('Could not create all derivatives for %s. For more information please check the logs.', array(
              '%s' => $object->id));
     drupal_set_message($msg, 'error');
     return FALSE;
