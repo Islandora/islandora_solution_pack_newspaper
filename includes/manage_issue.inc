@@ -28,7 +28,7 @@ function islandora_newspaper_ingest_page(FedoraObject $issue) {
   $page->label = 'New Page';
   $page->models = 'islandora:newspaperPageCModel';
   $newspaper = islandora_object_load(islandora_newspaper_get_newspaper($issue));
-  drupal_set_title(t('Add page to @newspaper Issue @issue', array('@newspaper' => $newspaper->label, '@issue' => $issue->label)));
+  drupal_set_title(t('Add page to @newspaper issue @issue', array('@newspaper' => $newspaper->label, '@issue' => $issue->label)));
   return drupal_get_form('islandora_ingest_form', array(
       'models' => array('islandora:newspaperPageCModel'),
       'issue' => $issue,

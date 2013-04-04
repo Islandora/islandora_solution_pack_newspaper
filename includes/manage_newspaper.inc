@@ -46,7 +46,7 @@ function islandora_newspaper_ingest_issue(FedoraObject $newspaper) {
   $issue->relationships->add(FEDORA_RELS_EXT_URI, 'isMemberOf', $newspaper->id);
   $issue->relationships->add(ISLANDORA_RELS_EXT_URI, 'isIssueOf', $newspaper->id);
   $issue->relationships->add(ISLANDORA_RELS_EXT_URI, 'isSequenceNumber', (string) $num_issues, TRUE);
-  drupal_set_title(t('Add Issue to @newspaper', array('@newspaper' => $newspaper->label)));
+  drupal_set_title(t('Add issue to @newspaper', array('@newspaper' => $newspaper->label)));
   return drupal_get_form('islandora_ingest_form', array(
       'models' => array('islandora:newspaperIssueCModel'),
       'object' => $issue,
