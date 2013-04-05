@@ -410,7 +410,7 @@ function islandora_newspaper_process_islandora_object_print(array &$variables) {
         '#markup' => l(t('Download Image'), "islandora/object/{$object->id}/download_clip", array(
                      'query' => array('clip' => $clip))),
         '#suffix' => '</strong>',
-            '#weight' => -5,
+        '#weight' => -5,
       ),
     );
   }
