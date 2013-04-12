@@ -169,6 +169,7 @@ function theme_islandora_newspaper_page_select(array $variables) {
 function islandora_newspaper_preprocess_islandora_newspaper_page_controls(array &$variables) {
   module_load_include('inc', 'islandora', 'includes/datastream');
   module_load_include('inc', 'islandora', 'includes/utilities');
+  global $base_url;
   $view_prefix = '<strong>' . t('View: ') . '</strong>';
   $download_prefix = '<strong>' . t('Download: ') . '</strong>';
   $object = $variables['object'];
@@ -212,9 +213,10 @@ function islandora_newspaper_preprocess_islandora_newspaper_page_controls(array 
   // JP2 Clip.
   if ($object['JP2']) {
     $jp2_ds = $object['JP2'];
-    $text = t('Clip Image');
+    $path = $base_url . '/' . drupal_get_path('module', 'islandora_newspaper');
+    $text = '<img src="' . $path . '/images/clip_icon.png" />';
     $url = "islandora/object/{$object->id}/print";
-    $attributes = array('attributes' => array('title' => t('Clip Image'), 'id' => 'clip'));
+    $attributes = array('attributes' => array('title' => t('Clip Image'), 'id' => 'clip'), 'html' => TRUE);
     $controls['clip'] = l($text, $url, $attributes);
   }
   $variables['controls'] = $controls;
