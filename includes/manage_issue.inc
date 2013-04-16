@@ -33,5 +33,6 @@ function islandora_newspaper_ingest_page(FedoraObject $issue) {
       'models' => array('islandora:newspaperPageCModel'),
       'issue' => $issue,
       'object' => $page,
+      'parent' => $issue->id,
     ));
 }

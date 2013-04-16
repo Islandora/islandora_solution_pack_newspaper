@@ -50,5 +50,6 @@ function islandora_newspaper_ingest_issue(FedoraObject $newspaper) {
   return drupal_get_form('islandora_ingest_form', array(
       'models' => array('islandora:newspaperIssueCModel'),
       'object' => $issue,
+      'parent' => $newspaper->id,
     ));
 }
