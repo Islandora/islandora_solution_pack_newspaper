@@ -43,7 +43,7 @@ function islandora_newspaper_get_current_sequence($object) {
  *   Returns the PID of the collection of which $object is a member of.
  */
 function islandora_newspaper_get_newspaper($object) {
-  $rels = $object->relationships->get(ISLANDORA_RELS_EXT_URI, 'isIssueOf');
+  $rels = $object->relationships->get(FEDORA_RELS_EXT_URI, 'isMemberOf');
   return $rels[0]['object']['value'];
 }
 
@@ -67,10 +67,11 @@ function islandora_newspaper_get_newspaper($object) {
 function islandora_newspaper_get_issues(FedoraObject $object) {
   $query = <<<EOQ
 PREFIX islandora-rels-ext: <http://islandora.ca/ontology/relsext#>
+PREFIX fedora-rels-ext: <info:fedora/fedora-system:def/relations-external#>
 SELECT ?pid ?sequence ?label ?issued
 FROM <#ri>
 WHERE {
-  ?pid islandora-rels-ext:isIssueOf <info:fedora/{$object->id}> ;
+  ?pid fedora-rels-ext:isMemberOf <info:fedora/{$object->id}> ;
     <fedora-model:label> ?label
   OPTIONAL {
     ?pid islandora-rels-ext:dateIssued ?issued .
