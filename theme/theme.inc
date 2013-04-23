@@ -213,11 +213,12 @@ function islandora_newspaper_preprocess_islandora_newspaper_page_controls(array 
   // JP2 Clip.
   if ($object['JP2']) {
     $jp2_ds = $object['JP2'];
-    $path = $base_url . '/' . drupal_get_path('module', 'islandora_newspaper');
-    $text = '<img src="' . $path . '/images/clip_icon.png" />';
+    $module_path = drupal_get_path('module', 'islandora_newspaper');
+    $path = url("$base_url/$module_path/images/clip_icon.png", array('absolute' => TRUE, 'external' => TRUE));        
+    $image = theme_image(array('path' => $path, 'attributes' => array()));
     $url = "islandora/object/{$object->id}/print";
     $attributes = array('attributes' => array('title' => t('Clip Image'), 'id' => 'clip'), 'html' => TRUE);
-    $controls['clip'] = l($text, $url, $attributes);
+    $controls['clip'] = l($image, $url, $attributes);
   }
   $variables['controls'] = $controls;
 }
