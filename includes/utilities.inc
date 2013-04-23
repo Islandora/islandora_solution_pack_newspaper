@@ -72,7 +72,8 @@ SELECT ?pid ?sequence ?label ?issued
 FROM <#ri>
 WHERE {
   ?pid fedora-rels-ext:isMemberOf <info:fedora/{$object->id}> ;
-    <fedora-model:label> ?label
+       <fedora-model:hasModel> <info:fedora/islandora:newspaperIssueCModel> ;
+       <fedora-model:label> ?label
   OPTIONAL {
     ?pid islandora-rels-ext:dateIssued ?issued .
   } .
