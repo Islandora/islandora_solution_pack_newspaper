@@ -215,7 +215,7 @@ function islandora_newspaper_preprocess_islandora_newspaper_page_controls(array 
     $jp2_ds = $object['JP2'];
     $module_path = drupal_get_path('module', 'islandora_newspaper');
     $path = url("$module_path/images/clip_icon.png", array('absolute' => TRUE, 'external' => TRUE));        
-    $image = theme('image',array('path' => $path, 'attributes' => array()));
+    $image = theme('image', array('path' => $path, 'attributes' => array()));
     $url = "islandora/object/{$object->id}/print";
     $attributes = array('attributes' => array('title' => t('Clip Image'), 'id' => 'clip'), 'html' => TRUE);
     $controls['clip'] = l($image, $url, $attributes);
