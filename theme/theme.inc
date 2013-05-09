@@ -53,7 +53,9 @@ function theme_islandora_newspaper(array $variables) {
       '#type' => 'fieldset',
     );
     foreach ($months as $month => $days) {
-      $month_name = t("@date", array("@date" => date("F", mktime(0, 0, 0, $month, 1, 2000))));
+      $month_name = t("@date", array(
+        "@date" => date("F", mktime(0, 0, 0, $month, 1, 2000)),
+      ));
       $tabs[$year][$month] = array(
         '#title' => $month_name,
         '#type' => 'fieldset',
@@ -217,9 +219,11 @@ function islandora_newspaper_preprocess_islandora_newspaper_page_controls(array 
     $path = "$module_path/images/clip_icon.png";
     $image = theme('image', array('path' => $path, 'attributes' => array()));
     $url = "islandora/object/{$object->id}/print";
-    $attributes = array('attributes' => array(
-      'title' => t('Clip Image'),
-      'id' => 'clip'),
+    $attributes = array(
+      'attributes' => array(
+        'title' => t('Clip Image'),
+        'id' => 'clip',
+      ),
       'html' => TRUE,
     );
     $controls['clip'] = l($image, $url, $attributes);
