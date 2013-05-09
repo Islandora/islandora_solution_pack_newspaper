@@ -89,7 +89,7 @@ EOQ;
     try {
       @$issued = new DateTime($o['issued']['value']);
     }
-    catch(Exception $e) {
+    catch (Exception $e) {
       // Use the current time as a place holder.
       $issued = new DateTime();
       $msg  = 'Failed to get issued date from SPARQL query for @pid';
@@ -162,7 +162,7 @@ function islandora_newspaper_get_date_issued_from_mods(AbstractFedoraDatastream 
       }
       $out = new DateTime($result);
     }
-    catch(Exception $e) {
+    catch (Exception $e) {
       $msg  = 'Failed to get issued date from MODS for @pid';
       $vars = array('@pid' => $datastream->parent->id);
       watchdog_exception('islandora_newspaper', $e, $msg, $vars, WATCHDOG_ERROR);
