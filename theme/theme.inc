@@ -53,7 +53,9 @@ function theme_islandora_newspaper(array $variables) {
       '#type' => 'fieldset',
     );
     foreach ($months as $month => $days) {
-      $month_name = t(date("F", mktime(0, 0, 0, $month, 1, 2000)));
+      $month_name = t("@date", array(
+        "@date" => date("F", mktime(0, 0, 0, $month, 1, 2000)),
+      ));
       $tabs[$year][$month] = array(
         '#title' => $month_name,
         '#type' => 'fieldset',
@@ -170,8 +172,8 @@ function islandora_newspaper_preprocess_islandora_newspaper_page_controls(array 
   module_load_include('inc', 'islandora', 'includes/datastream');
   module_load_include('inc', 'islandora', 'includes/utilities');
   global $base_url;
-  $view_prefix = '<strong>' . t('View: ') . '</strong>';
-  $download_prefix = '<strong>' . t('Download: ') . '</strong>';
+  $view_prefix = '<strong>' . t('View:') . ' </strong>';
+  $download_prefix = '<strong>' . t('Download:') . ' </strong>';
   $object = $variables['object'];
   $issue = islandora_newspaper_get_issue($object);
   $issue = islandora_object_load($issue);
@@ -214,10 +216,16 @@ function islandora_newspaper_preprocess_islandora_newspaper_page_controls(array 
   if ($object['JP2']) {
     $jp2_ds = $object['JP2'];
     $module_path = drupal_get_path('module', 'islandora_newspaper');
-    $path = "$module_path/images/clip_icon.png";        
+    $path = "$module_path/images/clip_icon.png";
     $image = theme('image', array('path' => $path, 'attributes' => array()));
     $url = "islandora/object/{$object->id}/print";
-    $attributes = array('attributes' => array('title' => t('Clip Image'), 'id' => 'clip'), 'html' => TRUE);
+    $attributes = array(
+      'attributes' => array(
+        'title' => t('Clip Image'),
+        'id' => 'clip',
+      ),
+      'html' => TRUE,
+    );
     $controls['clip'] = l($image, $url, $attributes);
   }
   $variables['controls'] = $controls;
