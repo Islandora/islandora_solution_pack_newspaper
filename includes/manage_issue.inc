@@ -12,13 +12,13 @@ require_once dirname(__FILE__) . '/utilities.inc';
  *
  * @global $user
  *
- * @param FedoraObject $issue
+ * @param AbstractObject $issue
  *   The newspaper to ingest into.
  *
  * @return sting
  *   The HTML repersentation of the ingest page form.
  */
-function islandora_newspaper_ingest_page(FedoraObject $issue) {
+function islandora_newspaper_ingest_page(AbstractObject $issue) {
   global $user;
   module_load_include('inc', 'islandora', 'includes/utilities');
   module_load_include('inc', 'islandora', 'includes/ingest.form');
