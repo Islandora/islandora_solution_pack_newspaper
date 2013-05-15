@@ -10,14 +10,14 @@ require_once dirname(__FILE__) . '/utilities.inc';
 /**
  * Displays all the book management forms in a set of vertical tabs.
  *
- * @param FedoraObject $object
+ * @param AbstractObject $object
  *   The newspaper object to manage.
  *
  * @return array
  *   A renderable array containing all the management forms related to
  *   book objects.
  */
-function islandora_newspaper_manage_newspaper(FedoraObject $object) {
+function islandora_newspaper_manage_newspaper(AbstractObject $object) {
   drupal_set_title($object->label);
   return '';
 }
@@ -25,13 +25,13 @@ function islandora_newspaper_manage_newspaper(FedoraObject $object) {
 /**
  * Local menu action, that gets the ingest page form.
  *
- * @param FedoraObject $newspaper
+ * @param AbstractObject $newspaper
  *   The newspaper to ingest into.
  *
  * @return sting
  *   The HTML repersentation of the ingest page form.
  */
-function islandora_newspaper_ingest_issue(FedoraObject $newspaper) {
+function islandora_newspaper_ingest_issue(AbstractObject $newspaper) {
   global $user;
   module_load_include('inc', 'islandora', 'includes/utilities');
   module_load_include('inc', 'islandora', 'includes/ingest.form');
