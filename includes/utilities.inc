@@ -155,7 +155,8 @@ function islandora_newspaper_get_date_issued_from_mods(AbstractDatastream $datas
     // Assumes the canonical date issued exists in the first mods document under
     // origin info and is not specified as a point, additional logic could be
     // added to process different encodings.
-    $result = (string) reset($doc->xpath('//ns:mods[1]/ns:originInfo/ns:dateIssued[not(@point)][1]'));
+    $dates = $doc->xpath('//ns:mods[1]/ns:originInfo/ns:dateIssued[not(@point)][1]');
+    $result = (string) reset($dates);
     try {
       if (empty($result)) {
         throw new Exception('mods:dateIssued element was empty.');
