@@ -183,37 +183,28 @@ function islandora_newspaper_preprocess_islandora_newspaper_page_controls(array 
     'issue_pager' => theme('islandora_newspaper_issue_navigator', array('object' => $issue)),
   );
   // Text view.
-  if ($object['OCR']) {
+  if (isset($object['OCR']) && islandora_datastream_access(FEDORA_VIEW_OBJECTS, $object['OCR'])) {
     $url = islandora_datastream_get_url($object['OCR'], 'view');
     $attributes = array('attributes' => array('title' => t('View text')));
     $controls['text_view'] = $view_prefix . l(t('Text'), $url, $attributes);
   }
   // PDF download.
-  if ($object['PDF']) {
+  if (isset($object['PDF']) && islandora_datastream_access(FEDORA_VIEW_OBJECTS, $object['PDF'])) {
     $size = islandora_datastream_get_human_readable_size($object['PDF']);
     $text = t('PDF (@size)', array('@size' => $size));
     $url = islandora_datastream_get_url($object['PDF'], 'download');
     $attributes = array('attributes' => array('title' => t('Download PDF')));
     $controls['pdf_download'] = $download_prefix . l($text, $url, $attributes);
   }
-  // JP2 download.
-  if ($object['JP2']) {
+  if (isset($object['JP2']) && islandora_datastream_access(FEDORA_VIEW_OBJECTS, $object['JP2'])) {
+    // JP2 download.
     $size = islandora_datastream_get_human_readable_size($object['JP2']);
     $text = t('JP2 (@size)', array('@size' => $size));
     $url = islandora_datastream_get_url($object['JP2'], 'download');
     $attributes = array('attributes' => array('title' => t('Download JP2')));
     $controls['jp2_download'] = $download_prefix . l($text, $url, $attributes);
-  }
-  // TIFF download.
-  if ($object['OBJ']) {
-    $size = islandora_datastream_get_human_readable_size($object['OBJ']);
-    $text = t('TIFF (@size)', array('@size' => $size));
-    $url = islandora_datastream_get_url($object['OBJ'], 'download');
-    $attributes = array('attributes' => array('title' => t('Download TIFF')));
-    $controls['tiff_download'] = $download_prefix . l($text, $url, $attributes);
-  }
-  // JP2 Clip.
-  if ($object['JP2']) {
+
+    // JP2 Clip.
     $jp2_ds = $object['JP2'];
     $module_path = drupal_get_path('module', 'islandora_newspaper');
     $path = "$module_path/images/clip_icon.png";
@@ -228,6 +219,14 @@ function islandora_newspaper_preprocess_islandora_newspaper_page_controls(array 
     );
     $controls['clip'] = l($image, $url, $attributes);
   }
+  // TIFF download.
+  if (isset($object['OBJ']) && islandora_datastream_access(FEDORA_VIEW_OBJECTS, $object['OBJ'])) {
+    $size = islandora_datastream_get_human_readable_size($object['OBJ']);
+    $text = t('TIFF (@size)', array('@size' => $size));
+    $url = islandora_datastream_get_url($object['OBJ'], 'download');
+    $attributes = array('attributes' => array('title' => t('Download TIFF')));
+    $controls['tiff_download'] = $download_prefix . l($text, $url, $attributes);
+  }
   $variables['controls'] = $controls;
 }
 
@@ -238,27 +237,30 @@ function islandora_newspaper_preprocess_islandora_newspaper_page(array &$variabl
   module_load_include('inc', 'islandora', 'includes/datastream');
   module_load_include('inc', 'islandora', 'includes/utilities');
   $object = $variables['object'];
-  // Get token to allow access to XACML protected datastreams if necessary.
-  // Always use token authentication in case there is a global policy.
-  module_load_include('inc', 'islandora', 'includes/authtokens');
-  $token = islandora_get_object_token($object->id, 'JP2', 2);
-  $jp2_url = url("islandora/object/{$object->id}/datastream/JP2/view",
-    array(
-      'absolute' => TRUE,
-      'query' => array('token' => $token),
-    ));
-  // Display newspaper.
-  module_load_include('inc', 'islandora', 'includes/solution_packs');
-  $params = array(
-    'jp2_url' => $jp2_url,
-  );
+
+  $params = array();
+  if (isset($object['JP2']) && islandora_datastream_access(FEDORA_VIEW_OBJECTS, $object['JP2'])) {
+    // Get token to allow access to XACML protected datastreams if necessary.
+    // Always use token authentication in case there is a global policy.
+    module_load_include('inc', 'islandora', 'includes/authtokens');
+    $token = islandora_get_object_token($object->id, 'JP2', 2);
+    $jp2_url = url("islandora/object/{$object->id}/datastream/JP2/view",
+      array(
+        'absolute' => TRUE,
+        'query' => array('token' => $token),
+      ));
+
+    // Display newspaper.
+    module_load_include('inc', 'islandora', 'includes/solution_packs');
+    $params['jp2_url'] = $jp2_url;
+  }
   $viewer = islandora_get_viewer($params, 'islandora_newspaper_page_viewers', $object);
   $variables['content'] = '';
   if ($viewer) {
     $variables['content'] = $viewer;
   }
   // If no viewer is configured just show the jpeg.
-  elseif (isset($object['JPG'])) {
+  elseif (isset($object['JPG']) && islandora_datastream_access(FEDORA_VIEW_OBJECTS, $object['JPG'])) {
     $params = array(
       'title' => $object->label,
       'path' => url("islandora/object/{$object->id}/datastream/JPG/view"),

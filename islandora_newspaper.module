@@ -66,7 +66,7 @@ function islandora_newspaper_menu() {
     ),
     'islandora/object/%islandora_object/manage/issue/ingest' => $ingest_page_menu_item,
     'islandora/object/%islandora_object/manage/overview/newspaper_page_ingest' => $ingest_page_menu_item,
-    'islandora/object/%islandora_object/manage/page' => array(
+    'islandora/object/%islandora_object/manage/newspaper_page' => array(
       'title' => 'Page',
       'type' => MENU_LOCAL_TASK,
       'page callback' => 'islandora_paged_content_manage_page_menu',
