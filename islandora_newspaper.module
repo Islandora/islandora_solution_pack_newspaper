@@ -16,7 +16,7 @@ function islandora_newspaper_menu() {
     'type' => MENU_LOCAL_ACTION,
     'access callback' => 'islandora_user_access',
     'access arguments' => array(
-      2, array(FEDORA_INGEST), array('islandora:newspaperCModel'),
+      2, array(ISLANDORA_INGEST), array('islandora:newspaperCModel'),
     ),
     'file' => 'includes/manage_newspaper.inc',
   );
@@ -27,7 +27,7 @@ function islandora_newspaper_menu() {
     'type' => MENU_LOCAL_ACTION,
     'access callback' => 'islandora_user_access',
     'access arguments' => array(
-      2, array(FEDORA_INGEST), array('islandora:newspaperIssueCModel'),
+      2, array(ISLANDORA_INGEST), array('islandora:newspaperIssueCModel'),
     ),
     'file' => 'includes/manage_issue.inc',
   );
@@ -48,7 +48,7 @@ function islandora_newspaper_menu() {
       'page arguments' => array(2),
       'access callback' => 'islandora_user_access',
       'access arguments' => array(
-        2, array(FEDORA_INGEST), array('islandora:newspaperCModel'),
+        2, array(ISLANDORA_INGEST), array('islandora:newspaperCModel'),
       ),
       'file' => 'includes/manage_newspaper.inc',
     ),
