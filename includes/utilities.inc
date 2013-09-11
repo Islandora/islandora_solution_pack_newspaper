@@ -53,7 +53,7 @@ function islandora_newspaper_get_newspaper($object) {
  * The results are ordered by their RELS-EXT dateIssued property.
  * Older to newer.
  *
- * @param AbstractFedoraDatastream $object
+ * @param AbstractDatastream $object
  *   The datastream containing MODS.
  *
  * @return array
@@ -64,7 +64,7 @@ function islandora_newspaper_get_newspaper($object) {
  *     - sequence: The sequence number of the issue, starts at 1.
  *     - issued: A DateTime object repersenting the date the issue was released.
  */
-function islandora_newspaper_get_issues(FedoraObject $object) {
+function islandora_newspaper_get_issues(AbstractObject $object) {
   $query = <<<EOQ
 PREFIX islandora-rels-ext: <http://islandora.ca/ontology/relsext#>
 PREFIX fedora-rels-ext: <info:fedora/fedora-system:def/relations-external#>
@@ -89,7 +89,7 @@ EOQ;
     try {
       @$issued = new DateTime($o['issued']['value']);
     }
-    catch(Exception $e) {
+    catch (Exception $e) {
       // Use the current time as a place holder.
       $issued = new DateTime();
       $msg  = 'Failed to get issued date from SPARQL query for @pid';
@@ -139,13 +139,13 @@ function islandora_newspaper_group_issues(array $issues) {
 /**
  * Attempts to get the date issued from the mods document.
  *
- * @param AbstractFedoraDatastream $datastream
+ * @param AbstractDatastream $datastream
  *   The datastream containing MODS.
  *
  * @return DateTime
  *   The date issued if found, otherwise the current time.
  */
-function islandora_newspaper_get_date_issued_from_mods(AbstractFedoraDatastream $datastream) {
+function islandora_newspaper_get_date_issued_from_mods(AbstractDatastream $datastream) {
   $out = FALSE;
   $file = file_create_filename("{$datastream->parent->id}_{$datastream->id}.xml", 'temporary://');
   $datastream->getContent($file);
@@ -155,14 +155,15 @@ function islandora_newspaper_get_date_issued_from_mods(AbstractFedoraDatastream 
     // Assumes the canonical date issued exists in the first mods document under
     // origin info and is not specified as a point, additional logic could be
     // added to process different encodings.
-    $result = (string) reset($doc->xpath('//ns:mods[1]/ns:originInfo/ns:dateIssued[not(@point)][1]'));
+    $dates = $doc->xpath('//ns:mods[1]/ns:originInfo/ns:dateIssued[not(@point)][1]');
+    $result = (string) reset($dates);
     try {
       if (empty($result)) {
         throw new Exception('mods:dateIssued element was empty.');
       }
       $out = new DateTime($result);
     }
-    catch(Exception $e) {
+    catch (Exception $e) {
       $msg  = 'Failed to get issued date from MODS for @pid';
       $vars = array('@pid' => $datastream->parent->id);
       watchdog_exception('islandora_newspaper', $e, $msg, $vars, WATCHDOG_ERROR);
@@ -175,12 +176,12 @@ function islandora_newspaper_get_date_issued_from_mods(AbstractFedoraDatastream 
 /**
  * Set's the date issued literal in the objects RELS-EXT.
  *
- * @param AbstractFedoraObject $object
+ * @param AbstractObject $object
  *   Newspaper issue object
  * @param DateTime $date
  *   The date issued, will be stored in ISO-8601 YYYY-MM-DD format.
  */
-function islandora_newspaper_set_date_issued(AbstractFedoraObject $object, DateTime $date) {
+function islandora_newspaper_set_date_issued(AbstractObject $object, DateTime $date) {
   $object->relationships->remove(ISLANDORA_RELS_EXT_URI, 'dateIssued', NULL, TRUE);
   $object->relationships->add(ISLANDORA_RELS_EXT_URI, 'dateIssued', $date->format("Y-m-d"), TRUE);
 }
@@ -190,13 +191,13 @@ function islandora_newspaper_set_date_issued(AbstractFedoraObject $object, DateT
  *
  * If the date issue is not defined the current time is returned.
  *
- * @param AbstractFedoraObject $object
+ * @param AbstractObject $object
  *   Newspaper issue object
  *
  * @return DateTime
  *   The date issued. If the date issue is not defined the current time is used.
  */
-function islandora_newspaper_get_date_issued(AbstractFedoraObject $object) {
+function islandora_newspaper_get_date_issued(AbstractObject $object) {
   $results = $object->relationships->get(ISLANDORA_RELS_EXT_URI, 'dateIssued', NULL, TRUE);
   $date = empty($results) ? new DateTime() : new DateTime($results[0]['object']['value']);
   return $date;

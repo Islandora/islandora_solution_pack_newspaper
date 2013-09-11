@@ -16,7 +16,7 @@ function islandora_newspaper_menu() {
     'type' => MENU_LOCAL_ACTION,
     'access callback' => 'islandora_user_access',
     'access arguments' => array(
-      2, array(FEDORA_INGEST), array('islandora:newspaperCModel'),
+      2, array(ISLANDORA_INGEST), array('islandora:newspaperCModel'),
     ),
     'file' => 'includes/manage_newspaper.inc',
   );
@@ -27,7 +27,7 @@ function islandora_newspaper_menu() {
     'type' => MENU_LOCAL_ACTION,
     'access callback' => 'islandora_user_access',
     'access arguments' => array(
-      2, array(FEDORA_INGEST), array('islandora:newspaperIssueCModel'),
+      2, array(ISLANDORA_INGEST), array('islandora:newspaperIssueCModel'),
     ),
     'file' => 'includes/manage_issue.inc',
   );
@@ -48,7 +48,7 @@ function islandora_newspaper_menu() {
       'page arguments' => array(2),
       'access callback' => 'islandora_user_access',
       'access arguments' => array(
-        2, array(FEDORA_INGEST), array('islandora:newspaperCModel'),
+        2, array(ISLANDORA_INGEST), array('islandora:newspaperCModel'),
       ),
       'file' => 'includes/manage_newspaper.inc',
     ),
@@ -66,7 +66,7 @@ function islandora_newspaper_menu() {
     ),
     'islandora/object/%islandora_object/manage/issue/ingest' => $ingest_page_menu_item,
     'islandora/object/%islandora_object/manage/overview/newspaper_page_ingest' => $ingest_page_menu_item,
-    'islandora/object/%islandora_object/manage/page' => array(
+    'islandora/object/%islandora_object/manage/newspaper_page' => array(
       'title' => 'Page',
       'type' => MENU_LOCAL_TASK,
       'page callback' => 'islandora_paged_content_manage_page_menu',
@@ -256,7 +256,7 @@ function islandora_newspaper_islandora_content_model_forms_form_associations() {
 /**
  * Implements hook_CMODEL_PID_islandora_view_object().
  */
-function islandora_newspaper_islandora_newspapercmodel_islandora_view_object(FedoraObject $newspaper) {
+function islandora_newspaper_islandora_newspapercmodel_islandora_view_object(AbstractObject $newspaper) {
   $output = theme('islandora_newspaper', array('object' => $newspaper));
   return array(
     'islandora_newspaper' => $output,
@@ -266,7 +266,7 @@ function islandora_newspaper_islandora_newspapercmodel_islandora_view_object(Fed
 /**
  * Implements hook_CMODEL_PID_islandora_view_object().
  */
-function islandora_newspaper_islandora_newspaperissuecmodel_islandora_view_object(FedoraObject $issue) {
+function islandora_newspaper_islandora_newspaperissuecmodel_islandora_view_object(AbstractObject $issue) {
   $output = theme('islandora_newspaper_issue', array('object' => $issue));
   return array(
     'islandora_newspaper' => $output,
@@ -279,38 +279,6 @@ function islandora_newspaper_islandora_newspaperissuecmodel_islandora_view_objec
 function islandora_newspaper_islandora_newspaperpagecmodel_islandora_view_object($object, $page_number, $page_size) {
   $output = theme('islandora_newspaper_page', array('object' => $object));
   return array('islandora_newspaper' => $output);
-}
-
-/**
- * Implements hook_CMODEL_PID_islandora_object_ingested().
- */
-function islandora_newspaper_islandora_newspaperpagecmodel_islandora_object_ingested(FedoraObject $object) {
-  module_load_include('inc', 'islandora_paged_content', 'includes/utilities');
-  $success = TRUE;
-  $derive = islandora_paged_content_get_enabled_ingest_derivatives("islandora_newspaper");
-  if ($derive['pdf']) {
-    $success = $success && islandora_paged_content_can_derive($object, 'PDF') && islandora_paged_content_page_derive_pdf_datastream($object);
-  }
-  if ($derive['image']) {
-    $derived_images = islandora_paged_content_can_derive($object, 'JP2') && islandora_paged_content_page_derive_image_datastreams($object);
-    if ($derived_images) {
-      $paged_object = islandora_paged_content_get_relationship($object->relationships, FEDORA_RELS_EXT_URI, 'isMemberOf', NULL);
-      $paged_object = islandora_object_load($paged_object);
-      if ($paged_object) {
-        islandora_paged_content_update_paged_content_thumbnail($paged_object);
-      }
-    }
-    $success = $success && $derived_images;
-  }
-  if ($derive['ocr']) {
-    $success = $success && islandora_paged_content_can_derive($object, 'OCR') && islandora_paged_content_page_derive_ocr_datastreams($object);
-  }
-  if (!$success) {
-    $msg = t('Could not create all derivatives for %s. For more information please check the logs.', array(
-             '%s' => $object->id));
-    drupal_set_message($msg, 'error');
-    return FALSE;
-  }
 }
 
 /**
@@ -335,7 +303,7 @@ function islandora_newspaper_islandora_newspaperpagecmodel_islandora_ingest_step
  *
  * This updates the RELS-EXT such that the date issued matches the mods.
  */
-function islandora_newspaper_islandora_newspaperissuecmodel_mods_islandora_datastream_ingested(FedoraObject $object, FedoraDatastream $datastream) {
+function islandora_newspaper_islandora_newspaperissuecmodel_mods_islandora_datastream_ingested(AbstractObject $object, AbstractDatastream $datastream) {
   module_load_include('inc', 'islandora_newspaper', 'includes/utilities');
   $date_issued = islandora_newspaper_get_date_issued_from_mods($datastream);
   if ($date_issued) {
@@ -348,7 +316,7 @@ function islandora_newspaper_islandora_newspaperissuecmodel_mods_islandora_datas
  *
  * This updates the RELS-EXT such that the date issued matches the mods.
  */
-function islandora_newspaper_islandora_newspaperissuecmodel_mods_islandora_datastream_modified(FedoraObject $object, FedoraDatastream $datastream) {
+function islandora_newspaper_islandora_newspaperissuecmodel_mods_islandora_datastream_modified(AbstractObject $object, AbstractDatastream $datastream) {
   module_load_include('inc', 'islandora_newspaper', 'includes/utilities');
   $date_issued = islandora_newspaper_get_date_issued_from_mods($datastream);
   if ($date_issued) {
@@ -378,7 +346,7 @@ function islandora_newspaper_preprocess_islandora_object_print(array &$variables
     $url = url("islandora/object/{$object->id}", array('absolute' => TRUE));
     $variables['content']['link'] = array(
       '#weight' => -10,
-      '#markup' => t('Persistent link: ') . l($url, $url),
+      '#markup' => t('Persistent link: !link', array('!link' => l($url, $url))),
     );
   }
 }
@@ -414,4 +382,117 @@ function islandora_newspaper_process_islandora_object_print(array &$variables) {
       ),
     );
   }
+}
+
+/**
+ * Implements hook_islandora_derivative().
+ *
+ * XXX: Should add in ability to regenerate PDFs as well... No reliable way to
+ * kick off a batch though...
+ */
+function islandora_newspaper_islandora_newspaperissuecmodel_islandora_derivative() {
+  $pc_mod_path = drupal_get_path('module', 'islandora_paged_content');
+
+  $derivatives = array();
+
+  module_load_include('inc', 'islandora_paged_content', 'includes/utilities');
+  $derive = islandora_paged_content_get_enabled_ingest_derivatives('islandora_newspaper');
+
+  if ($derive['image']) {
+    $derivatives[] = array(
+      'source_dsid' => NULL,
+      'destination_dsid' => 'TN',
+      'function' => array(
+        'islandora_paged_content_derive_thumbnail_of_parent',
+      ),
+      'file' => "$pc_mod_path/includes/derivatives.inc",
+    );
+  }
+
+  return $derivatives;
+}
+
+/**
+ * Implements hook_islandora_derivative().
+ */
+function islandora_newspaper_islandora_newspaperpagecmodel_islandora_derivative() {
+  $pc_mod_path = drupal_get_path('module', 'islandora_paged_content');
+  $li_mod_path = drupal_get_path('module', 'islandora_large_image');
+  $ocr_mod_path = drupal_get_path('module', 'islandora_ocr');
+  module_load_include('inc', 'islandora_paged_content', 'includes/utilities');
+  $derive = islandora_paged_content_get_enabled_ingest_derivatives('islandora_newspaper');
+  $derivatives = array();
+
+  if ($derive['pdf']) {
+    $derivatives[] = array(
+      'source_dsid' => 'OBJ',
+      'destination_dsid' => 'PDF',
+      'function' => array(
+        'islandora_paged_content_derivatives_pdf',
+      ),
+      'file' => "$pc_mod_path/includes/derivatives.inc",
+    );
+  }
+  if ($derive['image']) {
+    $derivatives[] = array(
+      'source_dsid' => 'OBJ',
+      'destination_dsid' => 'TN',
+      'function' => array(
+        'islandora_large_image_create_tn_derivative',
+      ),
+      'file' => "$li_mod_path/includes/derivatives.inc",
+    );
+    $derivatives[] = array(
+      'source_dsid' => 'OBJ',
+      'destination_dsid' => 'JPG',
+      'function' => array(
+        'islandora_large_image_create_jpg_derivative',
+      ),
+      'file' => "$li_mod_path/includes/derivatives.inc",
+    );
+    $derivatives[] = array(
+      'source_dsid' => 'OBJ',
+      'destination_dsid' => 'JP2',
+      'function' => array(
+        'islandora_large_image_create_jp2_derivative',
+      ),
+      'file' => "$li_mod_path/includes/derivatives.inc",
+    );
+    $derivatives[] = array(
+      'source_dsid' => 'JP2',
+      'destination_dsid' => NULL,
+      'function' => array(
+        'islandora_paged_content_add_dimensions_relationships',
+      ),
+      'file' => "$pc_mod_path/includes/utilities.inc",
+    );
+    $derivatives[] = array(
+      'source_dsid' => 'TN',
+      'destination_dsid' => NULL,
+      'function' => array(
+        'islandora_paged_content_derive_thumbnail_on_parent',
+      ),
+      'file' => "$pc_mod_path/includes/derivatives.inc",
+    );
+  }
+  if ($derive['ocr']) {
+    $derivatives[] = array(
+      'source_dsid' => 'OBJ',
+      'destination_dsid' => 'OCR',
+      'function' => array(
+        'islandora_ocr_derive_ocr',
+      ),
+      'file' => "$ocr_mod_path/includes/derivatives.inc",
+    );
+    $derivatives[] = array(
+      'source_dsid' => 'OBJ',
+      'destination_dsid' => 'HOCR',
+      'function' => array(
+        'islandora_ocr_derive_hocr',
+      ),
+      'file' => "$ocr_mod_path/includes/derivatives.inc",
+    );
+  }
+
+  return $derivatives;
 }
