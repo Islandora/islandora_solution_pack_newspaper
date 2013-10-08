@@ -496,3 +496,79 @@ function islandora_newspaper_islandora_newspaperpagecmodel_islandora_derivative(
 
   return $derivatives;
 }
+
+/**
+ * Implements hook_form_islandora_object_properties_form_alter().
+ */
+function islandora_newspaper_form_islandora_object_properties_form_alter(array &$form, array &$form_state) {
+  $object = $form_state['object'];
+  if (in_array('islandora:newspaperIssueCModel', $object->models)) {
+    $form['delete']['#value'] = t('Delete Issue');
+  }
+
+  if (in_array('islandora:newspaperCModel', $object->models)) {
+    $form['delete']['#value'] = t('Delete Newspaper');
+  }
+}
+
+/**
+ * Implements hook_form_islandora_object_properties_form_alter().
+ */
+function islandora_newspaper_form_islandora_delete_object_form_alter(array &$form, array &$form_state) {
+  $object = $form_state['object'];
+  if (in_array('islandora:newspaperIssueCModel', $object->models)) {
+    $form['description']['#markup'] = t('This will remove the issue object and all related page objects. This action cannot be undone.');
+    $form['#submit'] = array('islandora_newspaper_islandora_delete_issue_form_delete_pages_submit');
+  }
+
+  if (in_array('islandora:newspaperCModel', $object->models)) {
+    $form['description']['#markup'] = t('This will remove the newspaper object, all issue objects and all related page objects. This action cannot be undone.');
+    $form['#submit'] = array('islandora_newspaper_islandora_delete_newspaper_form_delete_pages_submit');
+  }
+}
+
+/**
+ * Delete all the page objects related to the issue object being deleted.
+ *
+ * @param array $form
+ *   The Drupal form.
+ * @param array $form_state
+ *   The Drupal form state.
+ */
+function islandora_newspaper_islandora_delete_issue_form_delete_pages_submit(array $form, array &$form_state) {
+  module_load_include('inc', 'islandora_paged_content', 'includes/batch');
+  module_load_include('inc', 'islandora_paged_content', 'includes/utilities');
+  module_load_include('inc', 'islandora', 'includes/datastream');
+  module_load_include('inc', 'islandora', 'includes/utilities');
+
+  $object = $form_state['object'];
+  $get_pid = function($o) {
+    return $o['pid'];
+  };
+  $pages = array_values(array_map($get_pid, islandora_paged_content_get_pages($object)));
+  $batch_delete = islandora_paged_content_delete_pages_batch($object, $pages);
+  $batch_delete['operations'][] = array('islandora_paged_content_delete_parent_object_operation', array($object->id));
+  batch_set($batch_delete);
+  $parents = islandora_get_parents_from_rels_ext($object);
+  $parent = array_pop($parents);
+  $form_state['redirect'] = isset($parent) ? "islandora/object/{$parent->id}" : 'islandora';
+}
+
+/**
+ * Delete all the issue objects related to the newspaper object being deleted.
+ *
+ * @param array $form
+ *   The Drupal form.
+ * @param array $form_state
+ *   The Drupal form state.
+ */
+function islandora_newspaper_islandora_delete_newspaper_form_delete_pages_submit(array $form, array &$form_state) {
+  module_load_include('inc', 'islandora', 'includes/utilities');
+  module_load_include('inc', 'islandora_newspaper', 'includes/batch');
+
+  $object = $form_state['object'];
+  batch_set(islandora_newspaper_delete_newspaper_batch($object));
+  $parents = islandora_get_parents_from_rels_ext($object);
+  $parent = array_pop($parents);
+  $form_state['redirect'] = isset($parent) ? "islandora/object/{$parent->id}" : 'islandora';
+}
