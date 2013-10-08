@@ -75,6 +75,7 @@ class IslandoraNewspaperPageIngestTestCase extends IslandoraCollectionWebTestCas
     $newspaper_title = $this->randomName(16);
     $edit = array(
       'titleInfo[title]' => $newspaper_title,
+      'originInfo[dateIssued]' => '2002-02-20',
     );
     $this->drupalPost($path, $edit, t('Ingest'));
     $this->assertText($newspaper_title, t('Newspaper was created'), 'Islandora');
@@ -143,7 +144,7 @@ class IslandoraNewspaperPageIngestTestCase extends IslandoraCollectionWebTestCas
     );
     $this->validateDatastreams($page_pid, $datastreams);
 
-    $this->deleteObject($newspaper_pid, t('Delete'));
+    $this->deleteObject($newspaper_pid, t('Delete Newspaper'));
     $this->deleteTestCollection($collection_pid);
   }
 }
