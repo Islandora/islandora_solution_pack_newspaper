@@ -26,7 +26,7 @@ function islandora_newspaper_delete_newspaper_batch_operation($pid) {
     $issue_object = islandora_object_load($issue['pid']);
     $pages = array_values(array_map($get_pid, islandora_paged_content_get_pages($issue_object)));
     $batch_delete = islandora_paged_content_delete_pages_batch($object, $pages);
-    $batch_delete['operations'][] = array('islandora_paged_content_delete_parent_operation', array($issue_object->id));
+    $batch_delete['operations'][] = array('islandora_paged_content_delete_parent_object_operation', array($issue_object->id));
     batch_set($batch_delete);
   }
   batch_set(islandora_newspaper_delete_newspaper_object_batch($pid));
