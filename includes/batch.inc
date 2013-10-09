@@ -22,7 +22,7 @@ function islandora_newspaper_delete_newspaper_batch_operation($pid) {
   };
   $issues = islandora_newspaper_get_issues($object);
 
-  foreach ($issues as $issue)  {
+  foreach ($issues as $issue) {
     $issue_object = islandora_object_load($issue['pid']);
     $pages = array_values(array_map($get_pid, islandora_paged_content_get_pages($issue_object)));
     $batch_delete = islandora_paged_content_delete_pages_batch($object, $pages);
@@ -30,7 +30,7 @@ function islandora_newspaper_delete_newspaper_batch_operation($pid) {
     batch_set($batch_delete);
   }
   batch_set(islandora_newspaper_delete_newspaper_object_batch($pid));
- }
+}
 
 /**
  * The main batch operation from which the other batch operations start from.
