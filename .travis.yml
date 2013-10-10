@@ -21,6 +21,12 @@ before_install:
   - $HOME/islandora/tests/scripts/travis_setup.sh
   - cd $HOME/drupal-*
   - ln -s $TRAVIS_BUILD_DIR sites/all/modules/islandora_solution_pack_newspaper
+  - ln -s $HOME/islandora_paged_content sites/all/modules/islandora_paged_content
+  - ln -s $HOME/islandora_solution_pack_collection sites/all/modules/islandora_solution_pack_collection
+  - ln -s $HOME/islandora_ocr sites/all/modules/islandora_ocr
+  - ln -s $HOME/islandora_solution_pack_large_image sites/all/modules/islandora_solution_pack_large_image
+  - ln -s $HOME/php_lib sites/all/modules/php_lib
+  - ln -s $HOME/islandora_xml_forms sites/all/modules/islandora_xml_forms
   - drush dl imagemagick
   - drush en --user=1 --yes imagemagick islandora_newspaper islandora_paged_content islandora_basic_collection, islandora_ocr, xml_form_builder, islandora_large_image
 script:
