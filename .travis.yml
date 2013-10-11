@@ -17,6 +17,7 @@ before_install:
   - git clone -b 7.x git://github.com/Islandora/islandora_solution_pack_large_image.git
   - git clone -b 7.x git://github.com/Islandora/php_lib.git
   - git clone -b 7.x git://github.com/Islandora/islandora_xml_forms.git
+  - git clone -b 7.x git://github.com/Islandora/objective_forms.git
   - export ISLANDORA_DIR=$HOME/islandora
   - $HOME/islandora/tests/scripts/travis_setup.sh
   - cd $HOME/drupal-*
@@ -27,6 +28,7 @@ before_install:
   - ln -s $HOME/islandora_solution_pack_large_image sites/all/modules/islandora_solution_pack_large_image
   - ln -s $HOME/php_lib sites/all/modules/php_lib
   - ln -s $HOME/islandora_xml_forms sites/all/modules/islandora_xml_forms
+  - ln -s $HOME/objective_forms sites/all/modules/objective_forms
   - drush dl imagemagick
   - drush en --user=1 --yes imagemagick islandora_newspaper islandora_paged_content islandora_basic_collection islandora_ocr xml_form_builder islandora_large_image
 script:
