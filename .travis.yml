@@ -33,6 +33,8 @@ before_install:
   - ln -s $HOME/objective_forms sites/all/modules/objective_forms
   - drush dl imagemagick
   - drush en --user=1 --yes imagemagick islandora_newspaper islandora_paged_content islandora_basic_collection islandora_ocr xml_form_builder islandora_large_image
+  - drush vset islandora_ocr_tesseract `which tesseract`
+  - drush vset islandora_book_tesseract `which tesseract`
 script:
   - ant -buildfile sites/all/modules/islandora_solution_pack_newspaper/build.xml lint
   - $ISLANDORA_DIR/tests/scripts/line_endings.sh sites/all/modules/islandora_solution_pack_newspaper
