@@ -27,7 +27,7 @@ class IslandoraNewspaperPageIngestTestCase extends IslandoraCollectionWebTestCas
    */
   public function setUp() {
     $this->imagemagick_convert = variable_get('imagemagick_convert', '/usr/bin/convert');
-    $this->islandora_ocr_tesseract = variable_get('islandora_ocr_tesseract');
+    $this->islandora_ocr_tesseract = variable_get('islandora_ocr_tesseract', '/usr/local/bin/tesseract');
     parent::setUp(array(
       'islandora_basic_collection',
       'islandora_newspaper',
