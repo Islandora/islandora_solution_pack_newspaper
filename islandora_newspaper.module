@@ -179,7 +179,8 @@ function islandora_newspaper_islandora_required_objects(IslandoraTuque $connecti
   $datastream = $newspaper_page_content_model->constructDatastream('DS-COMPOSITE-MODEL', 'X');
   $datastream->label = 'DS-COMPOSITE-MODEL';
   $datastream->mimetype = 'text/xml';
-  $datastream->setContentFromFile("$module_path/xml/content_models/islandora_newspaper_ds_composite_model.xml", FALSE);
+  $paged_content_path = drupal_get_path('module', 'islandora_paged_content');
+  $datastream->setContentFromFile("$paged_content_path/xml/islandora_pageCModel_ds_composite_model.xml", FALSE);
   $newspaper_page_content_model->ingestDatastream($datastream);
 
   // Newspaper collection.
