@@ -26,8 +26,8 @@ class IslandoraNewspaperPageIngestTestCase extends IslandoraCollectionWebTestCas
    * @see IslandoraWebTestCase::setUp()
    */
   public function setUp() {
-    $this->imagemagick_convert = variable_get('imagemagick_convert');
-    $this->islandora_ocr_tesseract = variable_get('islandora_ocr_tesseract');
+    $this->imagemagick_convert = variable_get('imagemagick_convert', '/usr/bin/convert');
+    $this->islandora_ocr_tesseract = variable_get('islandora_ocr_tesseract', '/usr/local/bin/tesseract');
     parent::setUp(array(
       'islandora_basic_collection',
       'islandora_newspaper',
@@ -144,7 +144,7 @@ class IslandoraNewspaperPageIngestTestCase extends IslandoraCollectionWebTestCas
     );
     $this->validateDatastreams($page_pid, $datastreams);
 
-    $this->deleteObject($newspaper_pid, t('Delete Newspaper'));
+    $this->deleteObject($newspaper_pid);
     $this->deleteTestCollection($collection_pid);
   }
 }
