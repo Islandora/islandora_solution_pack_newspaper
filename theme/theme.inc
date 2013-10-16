@@ -63,22 +63,24 @@ function theme_islandora_newspaper(array $variables) {
           'class' => array('collapsible', 'collapsed', 'month'),
         ),
       );
-      foreach ($days as $day => $issue) {
-        $tabs[$year][$month][$day] = array(
-          '#theme' => 'link',
-          '#prefix' => '<div>',
-          '#suffix' => '</div>',
-          '#text' => t("@month @day, @year", array(
-                     '@year' => $year,
-                     '@month' => $month_name,
-                     '@day' => $day,
-                   )),
-          '#path' => "islandora/object/{$issue['pid']}",
-          '#options' => array(
-            'attributes' => array(),
-            'html' => FALSE,
-          ),
-        );
+      foreach ($days as $day => $issues) {
+        foreach ($issues as $issue) {
+          $tabs[$year][$month][$day][] = array(
+            '#theme' => 'link',
+            '#prefix' => '<div>',
+            '#suffix' => '</div>',
+            '#text' => t("@month @day, @year", array(
+                '@year' => $year,
+                '@month' => $month_name,
+                '@day' => $day,
+                )),
+            '#path' => "islandora/object/{$issue['pid']}",
+            '#options' => array(
+              'attributes' => array(),
+              'html' => FALSE,
+            ),
+          );
+        }
       }
       ksort($tabs[$year][$month]);
     }
