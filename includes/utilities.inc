@@ -73,15 +73,13 @@ FROM <#ri>
 WHERE {
   ?pid fedora-rels-ext:isMemberOf <info:fedora/{$object->id}> ;
        <fedora-model:hasModel> <info:fedora/islandora:newspaperIssueCModel> ;
-       <fedora-model:label> ?label
+       <fedora-model:label> ?label .
+  ?pid islandora-rels-ext:isSequenceNumber ?sequence
   OPTIONAL {
     ?pid islandora-rels-ext:dateIssued ?issued .
-  } .
-  OPTIONAL {
-    ?pid islandora-rels-ext:isSequenceNumber ?sequence
   }
 }
-ORDER BY ?issued
+ORDER BY ?sequence
 EOQ;
   $results = $object->repository->ri->sparqlQuery($query);
   // Map the results using a default Datetime for missing issued dates.
@@ -131,7 +129,7 @@ function islandora_newspaper_group_issues(array $issues) {
     $year = $issue['issued']->format('Y');
     $month = $issue['issued']->format('m');
     $day = $issue['issued']->format('d');
-    $output[$year][$month][$day] = $issue;
+    $output[$year][$month][$day][] = $issue;
   }
   return $output;
 }
