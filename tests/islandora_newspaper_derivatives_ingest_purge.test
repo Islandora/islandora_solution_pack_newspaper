@@ -144,7 +144,7 @@ class IslandoraNewspaperPageIngestTestCase extends IslandoraCollectionWebTestCas
     );
     $this->validateDatastreams($page_pid, $datastreams);
 
-    $this->deleteObject($newspaper_pid);
+    $this->deleteObject($newspaper_pid, 'Delete Newspaper');
     $this->deleteTestCollection($collection_pid);
   }
 }
