@@ -70,10 +70,10 @@ function theme_islandora_newspaper(array $variables) {
             '#prefix' => '<div>',
             '#suffix' => '</div>',
             '#text' => t("@month @day, @year", array(
-                       '@year' => $year,
-                       '@month' => $month_name,
-                       '@day' => $day,
-                     )),
+                '@year' => $year,
+                '@month' => $month_name,
+                '@day' => $day,
+                )),
             '#path' => "islandora/object/{$issue['pid']}",
             '#options' => array(
               'attributes' => array(),
