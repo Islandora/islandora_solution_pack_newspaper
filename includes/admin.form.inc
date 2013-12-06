@@ -18,8 +18,8 @@
  */
 function islandora_newspaper_admin_settings_form(array $form, array &$form_state) {
   $get_default_value = function($name, $default) use(&$form_state) {
-        return isset($form_state['values'][$name]) ? $form_state['values'][$name] : variable_get($name, $default);
-      };
+    return isset($form_state['values'][$name]) ? $form_state['values'][$name] : variable_get($name, $default);
+  };
   $form = array(
     'local_derivative_settings' => array(
       '#type' => 'fieldset',
