@@ -98,6 +98,7 @@ function islandora_newspaper_preprocess_islandora_newspaper_issue(array &$variab
   $object = $variables['object'];
   $pages = islandora_paged_content_get_pages($object);
   $variables['pages'] = array_keys($pages);
+  
 }
 
 /**
