@@ -18,8 +18,8 @@
  */
 function islandora_newspaper_admin_settings_form(array $form, array &$form_state) {
   $get_default_value = function($name, $default) use(&$form_state) {
-    return isset($form_state['values'][$name]) ? $form_state['values'][$name] : variable_get($name, $default);
-  };
+        return isset($form_state['values'][$name]) ? $form_state['values'][$name] : variable_get($name, $default);
+      };
   $form = array(
     'local_derivative_settings' => array(
       '#type' => 'fieldset',
@@ -34,10 +34,19 @@ function islandora_newspaper_admin_settings_form(array $form, array &$form_state
           'ocr' => t('OCR datastreams (OCR, HOCR). <b>Requires</b> <i>Islandora OCR Module</i>'),
         ),
         '#default_value' => $get_default_value('islandora_newspaper_ingest_derivatives', drupal_map_assoc(
-                            array('pdf', 'image', 'ocr'))),
+                array('pdf', 'image', 'ocr'))),
       ),
     ),
   );
+
+  $form['islandora_newspaper_parent_issue_solr_field'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Parent Solr Field'),
+    '#description' => t("Solr field containing the parent issue's PID."),
+    '#default_value' => variable_get('islandora_newspaper_parent_issue_solr_field', 'RELS_EXT_isMemberOf_uri_ms'),
+    '#size' => 30,
+  );
+
   module_load_include('inc', 'islandora', 'includes/solution_packs');
   $form += islandora_viewers_form('islandora_newspaper_issue_viewers', NULL, 'islandora:newspaperCModel');
   $form['issue_viewers'] = $form['viewers'];

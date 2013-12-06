@@ -336,6 +336,39 @@ function islandora_newspaper_islandora_newspaperpagecmodel_islandora_solr_object
     'query' => $query_processor->solrQuery,
     'params' => $query_processor->solrParams,
   );
+
+  module_load_include('inc', 'islandora', 'includes/solution_packs');
+  if (islandora_get_viewer_id('islandora_newspaper_issue_viewers') == 'islandora_internet_archive_bookreader') {
+    // Grab the names of the appropriate solr fields from the db.
+    $parent_issue_field_name = variable_get('islandora_newspaper_parent_issue_solr_field', 'RELS_EXT_isMemberOf_uri_ms');
+    $page_number_field_name = variable_get('islandora_paged_content_page_number_solr_field', 'RELS_EXT_isSequenceNumber_literal_ms');
+    // If:
+    // there's an object url AND
+    // there's a solr doc AND
+    // the solr doc contains the parent issue AND
+    // the solr doc contains the page number...
+    if (isset($search_results['object_url']) &&
+        isset($search_results['solr_doc']) &&
+        isset($search_results['solr_doc'][$parent_issue_field_name]) &&
+        count($search_results['solr_doc'][$parent_issue_field_name]) &&
+        isset($search_results['solr_doc'][$page_number_field_name]) &&
+        count($search_results['solr_doc'][$page_number_field_name])) {
+      // Replace the result url with that of the parent issue and add the page
+      // number as a fragment.
+      $issue_pid = preg_replace('/info\:fedora\//', '', $search_results['solr_doc'][$parent_issue_field_name][0], 1);
+      $page_number = $search_results['solr_doc'][$page_number_field_name][0];
+
+      if (islandora_object_access(ISLANDORA_VIEW_OBJECTS, islandora_object_load($issue_pid))) {
+        $search_results['object_url'] = "islandora/object/$issue_pid";
+
+        // XXX: Won't handle fielded searches nicely... then again, if our
+        // highlighting field is not the one being search on, this makes sense?
+        if ($query_processor->solrDefType == 'dismax' || $query_processor->solrDefType == 'edismax') {
+          $search_results['object_url_fragment'] = "page/$page_number/mode/1up/search/" . rawurlencode($query_processor->solrQuery);
+        }
+      }
+    }
+  }
 }
 
 /**
