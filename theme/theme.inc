@@ -105,6 +105,9 @@ function islandora_newspaper_preprocess_islandora_newspaper_issue(array &$variab
   if ($viewer_id) {
     $variables['viewer_id'] = $viewer_id;
   }
+  else {
+    $variables['viewer_id'] = '';
+  }
 
   // Get viewer content.
   $params = array(
