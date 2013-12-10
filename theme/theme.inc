@@ -98,6 +98,19 @@ function islandora_newspaper_preprocess_islandora_newspaper_issue(array &$variab
   $object = $variables['object'];
   $pages = islandora_paged_content_get_pages($object);
   $variables['pages'] = array_keys($pages);
+  drupal_add_js('misc/form.js');
+  drupal_add_js('misc/collapse.js');
+
+  if (islandora_datastream_access(FEDORA_VIEW_OBJECTS, $object['DC'])) {
+    try {
+      $dc = $object['DC']->content;
+      $dc_object = DublinCore::importFromXMLString($dc);
+    }
+    catch (Exception $e) {
+      drupal_set_message(t('Error retrieving object %s %t', array('%s' => $object->id, '%t' => $e->getMessage())), 'error', FALSE);
+    }
+  }
+  $variables['dc_array'] = isset($dc_object) ? $dc_object->asArray() : array();
 }
 
 /**
