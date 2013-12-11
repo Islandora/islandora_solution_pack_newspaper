@@ -34,11 +34,24 @@ function islandora_newspaper_admin_settings_form(array $form, array &$form_state
           'ocr' => t('OCR datastreams (OCR, HOCR). <b>Requires</b> <i>Islandora OCR Module</i>'),
         ),
         '#default_value' => $get_default_value('islandora_newspaper_ingest_derivatives', drupal_map_assoc(
-                            array('pdf', 'image', 'ocr'))),
+                array('pdf', 'image', 'ocr'))),
       ),
     ),
   );
+
+  $form['islandora_newspaper_parent_issue_solr_field'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Parent Solr Field'),
+    '#description' => t("Solr field containing the parent issue's PID."),
+    '#default_value' => variable_get('islandora_newspaper_parent_issue_solr_field', 'RELS_EXT_isMemberOf_uri_ms'),
+    '#size' => 30,
+  );
+
   module_load_include('inc', 'islandora', 'includes/solution_packs');
+  $form += islandora_viewers_form('islandora_newspaper_issue_viewers', NULL, 'islandora:newspaperCModel');
+  $form['issue_viewers'] = $form['viewers'];
+  $form['issue_viewers']['#title'] = t('Issue Viewers');
+  unset($form['viewers']);
   $form += islandora_viewers_form('islandora_newspaper_page_viewers', 'image/jp2');
   $form['page_viewers'] = $form['viewers'];
   $form['page_viewers']['#title'] = t('Page Viewers');
