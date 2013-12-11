@@ -81,10 +81,8 @@ function islandora_newspaper_menu() {
       'type' => MENU_LOCAL_TASK,
       'page callback' => 'islandora_newspaper_issue_pages_menu',
       'page arguments' => array(2),
-      'access callback' => 'islandora_user_access',
-      'access arguments' => array(
-        2, array(ISLANDORA_VIEW_OBJECTS), array('islandora:newspaperIssueCModel'),
-      ),
+      'access callback' => 'islandora_newspaper_issue_page_access',
+      'access arguments' => array(2),
     ),
   );
 }
@@ -632,4 +630,23 @@ function islandora_newspaper_issue_pages_menu(AbstractObject $object) {
   module_load_include('inc', 'islandora_paged_content', 'includes/utilities');
   $pages = islandora_paged_content_get_pages($object);
   return theme('islandora_objects', array('objects' => array_keys($pages)));
+}
+
+/**
+ * Check weather the Page tab should be shown.
+ * 
+ * @param AbstractObject $object
+ *   Newspaper object.
+ * 
+ * @return bool
+ *   Reture true if Page tab should shown.
+ */
+function islandora_newspaper_issue_page_access(AbstractObject $object) {
+  module_load_include('inc', 'islandora', 'includes/solution_packs');
+  $access = islandora_user_access($object, array(ISLANDORA_VIEW_OBJECTS), array('islandora:newspaperIssueCModel'));
+  $viewer_id = islandora_get_viewer_id('islandora_newspaper_issue_viewers');
+  if ($viewer_id == 'none') {
+    $access = FALSE;
+  }
+  return $access;
 }
