@@ -65,6 +65,15 @@ function islandora_newspaper_menu() {
       'file' => 'includes/manage_pages.inc',
     ),
     'islandora/object/%islandora_object/manage/issue/ingest' => $ingest_page_menu_item,
+    'islandora/object/%islandora_object/manage/issue/ingest_zipped' => array(
+      'title' => 'Add Zipped Pages',
+      'page callback' => 'islandora_newspaper_ingest_zipped_pages',
+      'page arguments' => array(2),
+      'type' => MENU_LOCAL_ACTION,
+      'access callback' => 'islandora_object_access',
+      'access arguments' => array(ISLANDORA_INGEST, 2),
+      'file' => 'includes/manage_issue.inc',
+    ),
     'islandora/object/%islandora_object/manage/overview/newspaper_page_ingest' => $ingest_page_menu_item,
     'islandora/object/%islandora_object/manage/newspaper_page' => array(
       'title' => 'Page',
