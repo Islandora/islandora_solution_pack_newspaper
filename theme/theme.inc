@@ -95,9 +95,30 @@ function theme_islandora_newspaper(array $variables) {
  */
 function islandora_newspaper_preprocess_islandora_newspaper_issue(array &$variables) {
   module_load_include('inc', 'islandora_paged_content', 'includes/utilities');
+  module_load_include('inc', 'islandora', 'includes/solution_packs');
   $object = $variables['object'];
   $pages = islandora_paged_content_get_pages($object);
   $variables['pages'] = array_keys($pages);
+
+  // Get viewer id.
+  $viewer_id = islandora_get_viewer_id('islandora_newspaper_issue_viewers');
+  if ($viewer_id) {
+    $variables['viewer_id'] = $viewer_id;
+  }
+  else {
+    $variables['viewer_id'] = '';
+  }
+
+  // Get viewer content.
+  $params = array(
+    'object' => $object,
+    'pages' => $pages,
+    'page_progression' => islandora_paged_content_get_page_progression($object),
+  );
+  $viewer = islandora_get_viewer($params, 'islandora_newspaper_issue_viewers');
+  if ($viewer) {
+    $variables['viewer'] = $viewer;
+  }
 }
 
 /**
