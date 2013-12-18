@@ -68,19 +68,42 @@ function islandora_newspaper_get_issues(AbstractObject $object) {
   $query = <<<EOQ
 PREFIX islandora-rels-ext: <http://islandora.ca/ontology/relsext#>
 PREFIX fedora-rels-ext: <info:fedora/fedora-system:def/relations-external#>
-SELECT ?pid ?sequence ?label ?issued
+SELECT ?object ?sequence ?label ?issued
 FROM <#ri>
 WHERE {
-  ?pid fedora-rels-ext:isMemberOf <info:fedora/{$object->id}> ;
+  ?object fedora-rels-ext:isMemberOf <info:fedora/{$object->id}> ;
        <fedora-model:hasModel> <info:fedora/islandora:newspaperIssueCModel> ;
        <fedora-model:label> ?label .
-  ?pid islandora-rels-ext:isSequenceNumber ?sequence
+  ?object islandora-rels-ext:isSequenceNumber ?sequence
+EOQ;
+  // XXX: Can't really use the fully featured query_filter and query_statements
+  // hook as it will return some things we don't want. Perhaps change the return
+  // structure in the future to specify which module they are coming from? For
+  // now we will just get XACML's directly.
+  if (module_exists('islandora_xacml_api')) {
+    $query_statements = islandora_xacml_api_islandora_basic_collection_get_query_statements('view');
+    foreach ($query_statements as $query_statement) {
+      // Note the newline is for the readability of the query.
+      $query .= <<<EOQ
+
+      $query_statement
+EOQ;
+    }
+    $query_filters = islandora_xacml_api_islandora_basic_collection_get_query_filters();
+    $query .= <<<EOQ
+
+FILTER ($query_filters)
+
+EOQ;
+  }
+  $query .= <<<EOQ
   OPTIONAL {
-    ?pid islandora-rels-ext:dateIssued ?issued .
+    ?object islandora-rels-ext:dateIssued ?issued .
   }
 }
 ORDER BY ?sequence
 EOQ;
+
   $results = $object->repository->ri->sparqlQuery($query);
   // Map the results using a default Datetime for missing issued dates.
   $map_results = function($o) {
@@ -91,11 +114,11 @@ EOQ;
       // Use the current time as a place holder.
       $issued = new DateTime();
       $msg  = 'Failed to get issued date from SPARQL query for @pid';
-      $vars = array('@pid' => $o['pid']['value']);
+      $vars = array('@pid' => $o['object']['value']);
       watchdog_exception('islandora_newspaper', $e, $msg, $vars, WATCHDOG_ERROR);
     }
     return array(
-      'pid' => $o['pid']['value'],
+      'pid' => $o['object']['value'],
       'label' => $o['label']['value'],
       'sequence' => $o['sequence']['value'],
       'issued' => $issued,
