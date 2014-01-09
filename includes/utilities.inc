@@ -53,8 +53,8 @@ function islandora_newspaper_get_newspaper($object) {
  * The results are ordered by their RELS-EXT dateIssued property.
  * Older to newer.
  *
- * @param AbstractDatastream $object
- *   The datastream containing MODS.
+ * @param AbstractObject $object
+ *   An AbstractObject representing a Fedora object.
  *
  * @return array
  *   An associative array in the form of:

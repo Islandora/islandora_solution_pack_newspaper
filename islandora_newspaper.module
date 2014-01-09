@@ -672,7 +672,7 @@ function islandora_book_islandora_newspaperIssueCModel_islandora_xacml_editor_ch
   $pages_query = <<<EOQ
 SELECT ?object from <#ri> WHERE
 {
-  ?object <fedora-rels-ext:isMemberOf> <info:fedora/{$object->id}> ;
+  ?object <fedora-rels-ext:isMemberOf> <info:fedora/{$object->id}>
 }
 EOQ;
   return array(
@@ -680,6 +680,7 @@ EOQ;
       'type' => 'sparql',
       'query' => $pages_query,
       'description' => t('All pages of this issue (existing and new).'),
+      'recurse' => TRUE,
     ),
   );
 }
@@ -689,11 +690,9 @@ EOQ;
  */
 function islandora_book_islandora_newspaperCModel_islandora_xacml_editor_child_query(AbstractObject $object) {
   $issues_query = <<<EOQ
-SELECT ?object ?model from <#ri> WHERE
+SELECT ?object from <#ri> WHERE
 {
-  ?object <fedora-rels-ext:isMemberOf> <info:fedora/{$object->id}> ;
-          <fedora-model:hasModel> ?model
-  FILTER(!regex(str(?model), "fedora-system:FedoraObject-3.0"))
+  ?object <fedora-rels-ext:isMemberOf> <info:fedora/{$object->id}>
 }
 EOQ;
   return array(
@@ -701,7 +700,7 @@ EOQ;
       'type' => 'sparql',
       'query' => $issues_query,
       'description' => t('All newspaper issues and their pages (existing and new).'),
-      'walk' => array(),
+      'recurse' => TRUE,
     ),
   );
 }
