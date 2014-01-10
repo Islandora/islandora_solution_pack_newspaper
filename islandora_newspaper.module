@@ -648,10 +648,10 @@ function islandora_newspaper_issue_pages_menu(AbstractObject $object) {
 
 /**
  * Check weather the Page tab should be shown.
- * 
+ *
  * @param AbstractObject $object
  *   Newspaper object.
- * 
+ *
  * @return bool
  *   Reture true if Page tab should shown.
  */
@@ -663,4 +663,44 @@ function islandora_newspaper_issue_page_access(AbstractObject $object) {
     $access = FALSE;
   }
   return $access;
+}
+
+/**
+ * Implements hook_islandora_xacml_editor_child_query().
+ */
+function islandora_book_islandora_newspaperIssueCModel_islandora_xacml_editor_child_query(AbstractObject $object) {
+  $pages_query = <<<EOQ
+SELECT ?object from <#ri> WHERE
+{
+  ?object <fedora-rels-ext:isMemberOf> <info:fedora/{$object->id}>
+}
+EOQ;
+  return array(
+    'newspaper_pages' => array(
+      'type' => 'sparql',
+      'query' => $pages_query,
+      'description' => t('All pages of this issue (existing and new).'),
+      'recurse' => TRUE,
+    ),
+  );
+}
+
+/**
+ * Implements hook_islandora_xacml_editor_child_query().
+ */
+function islandora_book_islandora_newspaperCModel_islandora_xacml_editor_child_query(AbstractObject $object) {
+  $issues_query = <<<EOQ
+SELECT ?object from <#ri> WHERE
+{
+  ?object <fedora-rels-ext:isMemberOf> <info:fedora/{$object->id}>
+}
+EOQ;
+  return array(
+    'newspaper_issues' => array(
+      'type' => 'sparql',
+      'query' => $issues_query,
+      'description' => t('All newspaper issues and their pages (existing and new).'),
+      'recurse' => TRUE,
+    ),
+  );
 }
