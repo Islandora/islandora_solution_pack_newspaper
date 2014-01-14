@@ -259,6 +259,7 @@ function islandora_newspaper_preprocess_islandora_newspaper_page_controls(array 
 function islandora_newspaper_preprocess_islandora_newspaper_page(array &$variables) {
   module_load_include('inc', 'islandora', 'includes/datastream');
   module_load_include('inc', 'islandora', 'includes/utilities');
+  module_load_include('inc', 'islandora', 'includes/solution_packs');
   $object = $variables['object'];
 
   $params = array();
@@ -274,7 +275,6 @@ function islandora_newspaper_preprocess_islandora_newspaper_page(array &$variabl
       ));
 
     // Display newspaper.
-    module_load_include('inc', 'islandora', 'includes/solution_packs');
     $params['jp2_url'] = $jp2_url;
   }
   $viewer = islandora_get_viewer($params, 'islandora_newspaper_page_viewers', $object);
