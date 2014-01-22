@@ -668,7 +668,7 @@ function islandora_newspaper_issue_page_access(AbstractObject $object) {
 /**
  * Implements hook_islandora_xacml_editor_child_query().
  */
-function islandora_book_islandora_newspaperIssueCModel_islandora_xacml_editor_child_query(AbstractObject $object) {
+function islandora_newspaper_islandora_newspaperIssueCModel_islandora_xacml_editor_child_query(AbstractObject $object) {
   $pages_query = <<<EOQ
 SELECT ?object from <#ri> WHERE
 {
@@ -688,7 +688,7 @@ EOQ;
 /**
  * Implements hook_islandora_xacml_editor_child_query().
  */
-function islandora_book_islandora_newspaperCModel_islandora_xacml_editor_child_query(AbstractObject $object) {
+function islandora_newspaper_islandora_newspaperCModel_islandora_xacml_editor_child_query(AbstractObject $object) {
   $issues_query = <<<EOQ
 SELECT ?object from <#ri> WHERE
 {
