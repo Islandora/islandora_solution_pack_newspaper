@@ -70,10 +70,10 @@ function theme_islandora_newspaper(array $variables) {
             '#prefix' => '<div>',
             '#suffix' => '</div>',
             '#text' => t("@month @day, @year", array(
-                '@year' => $year,
-                '@month' => $month_name,
-                '@day' => $day,
-                )),
+              '@year' => $year,
+              '@month' => $month_name,
+              '@day' => $day,
+            )),
             '#path' => "islandora/object/{$issue['pid']}",
             '#options' => array(
               'attributes' => array(),
@@ -183,9 +183,9 @@ function theme_islandora_newspaper_page_select(array $variables) {
   $variables['#value'] = $object->id;
   $prefix = '<strong>' . t('Image') . ':</strong> ';
   return $prefix . t('!page_selector of @total', array(
-      '!page_selector' => theme('select', array('element' => $variables)),
-      '@total' => count($pages),
-    ));
+        '!page_selector' => theme('select', array('element' => $variables)),
+        '@total' => count($pages),
+  ));
 }
 
 /**
@@ -268,18 +268,18 @@ function islandora_newspaper_preprocess_islandora_newspaper_page(array &$variabl
     // Always use token authentication in case there is a global policy.
     module_load_include('inc', 'islandora', 'includes/authtokens');
     $token = islandora_get_object_token($object->id, 'JP2', 2);
-    $jp2_url = url("islandora/object/{$object->id}/datastream/JP2/view",
-      array(
-        'absolute' => TRUE,
-        'query' => array('token' => $token),
-      ));
+    $jp2_url = url("islandora/object/{$object->id}/datastream/JP2/view", array(
+      'absolute' => TRUE,
+      'query' => array('token' => $token),
+    ));
 
     // Display newspaper.
     $params['jp2_url'] = $jp2_url;
+    $viewer = islandora_get_viewer($params, 'islandora_newspaper_page_viewers', $object);
   }
-  $viewer = islandora_get_viewer($params, 'islandora_newspaper_page_viewers', $object);
+
   $variables['content'] = '';
-  if ($viewer) {
+  if (isset($viewer)) {
     $variables['content'] = $viewer;
   }
   // If no viewer is configured just show the jpeg.
