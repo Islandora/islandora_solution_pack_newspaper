@@ -49,7 +49,7 @@ function islandora_newspaper_delete_newspaper_batch(AbstractObject $object) {
     ),
     'title' => t('Deleting newspaper object and all its children'),
     'init_message' => t('Preparing to delete newspaper object and all its children...'),
-    'progress_message' => t('Time elapsed: @elapsed <br/>Estimated time remaning @estimate.'),
+    'progress_message' => t('Time elapsed: @elapsed <br/>Estimated time remaining @estimate.'),
     'error_message' => t('An error has occurred.'),
     'file' => drupal_get_path('module', 'islandora_newspaper') . '/includes/batch.inc',
   );
@@ -71,7 +71,7 @@ function islandora_newspaper_delete_newspaper_object_batch($pid) {
     ),
     'title' => t('Deleting newspaper object'),
     'init_message' => t('Preparing to delete newspaper object...'),
-    'progress_message' => t('Time elapsed: @elapsed <br/>Estimated time remaning @estimate.'),
+    'progress_message' => t('Time elapsed: @elapsed <br/>Estimated time remaining @estimate.'),
     'error_message' => t('An error has occurred.'),
     'file' => drupal_get_path('module', 'islandora_newspaper') . '/includes/batch.inc',
   );
