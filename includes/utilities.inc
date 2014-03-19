@@ -75,34 +75,28 @@ WHERE {
        <fedora-model:hasModel> <info:fedora/islandora:newspaperIssueCModel> ;
        <fedora-model:label> ?label .
   ?object islandora-rels-ext:isSequenceNumber ?sequence
+  !optionals
+  !filters
+}
+ORDER BY ?sequence
 EOQ;
+
   // XXX: Can't really use the fully featured query_filter and query_statements
   // hook as it will return some things we don't want. Perhaps change the return
   // structure in the future to specify which module they are coming from? For
   // now we will just get XACML's directly.
-  if (module_exists('islandora_xacml_api')) {
-    $query_statements = islandora_xacml_api_islandora_basic_collection_get_query_statements('view');
-    foreach ($query_statements as $query_statement) {
-      // Note the newline is for the readability of the query.
-      $query .= <<<EOQ
+  $query_optionals = (array) module_invoke('islandora_xacml_api', 'islandora_basic_collection_get_query_optionals', 'view');
+  $query_optionals[] = '?object islandora-rels-ext:dateIssued ?issued';
+  $query_filters = (array) module_invoke('islandora_xacml_api', 'islandora_basic_collection_get_query_filters');
 
-      $query_statement
-EOQ;
-    }
-    $query_filters = islandora_xacml_api_islandora_basic_collection_get_query_filters();
-    $query .= <<<EOQ
+  $filter_map = function ($filter) {
+    return "FILTER($filter)";
+  };
 
-FILTER ($query_filters)
-
-EOQ;
-  }
-  $query .= <<<EOQ
-  OPTIONAL {
-    ?object islandora-rels-ext:dateIssued ?issued .
-  }
-}
-ORDER BY ?sequence
-EOQ;
+  $query = format_string($query, array(
+    '!optionals' => !empty($query_optionals) ? ('OPTIONAL {{' . implode('} UNION {', $query_optionals) . '}}') : '',
+    '!filters' => implode(' ', array_map($filter_map, $query_filters)),
+  ));
 
   $results = $object->repository->ri->sparqlQuery($query);
   // Map the results using a default Datetime for missing issued dates.
