@@ -39,12 +39,17 @@ function islandora_newspaper_get_current_sequence($object) {
  * @param object $object
  *   Newspaper issue object
  *
- * @return string
- *   Returns the PID of the collection of which $object is a member of.
+ * @return string|bool
+ *   Returns the PID of the newspaper of which $object is a member. If there is
+ *   no such membership, returns FALSE.
  */
 function islandora_newspaper_get_newspaper($object) {
   $rels = $object->relationships->get(FEDORA_RELS_EXT_URI, 'isMemberOf');
-  return $rels[0]['object']['value'];
+  $rel = reset($rels);
+  if ($rel) {
+    return $rel['object']['value'];
+  }
+  return FALSE;
 }
 
 /**
