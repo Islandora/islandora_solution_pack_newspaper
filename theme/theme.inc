@@ -127,7 +127,7 @@ function islandora_newspaper_preprocess_islandora_newspaper_issue(array &$variab
 function theme_islandora_newspaper_issue_navigator(array $variables) {
   $object = $variables['object'];
   $newspaper = islandora_newspaper_get_newspaper($object);
-  $newspaper = islandora_object_load($newspaper);
+  $newspaper = $newspaper ? islandora_object_load($newspaper) : FALSE;
   $issues = $newspaper ? islandora_newspaper_get_issues($newspaper) : array();
   $issues = array_keys($issues);
   if (empty($issues)) {
