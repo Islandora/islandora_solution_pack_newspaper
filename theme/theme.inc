@@ -128,8 +128,11 @@ function theme_islandora_newspaper_issue_navigator(array $variables) {
   $object = $variables['object'];
   $newspaper = islandora_newspaper_get_newspaper($object);
   $newspaper = islandora_object_load($newspaper);
-  $issues = islandora_newspaper_get_issues($newspaper);
+  $issues = $newspaper ? islandora_newspaper_get_issues($newspaper) : array();
   $issues = array_keys($issues);
+  if (empty($issues)) {
+    $issues[] = $object->id;
+  }
   $index = array_search($object->id, $issues);
   $previous_issue = isset($issues[$index - 1]) ? $issues[$index - 1] : NULL;
   $next_issue = isset($issues[$index + 1]) ? $issues[$index + 1] : NULL;
@@ -154,10 +157,12 @@ function theme_islandora_newspaper_issue_navigator(array $variables) {
       'href' => url("islandora/object/{$next_issue}", array('absolute' => TRUE)),
     );
   }
-  $links[] = array(
-    'title' => t('All Issues'),
-    'href' => url("islandora/object/{$newspaper->id}", array('absolute' => TRUE)),
-  );
+  if ($newspaper) {
+    $links[] = array(
+      'title' => t('All Issues'),
+      'href' => url("islandora/object/{$newspaper->id}", array('absolute' => TRUE)),
+    );
+  }
   $attributes = array('class' => array('links', 'inline'));
   return theme('links', array('links' => $links, 'attributes' => $attributes));
 }
