@@ -11,12 +11,17 @@
  * @param object $object
  *   Newspaper page object
  *
- * @return string
- *   Returns the PID of the issue object of which $object is a page of.
+ * @return string|bool
+ *   Returns the PID of the issue object of which $object is a page of. If
+ *   there is no such membership, returns FALSE.
  */
 function islandora_newspaper_get_issue($object) {
   $rels = $object->relationships->get(ISLANDORA_RELS_EXT_URI, 'isPageOf');
-  return $rels[0]['object']['value'];
+  $rel = reset($rels);
+  if ($rel) {
+    return $rel['object']['value'];
+  }
+  return FALSE;
 }
 
 /**
@@ -25,12 +30,17 @@ function islandora_newspaper_get_issue($object) {
  * @param object $object
  *   Newspaper page object
  *
- * @return string
- *   Returns the sequence number of a page in an issue.
+ * @return string|bool
+ *   Returns the sequence number of a page in an issue. If there is no such
+ *   membership, returns FALSE.
  */
 function islandora_newspaper_get_current_sequence($object) {
   $rels = $object->relationships->get(ISLANDORA_RELS_EXT_URI, 'isSequenceNumber');
-  return $rels[0]['object']['value'];
+  $rel = reset($rels);
+  if ($rel) {
+    return $rel['object']['value'];
+  }
+  return FALSE;
 }
 
 /**
