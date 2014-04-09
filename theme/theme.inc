@@ -176,21 +176,26 @@ function theme_islandora_newspaper_page_select(array $variables) {
   drupal_add_js($path . '/js/islandora_newspaper.js');
   $object = $variables['object'];
   $results = $object->relationships->get(ISLANDORA_RELS_EXT_URI, 'isPageOf');
-  $parent = islandora_object_load($results[0]['object']['value']);
-  $pages = islandora_paged_content_get_pages($parent);
+  $result = reset($results);
+  $parent = $result ? islandora_object_load($result['object']['value']) : FALSE;
+  $pages = $parent ? islandora_paged_content_get_pages($parent) : FALSE;
+  if (!$pages) {
+    return;
+  }
+
   $variables = array(
     '#options' => array(),
     '#attributes' => array('class' => array('page-select')),
+    '#value' => $object->id,
   );
   foreach ($pages as $pid => $page) {
     $variables['#options'][$pid] = $page['page'];
   }
-  $variables['#value'] = $object->id;
   $prefix = '<strong>' . t('Image') . ':</strong> ';
   return $prefix . t('!page_selector of @total', array(
-      '!page_selector' => theme('select', array('element' => $variables)),
-      '@total' => count($pages),
-    ));
+    '!page_selector' => theme('select', array('element' => $variables)),
+    '@total' => count($pages),
+  ));
 }
 
 /**
@@ -204,12 +209,15 @@ function islandora_newspaper_preprocess_islandora_newspaper_page_controls(array 
   $download_prefix = '<strong>' . t('Download:') . ' </strong>';
   $object = $variables['object'];
   $issue = islandora_newspaper_get_issue($object);
-  $issue = islandora_object_load($issue);
+  $issue = $issue ? islandora_object_load($issue) : FALSE;
   $controls = array(
     'page_select' => theme('islandora_newspaper_page_select', array('object' => $object)),
     'page_pager' => theme('islandora_paged_content_page_navigator', array('object' => $object)),
-    'issue_pager' => theme('islandora_newspaper_issue_navigator', array('object' => $issue)),
+    'issue_pager' => ($issue ?
+      theme('islandora_newspaper_issue_navigator', array('object' => $issue)) :
+      ''),
   );
+
   // Text view.
   if (isset($object['OCR']) && islandora_datastream_access(ISLANDORA_VIEW_OBJECTS, $object['OCR'])) {
     $url = islandora_datastream_get_url($object['OCR'], 'view');
