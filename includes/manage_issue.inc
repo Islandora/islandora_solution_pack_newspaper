@@ -32,7 +32,7 @@ function islandora_newspaper_ingest_page(AbstractObject $issue) {
   return drupal_get_form('islandora_ingest_form', array(
       'models' => array('islandora:newspaperPageCModel'),
       'issue' => $issue,
-      'object' => $page,
+      'objects' => array($page),
       'parent' => $issue->id,
     ));
 }
