@@ -5,6 +5,7 @@ name="issue" xsi:schemaLocation="http://www.islandora.ca http://www.islandora.ca
     <type>image/jpg</type>
     <type>image/jpeg</type>
     <type>application/xml</type>
+    <type>application/rdf+xml</type>
   </mimetypes>
   <ingest_rules></ingest_rules>
   <datastreams>
