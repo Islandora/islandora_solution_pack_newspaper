@@ -32,9 +32,9 @@ function islandora_newspaper_menu() {
     'file' => 'includes/manage_issue.inc',
   );
   return array(
-    'admin/islandora/newspaper' => array(
-      'title' => 'Newspaper Collection',
-      'description' => 'Configure the Newspaper Solution Pack.',
+    'admin/islandora/solution_pack_config/newspaper' => array(
+      'title' => 'Newspapers',
+      'description' => 'Select viewers and configure ingest behavior.',
       'page callback' => 'drupal_get_form',
       'access arguments' => array('administer site configuration'),
       'page arguments' => array('islandora_newspaper_admin_settings_form'),
