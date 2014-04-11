@@ -48,7 +48,7 @@ function islandora_newspaper_ingest_issue(AbstractObject $newspaper) {
   drupal_set_title(t('Add issue to @newspaper', array('@newspaper' => $newspaper->label)));
   return drupal_get_form('islandora_ingest_form', array(
       'models' => array('islandora:newspaperIssueCModel'),
-      'object' => $issue,
+      'objects' => array($issue),
       'parent' => $newspaper->id,
     ));
 }
