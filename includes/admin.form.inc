@@ -23,8 +23,8 @@ function islandora_newspaper_admin_settings_form(array $form, array &$form_state
   $form = array(
     'local_derivative_settings' => array(
       '#type' => 'fieldset',
-      '#title' => t('Create Page Derivatives Locally'),
-      '#description' => t('These options allow you to create derivatives automatically when ingesting pages, using this server. If you intend to only use microservices to generate derivatives, you should not have any of these settings enabled.'),
+      '#title' => t('Create Page/Issue Derivatives Locally'),
+      '#description' => t('These options allow you to create derivatives automatically when ingesting pages or issues, using this server. If you intend to only use microservices to generate derivatives, you should not have any of these settings enabled.'),
       'islandora_newspaper_ingest_derivatives' => array(
         '#type' => 'checkboxes',
         '#element_validate' => array('islandora_newspaper_admin_settings_form_ingest_derivatives_validate'),
