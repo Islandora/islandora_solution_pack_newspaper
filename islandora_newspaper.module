@@ -446,29 +446,10 @@ function islandora_newspaper_process_islandora_object_print(array &$variables) {
 
 /**
  * Implements hook_islandora_derivative().
- *
- * XXX: Should add in ability to regenerate PDFs as well. As in book.
  */
 function islandora_newspaper_islandora_newspaperissuecmodel_islandora_derivative() {
-  $pc_mod_path = drupal_get_path('module', 'islandora_paged_content');
-
-  $derivatives = array();
-
   module_load_include('inc', 'islandora_paged_content', 'includes/utilities');
-  $derive = islandora_paged_content_get_enabled_ingest_derivatives('islandora_newspaper');
-
-  if ($derive['image']) {
-    $derivatives[] = array(
-      'source_dsid' => NULL,
-      'destination_dsid' => 'TN',
-      'function' => array(
-        'islandora_paged_content_derive_thumbnail_of_parent',
-      ),
-      'file' => "$pc_mod_path/includes/derivatives.inc",
-    );
-  }
-
-  return $derivatives;
+  return islandora_paged_content_paged_object_derivatives('islandora_newspaper');
 }
 
 /**
