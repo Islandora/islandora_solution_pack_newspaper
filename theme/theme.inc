@@ -240,20 +240,10 @@ function islandora_newspaper_preprocess_islandora_newspaper_page_controls(array 
     $attributes = array('attributes' => array('title' => t('Download JP2')));
     $controls['jp2_download'] = $download_prefix . l($text, $url, $attributes);
 
-    // JP2 Clip.
-    $jp2_ds = $object['JP2'];
-    $module_path = drupal_get_path('module', 'islandora_newspaper');
-    $path = "$module_path/images/clip_icon.png";
-    $image = theme('image', array('path' => $path, 'attributes' => array()));
-    $url = "islandora/object/{$object->id}/print";
-    $attributes = array(
-      'attributes' => array(
-        'title' => t('Clip Image'),
-        'id' => 'clip',
-      ),
-      'html' => TRUE,
+    $controls['clip'] = theme(
+      'islandora_openseadragon_clipper',
+      array('pid' => $object->id)
     );
-    $controls['clip'] = l($image, $url, $attributes);
   }
   // TIFF download.
   if (isset($object['OBJ']) && islandora_datastream_access(ISLANDORA_VIEW_OBJECTS, $object['OBJ'])) {
