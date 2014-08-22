@@ -1,7 +1,7 @@
 <content_model xmlns="http://www.islandora.ca" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 name="issue" xsi:schemaLocation="http://www.islandora.ca http://www.islandora.ca/islandoracm.xsd">
   <mimetypes>
-    <type>text/xml</type>
+    <type>application/xml</type>
     <type>image/jpg</type>
     <type>image/jpeg</type>
     <type>application/xml</type>
