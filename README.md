@@ -1,5 +1,9 @@
 # Newspaper Solution Pack [![Build Status](https://travis-ci.org/Islandora/islandora_solution_pack_newspaper.png?branch=7.x)](https://travis-ci.org/Islandora/islandora_solution_pack_newspaper)
 
+## Introduction
+
+This module packages functions for ingesting and displaying newspaper content.
+
 ## Requirements
 
 This module requires the following modules/libraries:
