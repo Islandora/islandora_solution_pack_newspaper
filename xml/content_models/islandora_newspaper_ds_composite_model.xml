@@ -1,3 +1,4 @@
+<?xml version="1.0"?>
 <dsCompositeModel xmlns="info:fedora/fedora-system:def/dsCompositeModel#">
   <dsTypeModel ID="DC">
     <form FORMAT_URI="http://www.openarchives.org/OAI/2.0/oai_dc/" MIME="text/xml"/>
@@ -6,16 +7,17 @@
     <form FORMAT_URI="info:fedora/fedora-system:FedoraRELSExt-1.0" MIME="application/rdf+xml"/>
   </dsTypeModel>
   <dsTypeModel ID="RELS-INT" optional="true">
-    <form FORMAT_URI="info:fedora/fedora-system:FedoraRELSInt-1.0" MIME="application/rdf+xml" />
+    <form FORMAT_URI="info:fedora/fedora-system:FedoraRELSInt-1.0" MIME="application/rdf+xml"/>
   </dsTypeModel>
   <dsTypeModel ID="MODS">
     <!-- This datastream holds the descriptive metadata  -->
-    <form MIME="text/xml" />
+    <form MIME="text/xml"/>
   </dsTypeModel>
   <dsTypeModel ID="TN">
     <!-- this datastream holds a thumbnail version of the page image - from convert -->
-    <form MIME="image/jpg" />
-    <form MIME="image/jpeg" />
-    <form MIME="image/png" />
-  </dsTypeModel>                    
+    <form MIME="image/jpg"/>
+    <form MIME="image/jpeg"/>
+    <form MIME="image/png"/>
+    <form MIME="image/gif"/>
+  </dsTypeModel>
 </dsCompositeModel>
