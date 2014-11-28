@@ -17,6 +17,8 @@
  * - $islandora_content: A rendered image. By default this is the JPG datastream
  *   which is a medium sized image. Alternatively this could be a rendered
  *   viewer which displays the JP2 datastream image.
+ * - $description: Defined metadata descripton for the object.
+ * - $metadata: Rendered metadata display for the binary object.
  *
  * @see template_preprocess_islandora_large_image()
  * @see theme_islandora_large_image()
@@ -34,5 +36,9 @@
         <?php print $content; ?>
       </div>
     <?php endif; ?>
+  </div>
+  <div class="islandora-newspaper-page-metadata">
+    <?php print $description; ?>
+    <?php print $metadata; ?>
   </div>
 </div>

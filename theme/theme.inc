@@ -271,6 +271,7 @@ function islandora_newspaper_preprocess_islandora_newspaper_page(array &$variabl
   module_load_include('inc', 'islandora', 'includes/datastream');
   module_load_include('inc', 'islandora', 'includes/utilities');
   module_load_include('inc', 'islandora', 'includes/solution_packs');
+  module_load_include('inc', 'islandora', 'includes/metadata');
   $object = $variables['object'];
 
   $params = array();
@@ -304,4 +305,7 @@ function islandora_newspaper_preprocess_islandora_newspaper_page(array &$variabl
   else {
     $variables['content'] = NULL;
   }
+
+  $variables['metadata'] = islandora_retrieve_metadata_markup($object);
+  $variables['description'] = islandora_retrieve_description_markup($object);
 }

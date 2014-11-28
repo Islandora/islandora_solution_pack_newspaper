@@ -6,10 +6,10 @@
  *
  * Available variables:
  * - $islandora_content: A rendered vertical tabbed newspapper issue browser.
- * - $description:
  * - $parent_collections: An array containing parent collection(s) info.
  *   Includes collection object, label, url and rendered link.
- * - $metadata:
+ * - $description: Defined metadata descripton for the object.
+ * - $metadata: Rendered metadata display for the binary object.
  *
  * @see template_preprocess_islandora_newspaper()
  */
