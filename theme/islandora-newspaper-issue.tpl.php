@@ -15,4 +15,8 @@
   <?php else: ?>
     <?php print theme('islandora_objects', array('objects' => $pages)); ?>
   <?php endif; ?>
+  <div class="islandora-newspaper-issue-metadata">
+    <?php print $description; ?>
+    <?php print $metadata; ?>
+  </div>
 </div>
