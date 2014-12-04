@@ -15,7 +15,6 @@
   </dsTypeModel>
   <dsTypeModel ID="TN">
     <!-- this datastream holds a thumbnail version of the page image - from convert -->
-    <form MIME="image/jpg"/>
     <form MIME="image/jpeg"/>
     <form MIME="image/png"/>
     <form MIME="image/gif"/>
