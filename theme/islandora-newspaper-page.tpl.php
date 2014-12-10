@@ -6,22 +6,16 @@
  * This is the template file for the object page for newspaper
  *
  * Available variables:
- * - $islandora_object: The Islandora object rendered in this template file
- * - $islandora_dublin_core: The DC datastream object
- * - $dc_array: The DC datastream object values as a sanitized array. This
- *   includes label, value and class name.
- * - $islandora_object_label: The sanitized object label.
- * - $parent_collections: An array containing parent collection(s) info.
- *   Includes collection object, label, url and rendered link.
- * - $islandora_thumbnail_img: A rendered thumbnail image.
+ * - $object: The Islandora object rendered in this template file
  * - $islandora_content: A rendered image. By default this is the JPG datastream
  *   which is a medium sized image. Alternatively this could be a rendered
  *   viewer which displays the JP2 datastream image.
+ * - $description: Rendered metadata descripton for the object.
+ * - $metadata: Rendered metadata display for the binary object.
  *
- * @see template_preprocess_islandora_large_image()
- * @see theme_islandora_large_image()
+ * @see template_preprocess_islandora_newspaper_page()
+ * @see theme_islandora_newspaper_page()
  *
- * @TODO: review documentation about file and variables
  */
 ?>
 <div class="islandora-newspaper-object">
@@ -34,5 +28,9 @@
         <?php print $content; ?>
       </div>
     <?php endif; ?>
+  </div>
+  <div class="islandora-newspaper-page-metadata">
+    <?php print $description; ?>
+    <?php print $metadata; ?>
   </div>
 </div>
