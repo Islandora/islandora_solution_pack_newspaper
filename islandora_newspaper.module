@@ -292,7 +292,7 @@ function islandora_newspaper_islandora_newspaperpagecmodel_islandora_view_object
 }
 
 /**
- * Implements hook_islandora_ingest_steps().
+ * Implements hook_CMODEL_PID_islandora_ingest_steps().
  */
 function islandora_newspaper_islandora_newspaperpagecmodel_islandora_ingest_steps(array $form_state) {
   $shared_storage = islandora_ingest_form_get_shared_storage($form_state);
@@ -306,6 +306,25 @@ function islandora_newspaper_islandora_newspaperpagecmodel_islandora_ingest_step
       'file' => 'includes/upload_page.form.inc',
     ),
   );
+}
+
+/**
+ * Implements hook_CMODEL_PID_islandora_ingest_steps().
+ */
+function islandora_book_islandora_newspaperIssueCModel_islandora_ingest_steps(array $form_state) {
+  module_load_include('inc', 'islandora_paged_content', 'includes/utilities');
+  if (islandora_paged_content_can_extract_from_pdf()) {
+    return array(
+      'islandora_book_upload_pdf' => array(
+        'weight' => 10,
+        'type' => 'form',
+        'form_id' => 'islandora_paged_content_upload_pdf_form',
+        'args' => array('islandora:newspaperPageCModel'),
+        'module' => 'islandora_paged_content',
+        'file' => 'includes/upload_pdf.form.inc',
+      ),
+    );
+  }
 }
 
 /**

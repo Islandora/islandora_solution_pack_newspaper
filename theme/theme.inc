@@ -107,7 +107,7 @@ function islandora_newspaper_preprocess_islandora_newspaper_issue(array &$variab
 
   // Get viewer id.
   $viewer_id = islandora_get_viewer_id('islandora_newspaper_issue_viewers');
-  if ($viewer_id) {
+  if ($viewer_id && $viewer_id != 'none') {
     $variables['viewer_id'] = $viewer_id;
   }
   else {
