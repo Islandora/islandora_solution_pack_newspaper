@@ -630,3 +630,12 @@ function islandora_newspaper_islandora_view_print_object($object) {
     ));
   }
 }
+
+/**
+ * Implements hook_islandora_paged_content_content_model_registry().
+ */
+function islandora_newspaper_islandora_paged_content_content_model_registry() {
+  return array(
+    'islandora:newspaperIssueCModel',
+  );
+}
