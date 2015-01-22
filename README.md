@@ -23,7 +23,7 @@ Install as usual, see [this](https://drupal.org/documentation/install/modules-th
 
 Select configuration options for page derivatives, Parent Solr Field, and select a viewer for the book object and page objects in in Administration » Islandora » Newpaper Collection (admin/islandora/newspaper).
 
-![Configuration](http://i.imgur.com/VvKjdyF.png)
+![Configuration](https://camo.githubusercontent.com/00b3d34d5927b733689ce0d1598a79c832082937/687474703a2f2f692e696d6775722e636f6d2f56764b6a6479462e706e67)
 
 ## Troubleshooting/Issues
 
