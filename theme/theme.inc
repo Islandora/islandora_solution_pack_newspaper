@@ -8,9 +8,15 @@
 require_once dirname(__FILE__) . '/../includes/utilities.inc';
 
 /**
- * Implements hook_preprocess().
+ * Prepares variables for islandora_newspaper templates.
+ *
+ * Default template: islandora-newspaper.tpl.php.
+ *
+ * @param array $variables
+ *   An associative array containing:
+ *   - object: An AbstractObject for which to generate the display.
  */
-function islandora_newspaper_preprocess_islandora_newspaper(array &$variables) {
+function template_preprocess_islandora_newspaper(array &$variables) {
   module_load_include('inc', 'islandora', 'includes/metadata');
   drupal_add_js('misc/collapse.js');
   $object = $variables['object'];
@@ -88,16 +94,38 @@ function islandora_newspaper_preprocess_islandora_newspaper(array &$variables) {
     ksort($tabs[$year]);
   }
   ksort($tabs);
-  $variables['islandora_content'] = drupal_render($output);
+
+  $variables['islandora_content_render_array'] = $output;
   $variables['parent_collections'] = islandora_get_parents_from_rels_ext($object);
   $variables['metadata'] = islandora_retrieve_metadata_markup($object);
   $variables['description'] = islandora_retrieve_description_markup($object);
 }
 
 /**
- * Implements hook_preprocess().
+ * Process variables for islandora_newspaper_issue templates.
+ *
+ * Default template: islandora-newspaper-issue.tpl.php.
+ *
+ * @param array $variables
+ *   An associative array containing:
+ *   - object: An AbstractObject for which to generate the display.
+ *   - islandora_content_render_array: A renderable array of content to jamb
+ *     in.
  */
-function islandora_newspaper_preprocess_islandora_newspaper_issue(array &$variables) {
+function template_process_islandora_newspaper(array &$variables) {
+  $variables['islandora_content'] = drupal_render($variables['islandora_content_render_array']);
+}
+
+/**
+ * Prepares variables for islandora_newspaper_issue templates.
+ *
+ * Default template: islandora-newspaper-issue.tpl.php.
+ *
+ * @param array $variables
+ *   An associative array containing:
+ *   - object: An AbstractObject for which to generate the display.
+ */
+function template_preprocess_islandora_newspaper_issue(array &$variables) {
   module_load_include('inc', 'islandora_paged_content', 'includes/utilities');
   module_load_include('inc', 'islandora', 'includes/solution_packs');
   module_load_include('inc', 'islandora', 'includes/metadata');
@@ -106,27 +134,41 @@ function islandora_newspaper_preprocess_islandora_newspaper_issue(array &$variab
   $variables['pages'] = array_keys($pages);
 
   // Get viewer id.
-  $viewer_id = islandora_get_viewer_id('islandora_newspaper_issue_viewers');
-  if ($viewer_id && $viewer_id != 'none') {
-    $variables['viewer_id'] = $viewer_id;
-  }
-  else {
-    $variables['viewer_id'] = FALSE;
-  }
+  $variables['viewer_id'] = islandora_get_viewer_id('islandora_newspaper_issue_viewers');
 
   // Get viewer content.
-  $params = array(
+  $variables['viewer_params'] = array(
     'object' => $object,
     'pages' => $pages,
     'page_progression' => islandora_paged_content_get_page_progression($object),
   );
-  $viewer = islandora_get_viewer($params, 'islandora_newspaper_issue_viewers');
-  if ($viewer) {
-    $variables['viewer'] = $viewer;
-  }
 
   $variables['metadata'] = islandora_retrieve_metadata_markup($object);
   $variables['description'] = islandora_retrieve_description_markup($object);
+}
+
+/**
+ * Process variables for islandora_newspaper_issue templates.
+ *
+ * Default template: islandora-newspaper-issue.tpl.php.
+ *
+ * @param array $variables
+ *   An associative array containing:
+ *   - object: An AbstractObject for which to generate the display.
+ *   - viewer_id: The "ID" of the viewer to use.
+ *   - viewer_params: An (associative) array of parameters to pass to the
+ *     viewer.
+ */
+function template_process_islandora_newspaper_issue(array &$variables) {
+  if ($variables['viewer_id'] && $variables['viewer_id'] != 'none') {
+    $viewer_callback = islandora_get_viewer_callback($variables['viewer_id']);
+    if (function_exists($viewer_callback)) {
+      $viewer = $viewer_callback($variables['viewer_params'], $variables['object']);
+      if ($viewer) {
+        $variables['viewer'] = $viewer;
+      }
+    }
+  }
 }
 
 /**
@@ -209,7 +251,7 @@ function theme_islandora_newspaper_page_select(array $variables) {
 /**
  * Theme a newspaper pages controls.
  */
-function islandora_newspaper_preprocess_islandora_newspaper_page_controls(array &$variables) {
+function template_preprocess_islandora_newspaper_page_controls(array &$variables) {
   module_load_include('inc', 'islandora', 'includes/datastream');
   module_load_include('inc', 'islandora', 'includes/utilities');
   global $base_url;
@@ -265,9 +307,15 @@ function islandora_newspaper_preprocess_islandora_newspaper_page_controls(array 
 }
 
 /**
- * Implements hook_preprocess().
+ * Prepares variables for islandora_newspaper_page templates.
+ *
+ * Default template: islandora-newspaper-page.tpl.php.
+ *
+ * @param array $variables
+ *   An associative array containing:
+ *   - object: An AbstractObject for which to generate the display.
  */
-function islandora_newspaper_preprocess_islandora_newspaper_page(array &$variables) {
+function template_preprocess_islandora_newspaper_page(array &$variables) {
   module_load_include('inc', 'islandora', 'includes/datastream');
   module_load_include('inc', 'islandora', 'includes/utilities');
   module_load_include('inc', 'islandora', 'includes/solution_packs');
@@ -289,13 +337,38 @@ function islandora_newspaper_preprocess_islandora_newspaper_page(array &$variabl
     // Display newspaper.
     $params['jp2_url'] = $jp2_url;
   }
-  $viewer = islandora_get_viewer($params, 'islandora_newspaper_page_viewers', $object);
+  $variables['viewer_id'] = islandora_get_viewer_id('islandora_newspaper_page_viewers');
+  $variables['viewer_params'] = $params;
   $variables['content'] = '';
-  if ($viewer) {
-    $variables['content'] = $viewer;
+
+  $variables['metadata'] = islandora_retrieve_metadata_markup($object);
+  $variables['description'] = islandora_retrieve_description_markup($object);
+}
+
+/**
+ * Process variables for islandora_newspaper_issue templates.
+ *
+ * Default template: islandora-newspaper-issue.tpl.php.
+ *
+ * @param array $variables
+ *   An associative array containing:
+ *   - object: An AbstractObject for which to generate the display.
+ *   - viewer_id: The "ID" of the viewer to use.
+ *   - viewer_params: An (associative) array of parameters to pass to the
+ *     viewer.
+ */
+function template_process_islandora_newspaper_page(array &$variables) {
+  if ($variables['viewer_id'] && $variables['viewer_id'] != 'none') {
+    $viewer_callback = islandora_get_viewer_callback($variables['viewer_id']);
+    if (function_exists($viewer_callback)) {
+      $viewer = $viewer_callback($variables['viewer_params'], $variables['object']);
+      if ($viewer) {
+        $variables['content'] = $viewer;
+      }
+    }
   }
-  // If no viewer is configured just show the jpeg.
-  elseif (isset($object['JPG']) && islandora_datastream_access(ISLANDORA_VIEW_OBJECTS, $object['JPG'])) {
+  $object = $variables['object'];
+  if (!$variables['content'] && isset($object['JPG']) && islandora_datastream_access(ISLANDORA_VIEW_OBJECTS, $object['JPG'])) {
     $params = array(
       'title' => $object->label,
       'path' => url("islandora/object/{$object->id}/datastream/JPG/view"),
@@ -305,7 +378,4 @@ function islandora_newspaper_preprocess_islandora_newspaper_page(array &$variabl
   else {
     $variables['content'] = NULL;
   }
-
-  $variables['metadata'] = islandora_retrieve_metadata_markup($object);
-  $variables['description'] = islandora_retrieve_description_markup($object);
 }
