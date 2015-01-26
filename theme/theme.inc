@@ -174,6 +174,7 @@ function template_process_islandora_newspaper_issue(array &$variables) {
   // @todo: Remove condition with "IslandoraNewspaperDeprecateString" after
   // 7.x-1.5 release.
   if ($variables['viewer'] instanceof IslandoraNewspaperDeprecateString) {
+    $variables['viewer'] = NULL;
     if ($variables['viewer_id'] && $variables['viewer_id'] != 'none') {
       $viewer_callback = islandora_get_viewer_callback($variables['viewer_id']);
       if (function_exists($viewer_callback)) {
