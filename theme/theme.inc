@@ -364,9 +364,9 @@ function template_preprocess_islandora_newspaper_page(array &$variables) {
 }
 
 /**
- * Process variables for islandora_newspaper_issue templates.
+ * Process variables for islandora_newspaper_page templates.
  *
- * Default template: islandora-newspaper-issue.tpl.php.
+ * Default template: islandora-newspaper-page.tpl.php.
  *
  * @param array $variables
  *   An associative array containing:
@@ -388,15 +388,17 @@ function template_process_islandora_newspaper_page(array &$variables) {
         }
       }
     }
-  }
-  $object = $variables['object'];
-  // Fallback to image.
-  if (!$variables['content'] && isset($object['JPG']) && islandora_datastream_access(ISLANDORA_VIEW_OBJECTS, $object['JPG'])) {
-    $params = array(
-      'title' => $object->label,
-      'path' => url("islandora/object/{$object->id}/datastream/JPG/view"),
-    );
-    $variables['content'] = theme('image', $params);
+
+    $object = $variables['object'];
+    // Fallback to image.
+    if ($variables['viewer_id'] && $variables['viewer_id'] == 'none' && isset($object['JPG']) &&
+          islandora_datastream_access(ISLANDORA_VIEW_OBJECTS, $object['JPG'])) {
+      $params = array(
+        'title' => $object->label,
+        'path' => url("islandora/object/{$object->id}/datastream/JPG/view"),
+      );
+      $variables['content'] = theme('image', $params);
+    }
   }
   else {
     $variables['content'] = NULL;
