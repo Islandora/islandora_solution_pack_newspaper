@@ -30,7 +30,7 @@ function islandora_newspaper_admin_settings_form(array $form, array &$form_state
         '#element_validate' => array('islandora_newspaper_admin_settings_form_ingest_derivatives_validate'),
         '#options' => array(
           'pdf' => t('PDF datastream. <strong>Requires</strong> <em>ImageMagick</em>'),
-          'image' => t('Image datastr eams (TN, JPEG, JP2). <strong>Requires</strong> <em>Large Image Solution Pack</em>'),
+          'image' => t('Image datastreams (TN, JPEG, JP2). <strong>Requires</strong> <em>Large Image Solution Pack</em>'),
           'ocr' => t('OCR datastreams (OCR, HOCR). <strong>Requires</strong> <em>Islandora OCR Module</em>'),
         ),
         '#default_value' => $get_default_value('islandora_newspaper_ingest_derivatives', drupal_map_assoc(
