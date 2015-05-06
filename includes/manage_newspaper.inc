@@ -125,7 +125,7 @@ function islandora_newspaper_empty_issue_date_form_validate($form, &$form_state)
     }
   }
   if ($errors) {
-    drupal_set_message("Invalid date(s), please enter a valid date of the format YYYY-MM-DD.", "error");
+    drupal_set_message(t("Invalid date(s), please enter a valid date of the format YYYY-MM-DD."), "error");
   }
 }
 
@@ -148,7 +148,7 @@ function islandora_newspaper_empty_issue_date_form_submit($form, &$form_state) {
       }
     }
   }
-  drupal_set_message("Issue dates saved.");
+  drupal_set_message(t("Issue dates saved."));
 }
 
 /**
