@@ -232,3 +232,60 @@ function islandora_newspaper_get_date_issued(AbstractObject $object) {
   $date = empty($results) ? new DateTime() : new DateTime($results[0]['object']['value']);
   return $date;
 }
+
+/**
+ * Fetch the issues of a newspaper that do not have a date.
+ *
+ * @param AbstractObject|NULL $object
+ *   Newspaper object or empty for all issues
+ *
+ * @return array
+ *   Listing of the PIDs of objects without the date issued defined.
+ */
+function islandora_newspaper_get_empty_dates($object = NULL) {
+  if (is_null($object)) {
+    $where = <<<EOQ
+  ?object <fedora-model:hasModel> <info:fedora/islandora:newspaperIssueCModel> ;
+EOQ;
+  }
+  else {
+    $where = <<<EOQ
+  ?object fedora-rels-ext:isMemberOf <info:fedora/{$object->id}> ;
+    <fedora-model:hasModel> <info:fedora/islandora:newspaperIssueCModel> ;
+EOQ;
+  }
+  $query = <<<EOQ
+PREFIX islandora-rels-ext: <http://islandora.ca/ontology/relsext#>
+PREFIX fedora-rels-ext: <info:fedora/fedora-system:def/relations-external#>
+SELECT ?object ?label
+FROM <#ri>
+WHERE {
+  {$where}
+    <fedora-model:label> ?label .
+  OPTIONAL {
+    ?object islandora-rels-ext:dateIssued ?issued
+  }
+  FILTER (!bound(?issued))
+}
+ORDER BY ?label
+EOQ;
+
+  if (is_null($object)) {
+    $object = islandora_get_tuque_connection();
+  }
+  $results = $object->repository->ri->sparqlQuery($query);
+  // Map the results using a default Datetime for missing issued dates.
+  $map_results = function($o) {
+    return array(
+      'pid' => $o['object']['value'],
+      'label' => $o['label']['value'],
+    );
+  };
+  $issues = array_map($map_results, $results);
+  // Grab the PIDs...
+  $get_pid = function($o) {
+    return $o['pid'];
+  };
+  $pids = array_map($get_pid, $issues);
+  return count($pids) ? array_combine($pids, $issues) : array();
+}
