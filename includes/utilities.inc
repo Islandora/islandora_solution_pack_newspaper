@@ -260,12 +260,10 @@ PREFIX fedora-rels-ext: <info:fedora/fedora-system:def/relations-external#>
 SELECT ?object ?label
 FROM <#ri>
 WHERE {
-  {$where}
+  $where
     <fedora-model:label> ?label .
-  OPTIONAL {
-    ?object islandora-rels-ext:dateIssued ?issued
-  }
-  FILTER (!bound(?issued))
+  !optionals
+  !filters
 }
 ORDER BY ?label
 EOQ;
@@ -273,6 +271,25 @@ EOQ;
   if (is_null($object)) {
     $object = islandora_get_tuque_connection();
   }
+
+  // XXX: Can't really use the fully featured query_filter and query_statements
+  // hook as it will return some things we don't want. Perhaps change the return
+  // structure in the future to specify which module they are coming from? For
+  // now we will just get XACML's directly.
+  $query_optionals = (array) module_invoke('islandora_xacml_api', 'islandora_basic_collection_get_query_optionals', 'view');
+  $query_optionals[] = '?object islandora-rels-ext:dateIssued ?issued';
+  $query_filters = (array) module_invoke('islandora_xacml_api', 'islandora_basic_collection_get_query_filters');
+  $query_filters[] = '!bound(?issued)';
+
+  $filter_map = function ($filter) {
+    return "FILTER($filter)";
+  };
+
+  $query = format_string($query, array(
+    '!optionals' => !empty($query_optionals) ? ('OPTIONAL {{' . implode('} UNION {', $query_optionals) . '}}') : '',
+    '!filters' => implode(' ', array_map($filter_map, $query_filters)),
+  ));
+
   $results = $object->repository->ri->sparqlQuery($query);
   // Map the results using a default Datetime for missing issued dates.
   $map_results = function($o) {

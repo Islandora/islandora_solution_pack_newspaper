@@ -37,18 +37,16 @@ function islandora_newspaper_manage_newspaper(AbstractObject $object) {
  */
 function islandora_newspaper_empty_issue_date_form($form, &$form_state, $object) {
   $empty_issues = islandora_newspaper_get_empty_dates($object);
+  $form = array();
+  $form['dates_table'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Issues missing a dateIssued field.'),
+    '#description' => t('These newspapers will not appear in the browse listing if you use the "Order by date" setting. Add a date in the format "YYYY-MM-DD" and save the changes.'),
+  );
   if (count($empty_issues) > 0) {
-    $fields = array();
-    $form = array();
-    $form['dates_table'] = array(
-      '#type' => 'fieldset',
-      '#title' => t('Issues missing a dateIssued field.'),
-      '#description' => t('These newspapers will not appear in the browse listing if you use the "Order by date" setting. Add a date in the format "YYYY-MM-DD" and save the changes.'),
-    );
     foreach ($empty_issues as $issue) {
       $issue_obj = islandora_object_load($issue['pid']);
       if ($issue_obj) {
-        $escaped_pid = str_replace(':', '_', $issue['pid']);
         $escaped_pid = $issue['pid'];
         $form['dates_table'][$escaped_pid] = array(
           '#type' => 'textfield',
@@ -79,9 +77,14 @@ function islandora_newspaper_empty_issue_date_form($form, &$form_state, $object)
     $form['#after_build'] = array(
       'islandora_newspaper_empty_issue_date_datepicker',
     );
-    return $form;
   }
-  return '';
+  else {
+    $form['dates_table']['all_good'] = array(
+      '#type' => 'item',
+      '#markup' => t('No newspapers issues with missing dates found.'),
+    );
+  }
+  return $form;
 }
 
 /**
@@ -109,23 +112,30 @@ function islandora_newspaper_empty_issue_date_datepicker($form, $form_state) {
  */
 function islandora_newspaper_empty_issue_date_form_validate($form, &$form_state) {
   $errors = FALSE;
+  $updates = 0;
   foreach ($form_state['values']['issue_dates'] as $key => $date) {
-    if (!preg_match('/^\d{4}-\d{1,2}-\d{1,2}$/', $date)) {
-      form_set_error("$key");
-      $errors = TRUE;
-    }
-    else {
-      try {
-        $dt = new DateTime($date);
-      }
-      catch (Exception $e) {
+    if (trim($date) != "") {
+      $updates += 1;
+      if (!preg_match('/^\d{4}-\d{1,2}-\d{1,2}$/', $date)) {
         form_set_error("$key");
         $errors = TRUE;
+      }
+      else {
+        try {
+          $dt = new DateTime($date);
+        }
+        catch (Exception $e) {
+          form_set_error("$key");
+          $errors = TRUE;
+        }
       }
     }
   }
   if ($errors) {
     drupal_set_message(t("Invalid date(s), please enter a valid date of the format YYYY-MM-DD."), "error");
+  }
+  elseif ($updates == 0) {
+    drupal_set_message(t("You did not submit any dates."), "error");
   }
 }
 
@@ -137,14 +147,16 @@ function islandora_newspaper_empty_issue_date_form_validate($form, &$form_state)
 function islandora_newspaper_empty_issue_date_form_submit($form, &$form_state) {
   module_load_include('inc', 'islandora_newspaper', 'includes/utilities');
   foreach ($form_state['values']['issue_dates'] as $key => $date) {
-    $object = islandora_object_load($key);
-    if ($object) {
-      try {
-        $dt = new DateTime($date);
-        islandora_newspaper_set_date_issued($object, $dt);
-      }
-      catch (Exception $e) {
-        continue;
+    if (trim($date) != "") {
+      $object = islandora_object_load($key);
+      if ($object) {
+        try {
+          $dt = new DateTime($date);
+          islandora_newspaper_set_date_issued($object, $dt);
+        }
+        catch (Exception $e) {
+          continue;
+        }
       }
     }
   }
