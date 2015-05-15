@@ -41,7 +41,7 @@ function islandora_newspaper_empty_issue_date_form($form, &$form_state, $object)
   $form['dates_table'] = array(
     '#type' => 'fieldset',
     '#title' => t('Issues missing a dateIssued field.'),
-    '#description' => t('These newspapers will not appear in the browse listing if you use the "Order by date" setting. Add a date in the format "YYYY-MM-DD" and save the changes.'),
+    '#description' => t('These Newspaper Issues will not appear in the default browse listing until they have valid dates. Add a date in the format "YYYY-MM-DD" and save the changes.'),
   );
   if (count($empty_issues) > 0) {
     foreach ($empty_issues as $issue) {
@@ -81,7 +81,7 @@ function islandora_newspaper_empty_issue_date_form($form, &$form_state, $object)
   else {
     $form['dates_table']['all_good'] = array(
       '#type' => 'item',
-      '#markup' => t('No newspapers issues with missing dates found.'),
+      '#markup' => t('None found.'),
     );
   }
   return $form;
