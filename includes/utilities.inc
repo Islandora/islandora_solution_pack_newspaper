@@ -243,6 +243,8 @@ function islandora_newspaper_get_date_issued(AbstractObject $object) {
  *   Listing of the PIDs of objects without the date issued defined.
  */
 function islandora_newspaper_get_empty_dates($object = NULL) {
+  $tuque = islandora_get_tuque_connection();
+
   if (is_null($object)) {
     $where = <<<EOQ
   ?object <fedora-model:hasModel> <info:fedora/islandora:newspaperIssueCModel> ;
@@ -254,9 +256,11 @@ EOQ;
     <fedora-model:hasModel> <info:fedora/islandora:newspaperIssueCModel> ;
 EOQ;
   }
+  $islandora_rels_ext = ISLANDORA_RELS_EXT_URI;
+  $fedora_rels_ext = FEDORA_RELS_EXT_URI;
   $query = <<<EOQ
-PREFIX islandora-rels-ext: <http://islandora.ca/ontology/relsext#>
-PREFIX fedora-rels-ext: <info:fedora/fedora-system:def/relations-external#>
+PREFIX islandora-rels-ext: <{$islandora_rels_ext}>
+PREFIX fedora-rels-ext: <{$fedora_rels_ext}>
 SELECT ?object ?label
 FROM <#ri>
 WHERE {
@@ -267,10 +271,6 @@ WHERE {
 }
 ORDER BY ?label
 EOQ;
-
-  if (is_null($object)) {
-    $object = islandora_get_tuque_connection();
-  }
 
   // XXX: Can't really use the fully featured query_filter and query_statements
   // hook as it will return some things we don't want. Perhaps change the return
@@ -290,7 +290,7 @@ EOQ;
     '!filters' => implode(' ', array_map($filter_map, $query_filters)),
   ));
 
-  $results = $object->repository->ri->sparqlQuery($query);
+  $results = $tuque->repository->ri->sparqlQuery($query);
   // Map the results using a default Datetime for missing issued dates.
   $map_results = function($o) {
     return array(

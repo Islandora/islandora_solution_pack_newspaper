@@ -51,7 +51,7 @@ function islandora_newspaper_empty_issue_date_form($form, &$form_state, $object)
         $form['dates_table'][$escaped_pid] = array(
           '#type' => 'textfield',
           '#name' => "issue_dates[$escaped_pid]",
-          '#prefix' => t('<div class="islandora-newspaper-empty-issues">'),
+          '#prefix' => '<div class="islandora-newspaper-empty-issues">',
           '#suffix' => t('<a target="_new" href="@url">@label (@pid)</a></div>',
             array(
               '@url' => url('islandora/object/' . $issue['pid']),
@@ -150,13 +150,8 @@ function islandora_newspaper_empty_issue_date_form_submit($form, &$form_state) {
     if (trim($date) != "") {
       $object = islandora_object_load($key);
       if ($object) {
-        try {
-          $dt = new DateTime($date);
-          islandora_newspaper_set_date_issued($object, $dt);
-        }
-        catch (Exception $e) {
-          continue;
-        }
+        $dt = new DateTime($date);
+        islandora_newspaper_set_date_issued($object, $dt);
       }
     }
   }
