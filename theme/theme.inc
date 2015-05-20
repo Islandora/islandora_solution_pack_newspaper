@@ -96,10 +96,6 @@ function template_preprocess_islandora_newspaper(array &$variables) {
   ksort($tabs);
 
   $variables['islandora_content_render_array'] = $output;
-
-  // @todo: Remove after 7.x-1.5 release.
-  $variables['islandora_content'] = new IslandoraNewspaperDeprecateString($variables, 'islandora_content', 'template_process_islandora_newspaper');
-
   $variables['parent_collections'] = islandora_get_parents_from_rels_ext($object);
   $variables['metadata'] = islandora_retrieve_metadata_markup($object);
   $variables['description'] = islandora_retrieve_description_markup($object);
@@ -117,11 +113,7 @@ function template_preprocess_islandora_newspaper(array &$variables) {
  *     in.
  */
 function template_process_islandora_newspaper(array &$variables) {
-  // @todo: Remove condition with "IslandoraNewspaperDeprecateString" after
-  // 7.x-1.5 release.
-  if ($variables['islandora_content'] instanceof IslandoraNewspaperDeprecateString) {
-    $variables['islandora_content'] = drupal_render($variables['islandora_content_render_array']);
-  }
+  $variables['islandora_content'] = drupal_render($variables['islandora_content_render_array']);
 }
 
 /**
@@ -153,9 +145,6 @@ function template_preprocess_islandora_newspaper_issue(array &$variables) {
 
   $variables['metadata'] = islandora_retrieve_metadata_markup($object);
   $variables['description'] = islandora_retrieve_description_markup($object);
-
-  // @todo: Remove after 7.x-1.5 release.
-  $variables['viewer'] = new IslandoraNewspaperDeprecateString($variables, 'viewer', 'template_process_islandora_newspaper_issue');
 }
 
 /**
@@ -171,17 +160,13 @@ function template_preprocess_islandora_newspaper_issue(array &$variables) {
  *     viewer.
  */
 function template_process_islandora_newspaper_issue(array &$variables) {
-  // @todo: Remove condition with "IslandoraNewspaperDeprecateString" after
-  // 7.x-1.5 release.
-  if ($variables['viewer'] instanceof IslandoraNewspaperDeprecateString) {
-    $variables['viewer'] = NULL;
-    if ($variables['viewer_id'] && $variables['viewer_id'] != 'none') {
-      $viewer_callback = islandora_get_viewer_callback($variables['viewer_id']);
-      if (function_exists($viewer_callback)) {
-        $viewer = $viewer_callback($variables['viewer_params'], $variables['object']);
-        if ($viewer) {
-          $variables['viewer'] = $viewer;
-        }
+  $variables['viewer'] = NULL;
+  if ($variables['viewer_id'] && $variables['viewer_id'] != 'none') {
+    $viewer_callback = islandora_get_viewer_callback($variables['viewer_id']);
+    if (function_exists($viewer_callback)) {
+      $viewer = $viewer_callback($variables['viewer_params'], $variables['object']);
+      if ($viewer) {
+        $variables['viewer'] = $viewer;
       }
     }
   }
@@ -355,10 +340,6 @@ function template_preprocess_islandora_newspaper_page(array &$variables) {
   }
   $variables['viewer_id'] = islandora_get_viewer_id('islandora_newspaper_page_viewers');
   $variables['viewer_params'] = $params;
-
-  // @todo: Remove after 7.x-1.5 release.
-  $variables['content'] = new IslandoraNewspaperDeprecateString($variables, 'content', 'template_process_islandora_newspaper_page');
-
   $variables['metadata'] = islandora_retrieve_metadata_markup($object);
   $variables['description'] = islandora_retrieve_description_markup($object);
 }
@@ -376,17 +357,13 @@ function template_preprocess_islandora_newspaper_page(array &$variables) {
  *     viewer.
  */
 function template_process_islandora_newspaper_page(array &$variables) {
-  // @todo: Remove condition with "IslandoraNewspaperDeprecateString" after
-  // 7.x-1.5 release.
   $object = $variables['object'];
-  if ($variables['content'] instanceof IslandoraNewspaperDeprecateString) {
-    if ($variables['viewer_id'] && $variables['viewer_id'] != 'none') {
-      $viewer_callback = islandora_get_viewer_callback($variables['viewer_id']);
-      if (function_exists($viewer_callback)) {
-        $viewer = $viewer_callback($variables['viewer_params'], $variables['object']);
-        if ($viewer) {
-          $variables['content'] = $viewer;
-        }
+  if ($variables['viewer_id'] && $variables['viewer_id'] != 'none') {
+    $viewer_callback = islandora_get_viewer_callback($variables['viewer_id']);
+    if (function_exists($viewer_callback)) {
+      $viewer = $viewer_callback($variables['viewer_params'], $variables['object']);
+      if ($viewer) {
+        $variables['content'] = $viewer;
       }
     }
     // Fallback to image.
@@ -403,35 +380,5 @@ function template_process_islandora_newspaper_page(array &$variables) {
   }
   else {
     $variables['content'] = NULL;
-  }
-}
-
-/**
- * Helper to deprecate the text variables.
- *
- * @todo: Remove after 7.x-1.5 release.
- */
-class IslandoraNewspaperDeprecateString {
-  /**
-   * Constructor; stash parameters.
-   */
-  public function __construct(&$variables, $variable_name, $process_function) {
-    $this->variables =& $variables;
-    $this->variable_name = $variable_name;
-    $this->process_function = $process_function;
-  }
-
-  /**
-   * Coerce into a string.
-   */
-  public function __toString() {
-    $message = t('The "@variable" variable has been deprecated in the preprocessing phase as of 7.x-1.5. Please update your theme code to interact with "@variable" during/after the processing phase.', array(
-      '@variable' => $this->variable_name,
-    ));
-    trigger_error(filter_xss($message), E_USER_DEPRECATED);
-
-    $process = $this->process_function;
-    $process($this->variables);
-    return strval($this->variables[$this->variable_name]);
   }
 }
