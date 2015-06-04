@@ -306,3 +306,57 @@ EOQ;
   $pids = array_map($get_pid, $issues);
   return count($pids) ? array_combine($pids, $issues) : array();
 }
+
+function islandora_newspaper_set_mods_date_issued(AbstractDatastream $datastream, DateTime $date) {
+  $out = FALSE;
+  $file = file_create_filename("{$datastream->parent->id}_{$datastream->id}.xml", 'temporary://');
+  $datastream->getContent($file);
+  @$doc = simplexml_load_file($file);
+  if ($doc) {
+    $doc->registerXPathNamespace('ns', 'http://www.loc.gov/mods/v3');
+    // Assumes the canonical date issued exists in the first mods document under
+    // origin info and is not specified as a point, additional logic could be
+    // added to process different encodings.
+    $parent = FALSE;
+    $dates = $doc->xpath('//ns:mods[1]/ns:originInfo/ns:dateIssued[not(@point)][1]');
+    if (is_array($dates) && count($dates) > 0) {
+      $parent = reset($dates);
+      $removal = array();
+      // XX: Because you can't remove elements in a foreach loop
+      // we collect them. Then we can add the new one and remove
+      // the old.
+      foreach ($dates as $d) {
+        $removal[] = $d;
+      }
+      foreach ($removal as $r) {
+        $r->parentNode->removeChild($r);
+      }
+    }
+    else {
+      $origin = $doc->xpath('//ns:mods[1]/ns:originInfo');
+      if ($origin) {
+        $parent = reset($origin);
+      }
+    }
+    if ($parent) {
+      $new_date = $parent->addChild('dateIssued', $date->format("Y-m-d"), 'http://www.loc.gov/mods/v3');
+      $new_date->addAttribute('encoding', 'iso8601');
+      try {
+        $datastream->setContentFromString($doc->asXML());
+        $out = TRUE;
+      }
+      catch (Exception $e) {
+        $msg  = 'Failed to get save MODS datastream for @pid';
+        $vars = array('@pid' => $datastream->parent->id);
+        watchdog_exception('islandora_newspaper', $e, $msg, $vars, WATCHDOG_ERROR);
+      }
+    }
+    else {
+      $msg  = 'Failed to get originInfo from MODS for @pid';
+      $vars = array('@pid' => $datastream->parent->id);
+      watchdog_exception('islandora_newspaper', $e, $msg, $vars, WATCHDOG_ERROR);
+    }
+  }
+  file_unmanaged_delete($file);
+  return $out;
+}

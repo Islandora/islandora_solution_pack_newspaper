@@ -146,16 +146,32 @@ function islandora_newspaper_empty_issue_date_form_validate($form, &$form_state)
  */
 function islandora_newspaper_empty_issue_date_form_submit($form, &$form_state) {
   module_load_include('inc', 'islandora_newspaper', 'includes/utilities');
+  $out = TRUE;
   foreach ($form_state['values']['issue_dates'] as $key => $date) {
     if (trim($date) != "") {
       $object = islandora_object_load($key);
       if ($object) {
         $dt = new DateTime($date);
-        islandora_newspaper_set_date_issued($object, $dt);
+        if (isset($object['MODS'])) {
+          // Set the dateIssued to the MODS datastream
+          $ret = islandora_newspaper_set_mods_date_issued($object['MODS'], $dt);
+        }
+        else {
+          // Set the dateIssued to the RELS-EXT
+          $ret = islandora_newspaper_set_date_issued($object, $dt);
+        }
+        if (isset($ret) && $ret === FALSE) {
+          $out = FALSE;
+        }
       }
     }
   }
-  drupal_set_message(t("Issue dates saved."));
+  if (!$out) {
+    drupal_set_message(t("There were some errors completing your request. Check the watchdog logs for more information"), "error");
+  }
+  else {
+    drupal_set_message(t("Issue dates saved."));
+  }
 }
 
 /**
