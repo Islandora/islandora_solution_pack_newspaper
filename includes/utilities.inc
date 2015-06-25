@@ -307,6 +307,14 @@ EOQ;
   return count($pids) ? array_combine($pids, $issues) : array();
 }
 
+/**
+ * Set mods:dateIssued from form.
+ *
+ * @param AbstractDatastream $datastream
+ *   MODS datastream
+ * @param DateTime $date
+ *   New date issued
+ */
 function islandora_newspaper_set_mods_date_issued(AbstractDatastream $datastream, DateTime $date) {
   $out = FALSE;
   $file = file_create_filename("{$datastream->parent->id}_{$datastream->id}.xml", 'temporary://');

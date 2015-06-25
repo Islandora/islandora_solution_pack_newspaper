@@ -153,11 +153,11 @@ function islandora_newspaper_empty_issue_date_form_submit($form, &$form_state) {
       if ($object) {
         $dt = new DateTime($date);
         if (isset($object['MODS'])) {
-          // Set the dateIssued to the MODS datastream
+          // Set the dateIssued to the MODS datastream.
           $ret = islandora_newspaper_set_mods_date_issued($object['MODS'], $dt);
         }
         else {
-          // Set the dateIssued to the RELS-EXT
+          // Set the dateIssued to the RELS-EXT.
           $ret = islandora_newspaper_set_date_issued($object, $dt);
         }
         if (isset($ret) && $ret === FALSE) {
