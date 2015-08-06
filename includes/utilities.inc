@@ -328,7 +328,6 @@ function islandora_newspaper_set_mods_date_issued(AbstractDatastream $datastream
     $parent = FALSE;
     $dates = $doc->xpath('//ns:mods[1]/ns:originInfo/ns:dateIssued[not(@point)][1]');
     if (is_array($dates) && count($dates) > 0) {
-      $parent = reset($dates);
       $removal = array();
       // XX: Because you can't remove elements in a foreach loop
       // we collect them. Then we can add the new one and remove
@@ -337,14 +336,13 @@ function islandora_newspaper_set_mods_date_issued(AbstractDatastream $datastream
         $removal[] = $d;
       }
       foreach ($removal as $r) {
-        $r->parentNode->removeChild($r);
+        $dom = dom_import_simplexml($r);
+        $dom->parentNode->removeChild($dom);
       }
     }
-    else {
-      $origin = $doc->xpath('//ns:mods[1]/ns:originInfo');
-      if ($origin) {
-        $parent = reset($origin);
-      }
+    $origin = $doc->xpath('//ns:mods[1]/ns:originInfo');
+    if ($origin) {
+      $parent = reset($origin);
     }
     if ($parent) {
       $new_date = $parent->addChild('dateIssued', $date->format("Y-m-d"), 'http://www.loc.gov/mods/v3');
