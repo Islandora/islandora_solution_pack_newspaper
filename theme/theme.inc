@@ -378,6 +378,14 @@ function template_process_islandora_newspaper_page(array &$variables) {
       $variables['content'] = NULL;
     }
   }
+  // Fallback to image.
+  elseif (isset($object['JPG']) && islandora_datastream_access(ISLANDORA_VIEW_OBJECTS, $object['JPG'])) {
+    $params = array(
+      'title' => $object->label,
+      'path' => url("islandora/object/{$object->id}/datastream/JPG/view"),
+    );
+    $variables['content'] = theme('image', $params);
+  }
   else {
     $variables['content'] = NULL;
   }
