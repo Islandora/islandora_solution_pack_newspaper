@@ -276,7 +276,7 @@ EOQ;
   // hook as it will return some things we don't want. Perhaps change the return
   // structure in the future to specify which module they are coming from? For
   // now we will just get XACML's directly.
-  $query_optionals = (array) module_invoke('islandora_xacml_api', 'islandora_basic_collection_get_query_optionals', 'view');
+  $query_optionals = (array) module_invoke('islandora_xacml_api', 'islandora_basic_collection_get_query_optionals', 'manage');
   $query_optionals[] = '?object islandora-rels-ext:dateIssued ?issued';
   $query_filters = (array) module_invoke('islandora_xacml_api', 'islandora_basic_collection_get_query_filters');
   $query_filters[] = '!bound(?issued)';
