@@ -28,14 +28,14 @@ function islandora_newspaper_manage_newspaper(AbstractObject $object) {
  * @param array $form
  *   The form object.
  * @param array $form_state
- *   The form state
+ *   The form state.
  * @param AbstractObject|NULL $object
  *   The parent of the issues missing dates or NULL for all issues.
  *
  * @return array
  *   Renderable array of the form.
  */
-function islandora_newspaper_empty_issue_date_form($form, &$form_state, $object) {
+function islandora_newspaper_empty_issue_date_form(array $form, array &$form_state, $object) {
   $empty_issues = islandora_newspaper_get_empty_dates($object);
   $form = array();
   $form['dates_table'] = array(
@@ -93,12 +93,12 @@ function islandora_newspaper_empty_issue_date_form($form, &$form_state, $object)
  * @param array $form
  *   The form object.
  * @param array $form_state
- *   The form state
+ *   The form state.
  *
  * @return array
  *   Renderable array of the form.
  */
-function islandora_newspaper_empty_issue_date_datepicker($form, $form_state) {
+function islandora_newspaper_empty_issue_date_datepicker(array $form, array $form_state) {
   drupal_add_library('system', 'ui.datepicker');
   drupal_add_js("(function ($) { $('.datepicker').datepicker({dateFormat: \"yy-mm-dd\"
 }); })(jQuery);", array('type' => 'inline', 'scope' => 'footer', 'weight' => 5));

@@ -9,7 +9,7 @@
  * Returns issue object of a given page object.
  *
  * @param object $object
- *   Newspaper page object
+ *   Newspaper page object.
  *
  * @return string|bool
  *   Returns the PID of the issue object of which $object is a page of. If
@@ -28,7 +28,7 @@ function islandora_newspaper_get_issue($object) {
  * Returns the sequence number of a given newsletter page.
  *
  * @param object $object
- *   Newspaper page object
+ *   Newspaper page object.
  *
  * @return string|bool
  *   Returns the sequence number of a page in an issue. If there is no such
@@ -47,7 +47,7 @@ function islandora_newspaper_get_current_sequence($object) {
  * Returns the collection object of a given issue object.
  *
  * @param object $object
- *   Newspaper issue object
+ *   Newspaper issue object.
  *
  * @return string|bool
  *   Returns the PID of the newspaper of which $object is a member. If there is
@@ -207,7 +207,7 @@ function islandora_newspaper_get_date_issued_from_mods(AbstractDatastream $datas
  * Set's the date issued literal in the objects RELS-EXT.
  *
  * @param AbstractObject $object
- *   Newspaper issue object
+ *   Newspaper issue object.
  * @param DateTime $date
  *   The date issued, will be stored in ISO-8601 YYYY-MM-DD format.
  */
@@ -222,7 +222,7 @@ function islandora_newspaper_set_date_issued(AbstractObject $object, DateTime $d
  * If the date issue is not defined the current time is returned.
  *
  * @param AbstractObject $object
- *   Newspaper issue object
+ *   Newspaper issue object.
  *
  * @return DateTime
  *   The date issued. If the date issue is not defined the current time is used.
@@ -237,7 +237,7 @@ function islandora_newspaper_get_date_issued(AbstractObject $object) {
  * Fetch the issues of a newspaper that do not have a date.
  *
  * @param AbstractObject|NULL $object
- *   Newspaper object or empty for all issues
+ *   Newspaper object or empty for all issues.
  *
  * @return array
  *   Listing of the PIDs of objects without the date issued defined.
@@ -289,9 +289,7 @@ EOQ;
     '!optionals' => !empty($query_optionals) ? ('OPTIONAL {{' . implode('} UNION {', $query_optionals) . '}}') : '',
     '!filters' => implode(' ', array_map($filter_map, $query_filters)),
   ));
-
   $results = $tuque->repository->ri->sparqlQuery($query);
-  // Map the results using a default Datetime for missing issued dates.
   $map_results = function($o) {
     return array(
       'pid' => $o['object']['value'],
@@ -311,9 +309,9 @@ EOQ;
  * Set mods:dateIssued from form.
  *
  * @param AbstractDatastream $datastream
- *   MODS datastream
+ *   MODS datastream.
  * @param DateTime $date
- *   New date issued
+ *   New date issued.
  */
 function islandora_newspaper_set_mods_date_issued(AbstractDatastream $datastream, DateTime $date) {
   $out = FALSE;
