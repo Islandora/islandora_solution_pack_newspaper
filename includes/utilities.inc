@@ -297,12 +297,7 @@ EOQ;
     );
   };
   $issues = array_map($map_results, $results);
-  // Grab the PIDs...
-  $get_pid = function($o) {
-    return $o['pid'];
-  };
-  $pids = array_map($get_pid, $issues);
-  return count($pids) ? array_combine($pids, $issues) : array();
+  return $issues;
 }
 
 /**
