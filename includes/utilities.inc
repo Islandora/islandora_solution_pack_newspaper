@@ -83,13 +83,14 @@ function islandora_newspaper_get_issues(AbstractObject $object) {
   $query = <<<EOQ
 PREFIX islandora-rels-ext: <http://islandora.ca/ontology/relsext#>
 PREFIX fedora-rels-ext: <info:fedora/fedora-system:def/relations-external#>
-SELECT ?object ?sequence ?label ?issued
+SELECT DISTINCT ?object ?sequence ?label ?issued
 FROM <#ri>
 WHERE {
   ?object fedora-rels-ext:isMemberOf <info:fedora/{$object->id}> ;
        <fedora-model:hasModel> <info:fedora/islandora:newspaperIssueCModel> ;
        <fedora-model:label> ?label .
-  ?object islandora-rels-ext:isSequenceNumber ?sequence
+  ?object islandora-rels-ext:isSequenceNumber ?sequence .
+  ?object islandora-rels-ext:dateIssued ?issued
   !optionals
   !filters
 }
@@ -101,7 +102,6 @@ EOQ;
   // structure in the future to specify which module they are coming from? For
   // now we will just get XACML's directly.
   $query_optionals = (array) module_invoke('islandora_xacml_api', 'islandora_basic_collection_get_query_optionals', 'view');
-  $query_optionals[] = '?object islandora-rels-ext:dateIssued ?issued';
   $query_filters = (array) module_invoke('islandora_xacml_api', 'islandora_basic_collection_get_query_filters');
 
   $filter_map = function ($filter) {
