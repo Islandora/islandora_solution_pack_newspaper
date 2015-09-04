@@ -41,8 +41,7 @@ Having problems or solved a problem? Check out the Islandora google groups for a
 
 Current maintainers:
 
-* [Paul Pound](https://github.com/ppound)
-* [UPEI/Roberston Library](https://github.com/roblib)
+* [Jared Whiklo](https://github.com/whikloj)
 
 ## Development
 
