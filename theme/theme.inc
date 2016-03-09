@@ -170,6 +170,10 @@ function template_process_islandora_newspaper_issue(array &$variables) {
       }
     }
   }
+  else {
+    drupal_add_js('misc/form.js');
+    drupal_add_js('misc/collapse.js');
+  }
 }
 
 /**
