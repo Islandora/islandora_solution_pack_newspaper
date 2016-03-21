@@ -80,7 +80,9 @@ function islandora_newspaper_get_newspaper($object) {
  *     - issued: A DateTime object repersenting the date the issue was released.
  */
 function islandora_newspaper_get_issues(AbstractObject $object) {
-  if ($cache = cache_get('islandora_newspaper_get_issues')) {
+  $cid = preg_replace('/:/', '_', $object->id);
+  $cid = 'islandora_newspaper_issues_' . $cid;
+  if ($cache = cache_get($cid)) {
     $pids = $cache->data['pids'];
     $issues = $cache->data['issues'];
     return count($pids) ? array_combine($pids, $issues) : array();
@@ -148,7 +150,7 @@ EOQ;
 
     $newspaper_issue_data['pids'] = $pids;
     $newspaper_issue_data['issues'] = $issues;
-    cache_set('islandora_newspaper_get_issues', $newspaper_issue_data);
+    cache_set($cid, $newspaper_issue_data);
     // Make the PIDs the keys.
     return count($pids) ? array_combine($pids, $issues) : array();
   }
