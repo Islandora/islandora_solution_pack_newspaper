@@ -81,7 +81,7 @@ function islandora_newspaper_get_newspaper($object) {
  */
 function islandora_newspaper_get_issues(AbstractObject $object) {
   $cid = preg_replace('/:/', '_', $object->id);
-  $cid = 'islandora_newspaper_issues_' . $cid;
+  $cid = 'islandora_newspaper_issues:' . $cid;
   if ($cache = cache_get($cid)) {
     $pids = $cache->data['pids'];
     $issues = $cache->data['issues'];
