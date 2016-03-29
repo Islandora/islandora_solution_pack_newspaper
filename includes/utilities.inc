@@ -150,7 +150,10 @@ EOQ;
 
     $newspaper_issue_data['pids'] = $pids;
     $newspaper_issue_data['issues'] = $issues;
-    cache_set($cid, $newspaper_issue_data);
+    $to_cache = variable_get('islandora_newspaper_issue_list_cache', 'none');
+    if ($to_cache == 'auto' || $to_cache == 'permanent') {
+      cache_set($cid, $newspaper_issue_data);
+    }
     // Make the PIDs the keys.
     return count($pids) ? array_combine($pids, $issues) : array();
   }
@@ -371,4 +374,16 @@ function islandora_newspaper_set_mods_date_issued(AbstractDatastream $datastream
   }
   file_unmanaged_delete($file);
   return $out;
+}
+
+/**
+ * Clears a newspaper's issue list cache.
+ *
+ * @param string $pid
+ *   The PID of the newspaper whose cache is to be cleared.
+ */
+function islandora_newspaper_clear_issue_list_cache($pid) {
+  $cid = preg_replace('/:/', '_', $pid);
+  $cid = 'islandora_newspaper_issues:' . $cid;
+  cache_clear_all($cid, 'cache');
 }

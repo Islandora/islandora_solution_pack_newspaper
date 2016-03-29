@@ -47,6 +47,18 @@ function islandora_newspaper_admin_settings_form(array $form, array &$form_state
     '#size' => 30,
   );
 
+  $form['islandora_newspaper_issue_list_cache'] = array(
+    '#type' => 'select',
+    '#title' => t('Issue list cache'),
+    '#description' => t("Select how you would like the issue list cache to work. Each newspaper's issue list is cached separately. If you choose \"Clear cache manually\", you can clear all newspapers' cache using \"drush cc all\" or by visiting Administration > Configuration > Development > Performance and submitting the \"Clear all caches\" button."),
+    '#options' => array(
+      'none' => t('Do not cache issue list'),
+      'permanent' => t('Clear cache manually'),
+      'auto' => t('Clear cache on issue ingest/update/removal'),
+    ),
+    '#default_value' => variable_get('islandora_newspaper_issue_list_cache', 'none'),
+  );
+
   module_load_include('inc', 'islandora', 'includes/solution_packs');
   $form += islandora_viewers_form('islandora_newspaper_issue_viewers', NULL, 'islandora:newspaperIssueCModel');
   $form['issue_viewers'] = $form['viewers'];
