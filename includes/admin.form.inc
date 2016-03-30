@@ -49,18 +49,24 @@ function islandora_newspaper_admin_settings_form(array $form, array &$form_state
       '#default_value' => variable_get('islandora_newspaper_use_solr', FALSE),
       '#return_value' => TRUE,
     ),
-    'islandora_newspaper_parent_issue_solr_field' => array(
-      '#type' => 'textfield',
-      '#title' => t('Parent Solr Field'),
-      '#description' => t("Solr field containing the parent issue's PID."),
-      '#default_value' => variable_get('islandora_newspaper_parent_issue_solr_field', 'RELS_EXT_isMemberOf_uri_ms'),
-      '#size' => 30,
-    ),
     'islandora_newspapers_solr_options' => array(
       '#type' => 'container',
       '#states' => array(
         'visible' => array(
           ':input[name="islandora_newspaper_use_solr"]' => array('checked' => TRUE),
+        ),
+      ),
+      'islandora_newspaper_parent_issue_solr_field' => array(
+        '#type' => 'textfield',
+        '#title' => t('Parent Solr Field'),
+        '#description' => t("Solr field containing the parent issue's PID."),
+        '#default_value' => variable_get('islandora_newspaper_parent_issue_solr_field', 'RELS_EXT_isMemberOf_uri_ms'),
+        '#size' => 100,
+        '#autocomplete_path' => 'islandora_solr/autocomplete_luke',
+        '#states' => array(
+          'required' => array(
+            ':input[name="islandora_newspaper_use_solr"]' => array('checked' => TRUE),
+          ),
         ),
       ),
       'islandora_newspaper_date_issued_solr_field' => array(
@@ -69,19 +75,6 @@ function islandora_newspaper_admin_settings_form(array $form, array &$form_state
         '#description' => t('Solr field that contains the date issued of the newspaper.'),
         '#size' => 100,
         '#default_value' => variable_get('islandora_newspaper_date_issued_solr_field', ''),
-        '#autocomplete_path' => 'islandora_solr/autocomplete_luke',
-        '#states' => array(
-          'required' => array(
-            ':input[name="islandora_newspaper_use_solr"]' => array('checked' => TRUE),
-          ),
-        ),
-      ),
-      'islandora_newspaper_pageof_solr_field' => array(
-        '#type' => 'textfield',
-        '#title' => t('Page Of field'),
-        '#description' => t('Solr field that contains the isPageOf reference of a newspaper page.'),
-        '#size' => 100,
-        '#default_value' => variable_get('islandora_newspaper_pageof_solr_field', 'RELS_EXT_isPageOf_uri_ms'),
         '#autocomplete_path' => 'islandora_solr/autocomplete_luke',
         '#states' => array(
           'required' => array(
@@ -128,8 +121,8 @@ function islandora_newspaper_admin_settings_form_validate(array $form, array &$f
     if (empty($form_state['values']['islandora_newspaper_sequence_number_solr_field'])) {
       $error['islandora_newspaper_sequence_number_solr_field'] = t('Sequence number field cannot be blank');
     }
-    if (empty($form_state['values']['islandora_newspaper_pageof_solr_field'])) {
-      $error['islandora_newspaper_pageof_solr_field'] = t('PageOf field cannot be blank');
+    if (empty($form_state['values']['islandora_newspaper_parent_issue_solr_field'])) {
+      $error['islandora_newspaper_parent_issue_solr_field'] = t('Parent Solr field cannot be blank');
     }
     if (empty($form_state['values']['islandora_newspaper_date_issued_solr_field'])) {
       $error['islandora_newspaper_date_issued_solr_field'] = t('Date issued field cannot be blank');
