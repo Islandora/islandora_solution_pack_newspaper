@@ -181,9 +181,13 @@ function islandora_newspaper_get_issues_solr(AbstractObject $object) {
     $parent_field,
     $sequence_field,
   );
+
+  $issue_count = islandora_newspaper_count_issues_solr($object);
+
+  // TODO: Probably do multiple queries in a loop if over a threshold size.
   $solr_params = array(
-    'rows' => 30000,
-    'limit' => 30000,
+    'rows' => $issue_count,
+    'limit' => $issue_count,
     'fl' => implode(', ', $fields),
     'hl' => 'false',
     'facet' => 'false',
@@ -543,4 +547,43 @@ function islandora_newspaper_set_mods_date_issued(AbstractDatastream $datastream
   }
   file_unmanaged_delete($file);
   return $out;
+}
+
+/**
+ * Return a count of all the issues of the given newspaper.
+ *
+ * @param AbstractObject $object
+ *   The newspaper object.
+ *
+ * @return int
+ *   The count of issues.
+ */
+function islandora_newspaper_count_issues_solr(AbstractObject $object) {
+  module_load_include('inc', 'islandora_solr', 'includes/utilities');
+  $parent_field = variable_get('islandora_newspaper_parent_issue_solr_field', 'RELS_EXT_isMemberOf_uri_ms');
+
+  $solr_build = new IslandoraSolrQueryProcessor();
+  $pid = islandora_solr_lesser_escape($object->id);
+  $ns_pid = islandora_solr_lesser_escape("info:fedora/{$object->id}");
+
+  $solr_query = "($parent_field:{$pid}+OR+$parent_field:{$ns_pid})+AND+RELS_EXT_hasModel_uri_ms:\"info:fedora/islandora:newspaperIssueCModel\"";
+
+  $solr_params = array(
+    'rows' => 0,
+    'facet' => 'false',
+    'hl' => 'false',
+  );
+
+  $solr_build->buildQuery($solr_query, $solr_params);
+  $solr_build->solrParams = array_replace_recursive($solr_build->solrParams, $solr_params);
+
+  try {
+    $solr_build->executeQuery();
+    $results = $solr_build->islandoraSolrResult['response']['numFound'];
+  }
+  catch (Exception $e) {
+    $results = 0;
+    drupal_set_message(t('Error searching Solr index: !e', array('!e' => $e->getMessage())), 'error', FALSE);
+  }
+  return $results;
 }
