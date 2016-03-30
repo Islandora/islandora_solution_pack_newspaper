@@ -39,9 +39,6 @@ function islandora_newspaper_admin_settings_form(array $form, array &$form_state
     ),
   );
 
-
-  
-  
   $form['islandora_newspaper_solr_wrapper'] = array(
     '#type' => 'fieldset',
     '#title' => t('Solr replacements'),
@@ -77,7 +74,7 @@ function islandora_newspaper_admin_settings_form(array $form, array &$form_state
           'required' => array(
             ':input[name="islandora_newspaper_use_solr"]' => array('checked' => TRUE),
           ),
-        )
+        ),
       ),
       'islandora_newspaper_pageof_solr_field' => array(
         '#type' => 'textfield',
@@ -90,7 +87,7 @@ function islandora_newspaper_admin_settings_form(array $form, array &$form_state
           'required' => array(
             ':input[name="islandora_newspaper_use_solr"]' => array('checked' => TRUE),
           ),
-        )
+        ),
       ),
       'islandora_newspaper_sequence_number_solr_field' => array(
         '#type' => 'textfield',
@@ -103,11 +100,10 @@ function islandora_newspaper_admin_settings_form(array $form, array &$form_state
           'required' => array(
             ':input[name="islandora_newspaper_use_solr"]' => array('checked' => TRUE),
           ),
-        )
+        ),
       ),
     ),
   );
-
 
   module_load_include('inc', 'islandora', 'includes/solution_packs');
   $form += islandora_viewers_form('islandora_newspaper_issue_viewers', NULL, 'islandora:newspaperIssueCModel');

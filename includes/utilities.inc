@@ -76,7 +76,7 @@ function islandora_newspaper_get_newspaper_solr($object) {
   module_load_include('inc', 'islandora_solr', 'includes/utilities');
   $solr_build = new IslandoraSolrQueryProcessor();
   $parent_field = variable_get('islandora_newspaper_parent_issue_solr_field', 'RELS_EXT_isMemberOf_uri_ms');
-  $solr_param = array(
+  $solr_params = array(
     'rows' => 20,
     'limit' => 20,
     'fl' => $parent_field,
@@ -86,9 +86,9 @@ function islandora_newspaper_get_newspaper_solr($object) {
   );
   $pid = islandora_solr_lesser_escape($object->id);
   $solr_query = "PID:{$pid}";
-  $solr_build->buildQuery($query, $solr_params);
+  $solr_build->buildQuery($solr_query, $solr_params);
   $solr_build->solrParams = array_replace_recursive($solr_build->solrParams, $solr_params);
-  
+
   try {
     $solr_build->executeQuery(FALSE);
     $results = (array) $solr_build->islandoraSolrResult['response']['objects'];
@@ -97,7 +97,7 @@ function islandora_newspaper_get_newspaper_solr($object) {
     $results = array();
     drupal_set_message(check_plain(t('Error searching Solr index')) . ' ' . $e->getMessage(), 'error', FALSE);
   }
-  
+
   $rel = reset($results);
   if ($rel) {
     return $rel['PID'];
@@ -106,7 +106,7 @@ function islandora_newspaper_get_newspaper_solr($object) {
 }
 
 /**
- * Returns the collection object of a given issue object from the resource index.
+ * Returns the collection object of an issue object from the resource index.
  *
  * @param object $object
  *   Newspaper issue object.
@@ -114,7 +114,7 @@ function islandora_newspaper_get_newspaper_solr($object) {
  * @return string|bool
  *   Returns the PID of the newspaper of which $object is a member. If there is
  *   no such membership, returns FALSE.
- */  
+ */
 function islandora_newspaper_get_newspaper_ri($object) {
   $rels = $object->relationships->get(FEDORA_RELS_EXT_URI, 'isMemberOf');
   $rel = reset($rels);
@@ -170,68 +170,70 @@ function islandora_newspaper_get_issues(AbstractObject $object) {
 function islandora_newspaper_get_issues_solr(AbstractObject $object) {
   module_load_include('inc', 'islandora_solr', 'includes/utilities');
   $solr_build = new IslandoraSolrQueryProcessor();
-  
+
   $parent_field = variable_get('islandora_newspaper_parent_issue_solr_field', 'RELS_EXT_isMemberOf_uri_ms');
-  $date_field = variable_get('islandora_newspaper_date_issued_solr_field', '');
+  $date_field = variable_get('islandora_newspaper_date_issued_solr_field', 'RELS_EXT_dateIssued_literal_ms');
   $sequence_field = variable_get('islandora_newspaper_sequence_number_solr_field', 'RELS_EXT_isSequenceNumber_literal_ms');
-  $solr_param = array(
+  $fields = array(
+    'PID',
+    'fgs_label_ms',
+    $date_field,
+    $parent_field,
+    $sequence_field,
+  );
+  $solr_params = array(
     'rows' => 30000,
     'limit' => 30000,
-    'fl' => array(
-      'PID',
-      'fgs_label_s',
-      $date_field,
-      $parent_field,
-      $sequence_field,
-    ),
+    'fl' => implode(', ', $fields),
     'hl' => 'false',
     'facet' => 'false',
   );
   $pid = islandora_solr_lesser_escape($object->id);
   $ns_pid = islandora_solr_lesser_escape("info:fedora/{$object->id}");
-  
-  $solr_query = "($parent_field:{$pid}+OR+$parent_field:{$ns_pid})+AND+RELS_EXT_hasModel_uri_ms:\"info:fedora/islandora:newspaperIssueCModel\")";
 
+  $solr_query = "($parent_field:{$pid}+OR+$parent_field:{$ns_pid})+AND+RELS_EXT_hasModel_uri_ms:\"info:fedora/islandora:newspaperIssueCModel\"";
 
-  $solr_build->buildQuery($query, $solr_params);
+  $solr_build->buildQuery($solr_query, $solr_params);
   $solr_build->solrParams = array_replace_recursive($solr_build->solrParams, $solr_params);
-  
+
   try {
     $solr_build->executeQuery(FALSE);
     $results = (array) $solr_build->islandoraSolrResult['response']['objects'];
   }
   catch (Exception $e) {
     $results = array();
-    drupal_set_message(check_plain(t('Error searching Solr index')) . ' ' . $e->getMessage(), 'error', FALSE);
+    drupal_set_message(t('Error searching Solr index: !e', array('!e' => $e->getMessage())), 'error', FALSE);
   }
-  
+
   // Map the results using a default Datetime for missing issued dates.
   $map_results = function($o) use ($date_field, $sequence_field) {
     try {
-      @$issued = new DateTime($o[$date_field]);
+      @$issued = new DateTime($o['solr_doc'][$date_field]);
     }
     catch (Exception $e) {
       // Use the current time as a place holder.
       $issued = new DateTime();
-      $msg  = 'Failed to get issued date from SPARQL query for @pid';
+      $msg  = 'Failed to get issued date from SOLR query for @pid';
       $vars = array('@pid' => $o['PID']);
       watchdog_exception('islandora_newspaper', $e, $msg, $vars, WATCHDOG_ERROR);
     }
-    if (isset($o[$sequence_field])) {
-      if (is_array($o[$sequence_field])) {
-        $o[$sequence_field] = reset($o[$sequence_field]);
-        if ($o[$sequence_field] === FALSE) {
-          $o[$sequence_field] = 0;
+    $get_value = function($field, $default = "") use ($o) {
+      if (isset($o['solr_doc'][$field])) {
+        if (is_array($o['solr_doc'][$field]) && isset($o['solr_doc'][$field][0])) {
+          return $o['solr_doc'][$field][0];
+        }
+        else {
+          return $o['solr_doc'][$field];
         }
       }
-    }
-    else {
-      $o['RELS_EXT_isSequenceNumber_literal_ms'] = 0;
-    }
+      else {
+        return $default;
+      }
+    };
     return array(
-      'pid' => $o['PID'],
-      'label' => $o['fgs_label_s'],
-      'sequence' => $o[$sequence_field],
+      'pid' => $get_value('PID'),
+      'label' => $get_value('fgs_label_ms'),
+      'sequence' => $get_value($sequence_field, 0),
       'issued' => $issued,
     );
   };
