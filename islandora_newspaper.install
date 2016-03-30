@@ -28,7 +28,6 @@ function islandora_newspaper_uninstall() {
     'islandora_newspaper_date_issued_solr_field',
     'islandora_newspaper_ingest_derivatives',
     'islandora_newspaper_sequence_number_solr_field',
-    'islandora_newspaper_pageof_solr_field',
   );
   array_walk($variables, 'variable_del');
 }
