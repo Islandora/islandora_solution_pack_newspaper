@@ -20,6 +20,10 @@ function islandora_newspaper_admin_settings_form(array $form, array &$form_state
   $get_default_value = function($name, $default) use(&$form_state) {
     return isset($form_state['values'][$name]) ? $form_state['values'][$name] : variable_get($name, $default);
   };
+
+  $solr_enabled = module_exists('islandora_solr');
+  $solr_message = ($solr_enabled ? "" : "Islandora Solr is required.");
+
   $form = array(
     'local_derivative_settings' => array(
       '#type' => 'fieldset',
@@ -45,8 +49,10 @@ function islandora_newspaper_admin_settings_form(array $form, array &$form_state
     'islandora_newspaper_use_solr' => array(
       '#type' => 'checkbox',
       '#title' => t('Use Solr to get issues and pages'),
-      '#description' => t('Replaces newspapers resource index queries with Solr ones.'),
-      '#default_value' => variable_get('islandora_newspaper_use_solr', FALSE),
+      '#disabled' => (!$solr_enabled),
+      '#description' => t('Replaces newspapers resource index queries with Solr ones. @msg',
+        array('@msg' => $solr_message)),
+      '#default_value' => (variable_get('islandora_newspaper_use_solr', FALSE) && $solr_enabled),
       '#return_value' => TRUE,
     ),
     'islandora_newspapers_solr_options' => array(

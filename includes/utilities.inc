@@ -54,7 +54,7 @@ function islandora_newspaper_get_current_sequence($object) {
  *   no such membership, returns FALSE.
  */
 function islandora_newspaper_get_newspaper($object) {
-  if (variable_get('islandora_newspaper_use_solr', FALSE)) {
+  if (variable_get('islandora_newspaper_use_solr', FALSE) && module_exists('islandora_solr')) {
     return islandora_newspaper_get_newspaper_solr($object);
   }
   else {
@@ -142,7 +142,7 @@ function islandora_newspaper_get_newspaper_ri($object) {
  *     - issued: A DateTime object repersenting the date the issue was released.
  */
 function islandora_newspaper_get_issues(AbstractObject $object) {
-  if (variable_get('islandora_newspaper_use_solr', FALSE)) {
+  if (variable_get('islandora_newspaper_use_solr', FALSE) && module_exists('islandora_solr')) {
     return islandora_newspaper_get_issues_solr($object);
   }
   else {
