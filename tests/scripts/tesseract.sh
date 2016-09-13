@@ -14,7 +14,6 @@ if [ "$?" -eq "1" ]; then
   echo "Will try from source now"
   FROMSOURCE=1
 fi
-
 if [ "$FROMSOURCE" -eq 1 ]; then
   mkdir ~/tesseract
   cd ~/tesseract
@@ -38,5 +37,6 @@ if [ "$FROMSOURCE" -eq 1 ]; then
   cd ~ && rm -rf ~/tesseract
 fi
 # If this fails, then we are out of luck
-echo -e "\ntessceract output:"
+printf "\n"
+echo "tessceract output:"
 tesseract --version && tesseract --list-langs
