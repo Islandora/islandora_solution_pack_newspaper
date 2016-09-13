@@ -10,7 +10,7 @@ $(command -v tesseract --version > /dev/null 2>&1)
 if [ "$?" -eq "1" ]; then
   printf "\n"
   echo "Tesseract could not be installed via apt-get"
-  printf "\n"9082
+  printf "\n"
   echo "Will try from source now"
   FROMSOURCE=1
 fi
