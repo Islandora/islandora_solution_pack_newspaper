@@ -1,6 +1,6 @@
 #!/bin/sh
-apt-get update
-apt-get install build-essential checkinstall 
+apt-get -y update
+apt-get -y install build-essential checkinstall 
 # Go for Ubuntu's packages first
 FROMSOURCE=0
 echo "Installing Tesseract OCR using Trusty Ubuntu Packages"
@@ -10,7 +10,7 @@ $(command -v tesseract --version > /dev/null 2>&1)
 if [ "$?" -eq "1" ]; then
   printf "\n"
   echo "Tesseract could not be installed via apt-get"
-  printf "\n"
+  printf "\n"9082
   echo "Will try from source now"
   FROMSOURCE=1
 fi
