@@ -3,11 +3,11 @@ apt-get --yes --force-yes update
 apt-get --yes --force-yes install build-essential checkinstall
 # Go for Ubuntu's packages first
 FROMSOURCE=0
-PRECISEDIST="`cat /etc/issue | grep 12.0 | wc -l`" # 1 for 12.0x ubuntu 
+UBUNTUDIST="`lsb_release -sc`" # "precise" means from source
 
-if [ "$PRECISEDIST" -ne 1 ]; then
+if [ "$UBUNTUDIST" != "precise" ]; then
   echo "Installing Tesseract OCR using Ubuntu Packages"
-  apt-get --yes --force-yes install tesseract-ocr tesseract-ocr-eng
+  apt-get --yes install tesseract-ocr tesseract-ocr-eng
 fi
 # Check if install worked or already there
 $(command -v tesseract --version > /dev/null 2>&1)
