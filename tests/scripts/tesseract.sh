@@ -1,27 +1,25 @@
 #!/bin/sh
 apt-get --yes --force-yes update
-apt-get --yes --force-yes install build-essential checkinstall
+apt-get --yes --force-yes install build-essential checkinstall automake libtool
 # Go for Ubuntu's packages first
-FROMSOURCE=0
-UBUNTUDIST="`lsb_release -sc`" # "precise" means from source
-
+UBUNTUDIST="`lsb_release -sc`" # precise means from source
+CANRUN="1"
 if [ "$UBUNTUDIST" != "precise" ]; then
   echo "Installing Tesseract OCR using Ubuntu Packages"
   apt-get --yes install tesseract-ocr tesseract-ocr-eng
 fi
-# Check if install worked or already there
-$(command -v tesseract --version > /dev/null 2>&1)
-if [ "$?" -eq "1" ]; then
+# Check if installation worked or was already there
+$(command -v tesseract --version >/dev/null 2>&1 || exit 1)
+CANRUN="$?"
+if [ "$CANRUN" -eq "1" ]; then
   printf "\n"
   echo "Tesseract could not be installed via apt-get"
   printf "\n"
   echo "Will try from source now"
-  FROMSOURCE=1
-fi
-if [ "$FROMSOURCE" -eq 1 ]; then
-  echo "Installing Tesseract OCR from Source"
   mkdir ~/tesseract
   cd ~/tesseract
+  printf "\n"
+  echo "Installing Tesseract OCR from Source"
   wget http://www.leptonica.org/source/leptonica-1.69.tar.gz
   tar xf leptonica-1.69.tar.gz && rm -rf leptonica-1.69.tar.gz
   cd leptonica-1.69
