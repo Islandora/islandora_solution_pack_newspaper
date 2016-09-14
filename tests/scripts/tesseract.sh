@@ -1,16 +1,17 @@
 #!/bin/sh
-apt-get -y update
-apt-get -y install build-essential checkinstall 
+apt-get --yes --force-yes update
+apt-get --yes --force-yes install build-essential checkinstall
 # Go for Ubuntu's packages first
 FROMSOURCE=0
 KERNEL=$(uname -r) # kernel release version, e.g., "3.13.0-67-generic"
 VER="${KERNEL%.*-*}" # remove suffix starting with '.' and containing '-'
-VER="${KERNEL//.}" # remove periods
+VER=$(echo "$VER" | sed 's/\.//g') # remove periods
+
 #UBUNTU 14.04 has 3.13.x wich means VER == 313
 
 if [ "$VER" -ge 313 ]; then
   echo "Installing Tesseract OCR using Trusty Ubuntu Packages"
-  apt-get -y install tesseract-ocr tesseract-ocr-eng
+  apt-get --yes --force-yes install tesseract-ocr tesseract-ocr-eng
 fi
 # Check if install worked
 $(command -v tesseract --version > /dev/null 2>&1)
