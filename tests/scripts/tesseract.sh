@@ -26,11 +26,11 @@ if [ "$CANRUN" -eq "1" ]; then
   ./configure
   make && checkinstall --pkgname=libleptonica --pkgversion="1.73" --backup=no --deldoc=yes --fstrans=no --default
   cd ~/tesseract
-  git clone https://github.com/tesseract-ocr/tesseract.git -b 3.04 3.04.01 --depth 1
-  cd 3.04.01
+  git clone https://github.com/tesseract-ocr/tesseract.git -b 3.04 3.04.02b --depth 1
+  cd 3.04.02b
   ./autogen.sh
   ./configure
-  make && checkinstall --pkgname=tesseract-ocr --pkgversion="3.04.01" --backup=no --deldoc=yes --fstrans=no --default && ldconfig
+  make && checkinstall --pkgname=tesseract-ocr --pkgversion="3.04.02b" --backup=no --deldoc=yes --fstrans=no --default && ldconfig
   mkdir ~/tesseract/langs
   cd ~/tesseract/langs
   wget https://raw.githubusercontent.com/tesseract-ocr/tessdata/master/eng.traineddata
