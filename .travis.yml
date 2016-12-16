@@ -43,6 +43,6 @@ script:
   - $ISLANDORA_DIR/tests/scripts/line_endings.sh sites/all/modules/islandora_solution_pack_newspaper
   - drush coder-review --reviews=production,security,style,i18n,potx,sniffer islandora_newspaper
   - phpcpd --names *.module,*.inc,*.test sites/all/modules/islandora_solution_pack_newspaper
-  - sudo -u www-data php scripts/run-tests.sh --url http://localhost:8081 --verbose --class IslandoraNewspaperPageIngestTestCase
+  - drush test-run --uri=http://localhost:8081 "Islandora Newspaper"
 notifications:
   irc: "irc.freenode.org#islandora"
