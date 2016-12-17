@@ -95,9 +95,8 @@ class IslandoraNewspaperPageIngestTestCase extends IslandoraCollectionWebTestCas
       'titleInfo[title]' => $issue_title,
       'originInfo[dateIssued]' => '2002-02-20',
     );
-    $this->drupalPost($path, $edit, t('Next'));
-    $this->assertText('PDF File', 'Optional PDF ingest step', 'Islandora');
-    $this->drupalPost(NULL, array(), t('Ingest'));
+   
+    $this->drupalPost($path, $edit, t('Ingest'));
     $this->assertText($issue_title, 'Issue was created', 'Islandora');
 
     // Checks for issue datastream creation.
