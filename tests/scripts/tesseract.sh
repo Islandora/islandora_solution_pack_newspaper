@@ -6,7 +6,7 @@ UBUNTUDIST="`lsb_release -sc`" # precise means from source
 CANRUN="1"
 if [ "$UBUNTUDIST" != "precise" ]; then
   echo "Installing Tesseract OCR using Ubuntu Packages"
-  apt-get --yes install tesseract-ocr tesseract-ocr-eng 
+  apt-get --yes install tesseract-ocr tesseract-ocr-eng
 fi
 # Check if installation worked or was already there
 $(command -v tesseract --version >/dev/null 2>&1 || exit 1)
@@ -33,7 +33,8 @@ if [ "$CANRUN" -eq "1" ]; then
   make && checkinstall --pkgname=tesseract-ocr --pkgversion="3.04.02b" --backup=no --deldoc=yes --fstrans=no --default && ldconfig
   mkdir ~/tesseract/langs
   cd ~/tesseract/langs
-  wget https://raw.githubusercontent.com/tesseract-ocr/tessdata/master/eng.traineddata
+  # tested also with https://github.com/tesseract-ocr/tessdata/releases/tag/3.04
+  wget https://raw.githubusercontent.com/tesseract-ocr/tessdata/4.00/eng.traineddata
   echo "Deploying English trained language file"
   cp eng.traineddata /usr/local/share/tessdata/
   cd ~ && rm -rf ~/tesseract
