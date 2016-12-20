@@ -95,7 +95,7 @@ class IslandoraNewspaperPageIngestTestCase extends IslandoraCollectionWebTestCas
       'titleInfo[title]' => $issue_title,
       'originInfo[dateIssued]' => '2002-02-20',
     );
-   
+
     $this->drupalPost($path, $edit, t('Ingest'));
     $this->assertText($issue_title, 'Issue was created', 'Islandora');
 
