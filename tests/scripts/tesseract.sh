@@ -20,26 +20,26 @@ if [ "$CANRUN" -eq "1" ]; then
   cd ~/tesseract
   printf "\n"
   echo "Installing Tesseract OCR from Source"
-  wget http://www.leptonica.org/source/leptonica-1.69.tar.gz
-  tar xf leptonica-1.69.tar.gz && rm -rf leptonica-1.69.tar.gz
-  cd leptonica-1.69
+  wget http://www.leptonica.org/source/leptonica-1.73.tar.gz
+  tar xf leptonica-1.73.tar.gz && rm -rf leptonica-1.73.tar.gz
+  cd leptonica-1.73
   ./configure
-  make && checkinstall --pkgname=libleptonica --pkgversion="1.69" --backup=no --deldoc=yes --fstrans=no --default
+  make && checkinstall --pkgname=libleptonica --pkgversion="1.73" --backup=no --deldoc=yes --fstrans=no --default
   cd ~/tesseract
-  wget https://github.com/tesseract-ocr/tesseract/archive/3.02.02.tar.gz
-  tar xf 3.02.02.tar.gz && rm -rf 3.02.02.tar.gz
-  cd tesseract-3.02.02
+  git clone https://github.com/tesseract-ocr/tesseract.git -b 3.04 3.04.02b --depth 1
+  cd 3.04.02b
   ./autogen.sh
   ./configure
-  make && checkinstall --pkgname=tesseract-ocr --pkgversion="3.02.02" --backup=no --deldoc=yes --fstrans=no --default && ldconfig
+  make && checkinstall --pkgname=tesseract-ocr --pkgversion="3.04.02b" --backup=no --deldoc=yes --fstrans=no --default && ldconfig
   mkdir ~/tesseract/langs
   cd ~/tesseract/langs
-  wget https://raw.githubusercontent.com/tesseract-ocr/tessdata/master/eng.traineddata
+  # tested also with https://github.com/tesseract-ocr/tessdata/releases/tag/3.04
+  wget https://raw.githubusercontent.com/tesseract-ocr/tessdata/4.00/eng.traineddata
   echo "Deploying English trained language file"
   cp eng.traineddata /usr/local/share/tessdata/
   cd ~ && rm -rf ~/tesseract
 fi
 # If this fails, then we are out of luck
 printf "\n"
-echo "tessceract output:"
+echo "tesseract output:"
 tesseract --version && tesseract --list-langs
