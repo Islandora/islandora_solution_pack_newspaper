@@ -243,9 +243,9 @@ function islandora_newspaper_islandora_required_objects(IslandoraTuque $connecti
 }
 
 /**
- * Implements hook_islandora_xml_form_builder_forms().
+ * Implements hook_xml_form_builder_forms().
  */
-function islandora_newspaper_islandora_xml_form_builder_forms() {
+function islandora_newspaper_xml_form_builder_forms() {
   $module_path = drupal_get_path('module', 'islandora_newspaper');
   return array(
     'Newspaper' => array(
@@ -258,9 +258,9 @@ function islandora_newspaper_islandora_xml_form_builder_forms() {
 }
 
 /**
- * Implements hook_islandora_xml_form_builder_form_associations().
+ * Implements hook_xml_form_builder_form_associations().
  */
-function islandora_newspaper_islandora_xml_form_builder_form_associations() {
+function islandora_newspaper_xml_form_builder_form_associations() {
   return array(
     'islandora_newspaper_mods_form' => array(
       'content_model' => 'islandora:newspaperCModel',
