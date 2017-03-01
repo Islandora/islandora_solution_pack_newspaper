@@ -48,11 +48,11 @@ function islandora_newspaper_admin_settings_form(array $form, array &$form_state
   );
 
   module_load_include('inc', 'islandora', 'includes/solution_packs');
-  $form += islandora_viewers_form('islandora_newspaper_issue_viewers', NULL, 'islandora:newspaperIssueCModel');
+  $form += islandora_viewers_form('islandora_newspaper_issue_viewers', array('application/pdf'), 'islandora:newspaperIssueCModel');
   $form['issue_viewers'] = $form['viewers'];
   $form['issue_viewers']['#title'] = t('Issue Viewers');
   unset($form['viewers']);
-  $form += islandora_viewers_form('islandora_newspaper_page_viewers', 'image/jp2');
+  $form += islandora_viewers_form('islandora_newspaper_page_viewers', array('image/jp2', 'application/pdf'));
   $form['page_viewers'] = $form['viewers'];
   $form['page_viewers']['#title'] = t('Page Viewers');
   unset($form['viewers']);
