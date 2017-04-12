@@ -350,7 +350,8 @@ function islandora_newspaper_islandora_newspaperIssueCModel_islandora_ingest_ste
 /**
  * Implements hook_cmodel_dsid_islandora_datastream_ingested().
  *
- * This updates the RELS-EXT such that the date issued matches the mods.
+ * This updates the RELS-EXT such that the date issued matches the mods
+ * and clears the issue list cache.
  */
 function islandora_newspaper_islandora_newspaperissuecmodel_mods_islandora_datastream_ingested(AbstractObject $object, AbstractDatastream $datastream) {
   module_load_include('inc', 'islandora_newspaper', 'includes/utilities');
@@ -358,18 +359,43 @@ function islandora_newspaper_islandora_newspaperissuecmodel_mods_islandora_datas
   if ($date_issued) {
     islandora_newspaper_set_date_issued($object, $date_issued);
   }
+  if (variable_get('islandora_newspaper_issue_list_cache', 'none') == 'auto') {
+    if ($newspaper_pid = islandora_newspaper_get_newspaper($object)) {
+      islandora_newspaper_clear_issue_list_cache($newspaper_pid);
+    }
+  }
 }
 
 /**
  * Implements hook_cmodel_dsid_islandora_datastream_ingested().
  *
- * This updates the RELS-EXT such that the date issued matches the mods.
+ * This updates the RELS-EXT such that the date issued matches the mods
+ * and clears the issue list cache.
  */
 function islandora_newspaper_islandora_newspaperissuecmodel_mods_islandora_datastream_modified(AbstractObject $object, AbstractDatastream $datastream) {
   module_load_include('inc', 'islandora_newspaper', 'includes/utilities');
   $date_issued = islandora_newspaper_get_date_issued_from_mods($datastream);
   if ($date_issued) {
     islandora_newspaper_set_date_issued($object, $date_issued);
+  }
+  if (variable_get('islandora_newspaper_issue_list_cache', 'none') == 'auto') {
+    if ($newspaper_pid = islandora_newspaper_get_newspaper($object)) {
+      islandora_newspaper_clear_issue_list_cache($newspaper_pid);
+    }
+  }
+}
+
+/**
+ * Implements hook_cmodel_pid_islandora_datastream_purged().
+ *
+ * This clears the issue list cache.
+ */
+function islandora_newspaper_islandora_newspaperissuecmodel_mods_islandora_datastream_purged(AbstractObject $object, AbstractDatastream $datastream) {
+  module_load_include('inc', 'islandora_newspaper', 'includes/utilities');
+  if (variable_get('islandora_newspaper_issue_list_cache', 'none') == 'auto') {
+    if ($newspaper_pid = islandora_newspaper_get_newspaper($object)) {
+      islandora_newspaper_clear_issue_list_cache($newspaper_pid);
+    }
   }
 }
 

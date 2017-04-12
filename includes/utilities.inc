@@ -80,7 +80,15 @@ function islandora_newspaper_get_newspaper($object) {
  *     - issued: A DateTime object repersenting the date the issue was released.
  */
 function islandora_newspaper_get_issues(AbstractObject $object) {
-  $query = <<<EOQ
+  $cid = preg_replace('/:/', '_', $object->id);
+  $cid = 'islandora_newspaper_issues:' . $cid;
+  if ($cache = cache_get($cid)) {
+    $pids = $cache->data['pids'];
+    $issues = $cache->data['issues'];
+    return count($pids) ? array_combine($pids, $issues) : array();
+  }
+  else {
+    $query = <<<EOQ
 PREFIX islandora-rels-ext: <http://islandora.ca/ontology/relsext#>
 PREFIX fedora-rels-ext: <info:fedora/fedora-system:def/relations-external#>
 SELECT DISTINCT ?object ?sequence ?label ?issued
@@ -97,50 +105,58 @@ WHERE {
 ORDER BY ?sequence
 EOQ;
 
-  // XXX: Can't really use the fully featured query_filter and query_statements
-  // hook as it will return some things we don't want. Perhaps change the return
-  // structure in the future to specify which module they are coming from? For
-  // now we will just get XACML's directly.
-  $query_optionals = (array) module_invoke('islandora_xacml_api', 'islandora_basic_collection_get_query_optionals', 'view');
-  $query_filters = (array) module_invoke('islandora_xacml_api', 'islandora_basic_collection_get_query_filters');
+    // XXX: Can't really use the fully featured query_filter and
+    // query_statements hook as it will return some things we don't want.
+    // Perhaps change the return structure in the future to specify which
+    // module they are coming from? For now we will just get XACML's directly.
+    $query_optionals = (array) module_invoke('islandora_xacml_api', 'islandora_basic_collection_get_query_optionals', 'view');
+    $query_filters = (array) module_invoke('islandora_xacml_api', 'islandora_basic_collection_get_query_filters');
 
-  $filter_map = function ($filter) {
-    return "FILTER($filter)";
-  };
+    $filter_map = function ($filter) {
+      return "FILTER($filter)";
+    };
 
-  $query = format_string($query, array(
-    '!optionals' => !empty($query_optionals) ? ('OPTIONAL {{' . implode('} UNION {', $query_optionals) . '}}') : '',
-    '!filters' => implode(' ', array_map($filter_map, $query_filters)),
-  ));
+    $query = format_string($query, array(
+      '!optionals' => !empty($query_optionals) ? ('OPTIONAL {{' . implode('} UNION {', $query_optionals) . '}}') : '',
+      '!filters' => implode(' ', array_map($filter_map, $query_filters)),
+    ));
 
-  $results = $object->repository->ri->sparqlQuery($query);
-  // Map the results using a default Datetime for missing issued dates.
-  $map_results = function($o) {
-    try {
-      @$issued = new DateTime($o['issued']['value']);
+    $results = $object->repository->ri->sparqlQuery($query);
+    // Map the results using a default Datetime for missing issued dates.
+    $map_results = function($o) {
+      try {
+        @$issued = new DateTime($o['issued']['value']);
+      }
+      catch (Exception $e) {
+        // Use the current time as a place holder.
+        $issued = new DateTime();
+        $msg  = 'Failed to get issued date from SPARQL query for @pid';
+        $vars = array('@pid' => $o['object']['value']);
+        watchdog_exception('islandora_newspaper', $e, $msg, $vars, WATCHDOG_ERROR);
+      }
+      return array(
+        'pid' => $o['object']['value'],
+        'label' => $o['label']['value'],
+        'sequence' => $o['sequence']['value'],
+        'issued' => $issued,
+      );
+    };
+    $issues = array_map($map_results, $results);
+    // Grab the PIDs...
+    $get_pid = function($o) {
+      return $o['pid'];
+    };
+    $pids = array_map($get_pid, $issues);
+
+    $newspaper_issue_data['pids'] = $pids;
+    $newspaper_issue_data['issues'] = $issues;
+    $to_cache = variable_get('islandora_newspaper_issue_list_cache', 'none');
+    if ($to_cache == 'auto' || $to_cache == 'permanent') {
+      cache_set($cid, $newspaper_issue_data);
     }
-    catch (Exception $e) {
-      // Use the current time as a place holder.
-      $issued = new DateTime();
-      $msg  = 'Failed to get issued date from SPARQL query for @pid';
-      $vars = array('@pid' => $o['object']['value']);
-      watchdog_exception('islandora_newspaper', $e, $msg, $vars, WATCHDOG_ERROR);
-    }
-    return array(
-      'pid' => $o['object']['value'],
-      'label' => $o['label']['value'],
-      'sequence' => $o['sequence']['value'],
-      'issued' => $issued,
-    );
-  };
-  $issues = array_map($map_results, $results);
-  // Grab the PIDs...
-  $get_pid = function($o) {
-    return $o['pid'];
-  };
-  $pids = array_map($get_pid, $issues);
-  // Make the PIDs the keys.
-  return count($pids) ? array_combine($pids, $issues) : array();
+    // Make the PIDs the keys.
+    return count($pids) ? array_combine($pids, $issues) : array();
+  }
 }
 
 /**
@@ -357,4 +373,16 @@ function islandora_newspaper_set_mods_date_issued(AbstractDatastream $datastream
   }
   file_unmanaged_delete($file);
   return $out;
+}
+
+/**
+ * Clears a newspaper's issue list cache.
+ *
+ * @param string $pid
+ *   The PID of the newspaper whose cache is to be cleared.
+ */
+function islandora_newspaper_clear_issue_list_cache($pid) {
+  $cid = preg_replace('/:/', '_', $pid);
+  $cid = 'islandora_newspaper_issues:' . $cid;
+  cache_clear_all($cid, 'cache');
 }
