@@ -15,6 +15,7 @@
 ?>
 <div class="islandora-newspaper-object islandora">
   <div class="islandora-newspaper-content-wrapper clearfix">
+    <?php print theme('islandora_solr_search_return_link'); ?>
     <?php if ($islandora_content): ?>
       <div class="islandora-newspaper-content">
         <?php print $islandora_content; ?>

@@ -19,6 +19,7 @@
  */
 ?>
 <div class="islandora-newspaper-object">
+  <?php print theme('islandora_solr_search_return_link'); ?>
   <div class="islandora-newspaper-controls">
     <?php print theme('islandora_newspaper_page_controls', array('object' => $object)); ?>
   </div>
