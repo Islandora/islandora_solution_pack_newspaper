@@ -177,20 +177,20 @@ function islandora_newspaper_group_issues(array $issues) {
  */
 function islandora_newspaper_get_date_issued_from_mods(AbstractDatastream $datastream) {
   $out = FALSE;
-  $file = file_create_filename("{$datastream->parent->id}_{$datastream->id}.xml", 'temporary://');
-  $datastream->getContent($file);
-  @$doc = simplexml_load_file($file);
-  if ($doc) {
-    $doc->registerXPathNamespace('ns', 'http://www.loc.gov/mods/v3');
+  $dom = new DOMDocument();
+  $dom->loadXML($datastream->content);
+  $xpath = new DomXPath($dom);
+  if ($dom) {
+    $xpath->registerNamespace('ns', 'http://www.loc.gov/mods/v3');
     // Assumes the canonical date issued exists in the first mods document under
     // origin info and is not specified as a point, additional logic could be
     // added to process different encodings.
-    $dates = $doc->xpath('//ns:mods[1]/ns:originInfo/ns:dateIssued[not(@point)][1]');
-    $result = (string) reset($dates);
+    $dates = $xpath->query('//ns:mods/ns:originInfo/ns:dateIssued[not(@point)]')->item(0);
     try {
-      if (empty($result)) {
+      if (empty($dates)) {
         throw new Exception('mods:dateIssued element was empty.');
       }
+      $result = $dates->nodeValue;
       $out = new DateTime($result);
     }
     catch (Exception $e) {
@@ -199,7 +199,6 @@ function islandora_newspaper_get_date_issued_from_mods(AbstractDatastream $datas
       watchdog_exception('islandora_newspaper', $e, $msg, $vars, WATCHDOG_ERROR);
     }
   }
-  file_unmanaged_delete($file);
   return $out;
 }
 
@@ -310,17 +309,16 @@ EOQ;
  */
 function islandora_newspaper_set_mods_date_issued(AbstractDatastream $datastream, DateTime $date) {
   $out = FALSE;
-  $file = file_create_filename("{$datastream->parent->id}_{$datastream->id}.xml", 'temporary://');
-  $datastream->getContent($file);
-  @$doc = simplexml_load_file($file);
-  if ($doc) {
-    $doc->registerXPathNamespace('ns', 'http://www.loc.gov/mods/v3');
+  $dom = new DOMDocument();
+  $dom->loadXML($datastream->content);
+  $xpath = new DomXPath($dom);
+  if ($dom) {
+    $xpath->registerNamespace('ns', 'http://www.loc.gov/mods/v3');
     // Assumes the canonical date issued exists in the first mods document under
     // origin info and is not specified as a point, additional logic could be
     // added to process different encodings.
-    $parent = FALSE;
-    $dates = $doc->xpath('//ns:mods[1]/ns:originInfo/ns:dateIssued[not(@point)][1]');
-    if (is_array($dates) && count($dates) > 0) {
+    $dates = $xpath->query('//ns:mods/ns:originInfo/ns:dateIssued[not(@point)]');
+    if ($dates->length > 0) {
       $removal = array();
       // XX: Because you can't remove elements in a foreach loop
       // we collect them. Then we can add the new one and remove
@@ -329,32 +327,28 @@ function islandora_newspaper_set_mods_date_issued(AbstractDatastream $datastream
         $removal[] = $d;
       }
       foreach ($removal as $r) {
-        $dom = dom_import_simplexml($r);
-        $dom->parentNode->removeChild($dom);
+        $r->parentNode->removeChild($r);
       }
     }
-    $origin = $doc->xpath('//ns:mods[1]/ns:originInfo');
-    if ($origin) {
-      $parent = reset($origin);
+    $mods = $xpath->query('//ns:mods')->item(0);
+    $prefix = ($mods->prefix) ? ($mods->prefix) . ':' : '';
+    $new_date = $dom->createElement($prefix . 'dateIssued', $date->format("Y-m-d"));
+    $new_date->setAttribute('encoding', 'iso8601');
+    $origin = $xpath->query('ns:originInfo', $mods)->item(0);
+    if (!$origin) {
+      $origin = $dom->createElement($prefix . 'originInfo');
+      $origin = $mods->appendChild($origin);
     }
-    if ($parent) {
-      $new_date = $parent->addChild('dateIssued', $date->format("Y-m-d"), 'http://www.loc.gov/mods/v3');
-      $new_date->addAttribute('encoding', 'iso8601');
-      try {
-        $datastream->setContentFromString($doc->asXML());
-        $out = TRUE;
-      }
-      catch (Exception $e) {
-        $msg  = 'Failed to get save MODS datastream for @pid';
-        $vars = array('@pid' => $datastream->parent->id);
-        watchdog_exception('islandora_newspaper', $e, $msg, $vars, WATCHDOG_ERROR);
-      }
+    $new_date = $origin->appendChild($new_date);
+    try {
+      $datastream->setContentFromString($dom->saveXML());
+      $out = TRUE;
     }
-    else {
+    catch (Exception $e) {
+      $msg  = 'Failed to get save MODS datastream for @pid';
       $vars = array('@pid' => $datastream->parent->id);
-      watchdog('islandora_newspaper', 'Failed to get originInfo from MODS for @pid', $vars, WATCHDOG_ERROR);
+      watchdog_exception('islandora_newspaper', $e, $msg, $vars, WATCHDOG_ERROR);
     }
   }
-  file_unmanaged_delete($file);
   return $out;
 }
