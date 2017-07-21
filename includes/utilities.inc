@@ -319,25 +319,16 @@ function islandora_newspaper_set_mods_date_issued(AbstractDatastream $datastream
     // added to process different encodings.
     $dates = $xpath->query('//ns:mods/ns:originInfo/ns:dateIssued[not(@point)]');
     if ($dates->length > 0) {
-      $removal = array();
-      // XX: Because you can't remove elements in a foreach loop
-      // we collect them. Then we can add the new one and remove
-      // the old.
       foreach ($dates as $d) {
-        $removal[] = $d;
-      }
-      foreach ($removal as $r) {
-        $r->parentNode->removeChild($r);
+        $d->parentNode->removeChild($d);
       }
     }
-    $mods = $xpath->query('//ns:mods')->item(0);
-    $prefix = ($mods->prefix) ? ($mods->prefix) . ':' : '';
-    $new_date = $dom->createElement($prefix . 'dateIssued', $date->format("Y-m-d"));
+    $new_date = $dom->createElementNS($dom->firstChild->namespaceURI, 'dateIssued', $date->format("Y-m-d"));
     $new_date->setAttribute('encoding', 'iso8601');
-    $origin = $xpath->query('ns:originInfo', $mods)->item(0);
+    $origin = $xpath->query('//ns:mods/ns:originInfo')->item(0);
     if (!$origin) {
-      $origin = $dom->createElement($prefix . 'originInfo');
-      $origin = $mods->appendChild($origin);
+      $origin = $dom->createElementNS($dom->firstChild->namespaceURI, 'originInfo');
+      $origin = $dom->firstChild->appendChild($origin);
     }
     $new_date = $origin->appendChild($new_date);
     try {
