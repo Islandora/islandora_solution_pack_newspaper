@@ -318,10 +318,8 @@ function islandora_newspaper_set_mods_date_issued(AbstractDatastream $datastream
     // origin info and is not specified as a point, additional logic could be
     // added to process different encodings.
     $dates = $xpath->query('//ns:mods/ns:originInfo/ns:dateIssued[not(@point)]');
-    if ($dates->length > 0) {
-      foreach ($dates as $d) {
-        $d->parentNode->removeChild($d);
-      }
+    foreach ($dates as $d) {
+      $d->parentNode->removeChild($d);
     }
     $new_date = $dom->createElementNS($dom->firstChild->namespaceURI, 'dateIssued', $date->format("Y-m-d"));
     $new_date->setAttribute('encoding', 'iso8601');
