@@ -178,9 +178,8 @@ function islandora_newspaper_group_issues(array $issues) {
 function islandora_newspaper_get_date_issued_from_mods(AbstractDatastream $datastream) {
   $out = FALSE;
   $dom = new DOMDocument();
-  $dom->loadXML($datastream->content);
-  $xpath = new DomXPath($dom);
-  if ($dom) {
+  if ($dom->loadXML($datastream->content)) {
+    $xpath = new DomXPath($dom);
     $xpath->registerNamespace('ns', 'http://www.loc.gov/mods/v3');
     // Assumes the canonical date issued exists in the first mods document under
     // origin info and is not specified as a point, additional logic could be
@@ -310,9 +309,8 @@ EOQ;
 function islandora_newspaper_set_mods_date_issued(AbstractDatastream $datastream, DateTime $date) {
   $out = FALSE;
   $dom = new DOMDocument();
-  $dom->loadXML($datastream->content);
-  $xpath = new DomXPath($dom);
-  if ($dom) {
+  if ($dom->loadXML($datastream->content)) {
+    $xpath = new DomXPath($dom);
     $xpath->registerNamespace('ns', 'http://www.loc.gov/mods/v3');
     // Assumes the canonical date issued exists in the first mods document under
     // origin info and is not specified as a point, additional logic could be
