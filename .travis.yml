@@ -1,4 +1,4 @@
-lsudo: required
+sudo: required
 dist: trusty
 language: php
 
