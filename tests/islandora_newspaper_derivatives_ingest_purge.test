@@ -135,9 +135,9 @@ class IslandoraNewspaperPageIngestTestCase extends IslandoraCollectionWebTestCas
     // Attempts to validate datastreams where possible.
     $datastreams = array(
       array('OBJ', 'tiff'),
-      array('OCR', 'text', array('TEST TIFF', 14)),
-      array('HOCR', 'text', array('TEST', 14)),
-      array('HOCR', 'text', array('TIFF', 14)),
+      array('OCR', 'text', array('HAPPY DOG', 3)),
+      array('HOCR', 'text', array('HAPPY', 6)),
+      array('HOCR', 'text', array('CAT', 3)),
       array('JP2', 'jp2'),
       array('PDF', 'pdf'),
       array('TN', 'image'),
