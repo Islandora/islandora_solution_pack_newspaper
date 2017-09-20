@@ -28,6 +28,9 @@ Select configuration options for page derivatives, Parent Solr Field, and select
 
 ## Documentation
 
+Deleting a newspaper object will invariantly delete all its child issue objects, and their associated page objects without warning.
+![newspaper_diagram](https://user-images.githubusercontent.com/2738244/30652457-6ea939e0-9df6-11e7-851b-d298ca1e631b.png)
+
 Further documentation for this module is available at [our wiki](https://wiki.duraspace.org/display/ISLANDORA/Newspaper+Solution+Pack).
 
 ## Troubleshooting/Issues
