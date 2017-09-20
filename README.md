@@ -28,7 +28,7 @@ Select configuration options for page derivatives, Parent Solr Field, and select
 
 ## Documentation
 
-:warning: <br/>Deleting a newspaper object will invariantly delete all its child issue objects, and their associated page objects without warning. Highlighted in red in this diagram shows all that will be deleted if the newspaper Locusta Newspaper is deleted. All of the child issues and pages associated with this will also be deleted.
+:warning: <br/>Deleting a newspaper object will delete all its child issue objects, and their associated page objects. Highlighted in red in this diagram shows all that will be deleted if the newspaper Locusta Newspaper is deleted. All of the child issues and pages associated with this will also be deleted.
 
 ![newspaper_diagram](https://user-images.githubusercontent.com/2738244/30652457-6ea939e0-9df6-11e7-851b-d298ca1e631b.png)
 
