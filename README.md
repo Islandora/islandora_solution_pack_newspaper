@@ -27,6 +27,10 @@ Select configuration options for page derivatives, Parent Solr Field, and select
 ![Configuration](https://camo.githubusercontent.com/00b3d34d5927b733689ce0d1598a79c832082937/687474703a2f2f692e696d6775722e636f6d2f56764b6a6479462e706e67)
 
 ## Documentation
+:exclamation:Known BUG; this is not currently functioning as expected. All child object are being converted into orphan objects. A fix is being developed. :exclamation:
+:warning: <br/>Deleting a newspaper object will delete all its child issue objects, and their associated page objects. Highlighted in red in this diagram shows all that will be deleted if the newspaper Locusta Newspaper is deleted. All of the child issues and pages associated with this will also be deleted.
+
+![newspaper_diagram](https://user-images.githubusercontent.com/2738244/30652457-6ea939e0-9df6-11e7-851b-d298ca1e631b.png)
 
 Further documentation for this module is available at [our wiki](https://wiki.duraspace.org/display/ISLANDORA/Newspaper+Solution+Pack).
 
