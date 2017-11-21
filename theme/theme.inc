@@ -338,8 +338,10 @@ function template_preprocess_islandora_newspaper_page(array &$variables) {
         'absolute' => TRUE,
         'query' => array('token' => $token),
       ));
-
-    // Display newspaper.
+    $params['token'] = $token;
+    $params['pid'] = $object->id;
+    $params['dsid'] = 'JP2';
+    // Can be removed after 7.x-1.11 is out the door islandora_deprecated.
     $params['jp2_url'] = $jp2_url;
   }
   $variables['viewer_id'] = islandora_get_viewer_id('islandora_newspaper_page_viewers');
