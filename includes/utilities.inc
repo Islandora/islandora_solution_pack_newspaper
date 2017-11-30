@@ -65,9 +65,6 @@ function islandora_newspaper_get_newspaper($object) {
 /**
  * Gets all the issues that the given newspaper owns.
  *
- * The results are ordered by their RELS-EXT dateIssued property.
- * Older to newer.
- *
  * @param AbstractObject $object
  *   An AbstractObject representing a Fedora object.
  *
@@ -80,6 +77,41 @@ function islandora_newspaper_get_newspaper($object) {
  *     - issued: A DateTime object repersenting the date the issue was released.
  */
 function islandora_newspaper_get_issues(AbstractObject $object) {
+
+  if (module_exists('islandora_solr') && variable_get('islandora_newspaper_use_solr', FALSE)) {
+    $issues = islandora_newspaper_get_issues_solr($object);
+  }
+  else {
+    $issues = islandora_newspaper_get_issues_sparql($object);
+  }
+
+  // Grab the PIDs...
+  $get_pid = function ($o) {
+    return $o['pid'];
+  };
+  $pids = array_map($get_pid, $issues);
+  // Make the PIDs the keys.
+  $issues = count($pids) ? array_combine($pids, $issues) : array();
+  return $issues;
+}
+
+/**
+ * Gets all the issues that the given newspaper owns use the resource index.
+ *
+ * The results are ordered by their RELS-EXT dateIssued property.
+ * Older to newer.
+ *
+ * @param AbstractObject $object
+ *   An AbstractObject representing a Fedora object.
+ *
+ * @return array
+ *   An array with element of the form of:
+ *     - pid: The unique persistent identifier for the issue.
+ *     - label: A descriptive label for the issue.
+ *     - sequence: The sequence number of the issue, starts at 1.
+ *     - issued: A DateTime object repersenting the date the issue was released.
+ */
+function islandora_newspaper_get_issues_sparql(AbstractObject $object) {
   $query = <<<EOQ
 PREFIX islandora-rels-ext: <http://islandora.ca/ontology/relsext#>
 PREFIX fedora-rels-ext: <info:fedora/fedora-system:def/relations-external#>
@@ -115,14 +147,14 @@ EOQ;
 
   $results = $object->repository->ri->sparqlQuery($query);
   // Map the results using a default Datetime for missing issued dates.
-  $map_results = function($o) {
+  $map_results = function ($o) {
     try {
       @$issued = new DateTime($o['issued']['value']);
     }
     catch (Exception $e) {
       // Use the current time as a place holder.
       $issued = new DateTime();
-      $msg  = 'Failed to get issued date from SPARQL query for @pid';
+      $msg = 'Failed to get issued date from SPARQL query for @pid';
       $vars = array('@pid' => $o['object']['value']);
       watchdog_exception('islandora_newspaper', $e, $msg, $vars, WATCHDOG_ERROR);
     }
@@ -134,13 +166,111 @@ EOQ;
     );
   };
   $issues = array_map($map_results, $results);
-  // Grab the PIDs...
-  $get_pid = function($o) {
-    return $o['pid'];
+  return $issues;
+}
+
+/**
+ * Gets all the issues that the given newspaper owns using Solr.
+ *
+ * @param AbstractObject $object
+ *   An AbstractObject representing a Fedora object.
+ *
+ * @return array
+ *   An array with elements of the form of:
+ *     - pid: The unique persistent identifier for the issue.
+ *     - label: A descriptive label for the issue.
+ *     - sequence: The sequence number of the issue, starts at 1.
+ *     - issued: A DateTime object repersenting the date the issue was released.
+ */
+function islandora_newspaper_get_issues_solr(AbstractObject $object) {
+  $parent_field = variable_get('islandora_newspaper_parent_issue_solr_field', 'RELS_EXT_isMemberOf_uri_ms');
+  $date_field = variable_get('islandora_newspaper_solr_date_field', '');
+  $sequence_field = variable_get('islandora_newspaper_solr_sequence_field', 'RELS_EXT_isSequenceNumber_literal_ms');
+  // Counter for looping the start.
+  $start = -1;
+  // Number of records to return at once.
+  $rows = 10000;
+  $results = array();
+
+  $solr_build = new IslandoraSolrQueryProcessor();
+  $solr_query = format_string('!parent_field:("info:fedora/!pid" "!pid") AND'
+    . ' RELS_EXT_hasModel_uri_ms:"info:fedora/islandora:newspaperIssueCModel"',
+    [
+      '!parent_field' => $parent_field,
+      '!pid' => $object->id,
+    ]
+  );
+
+  do {
+    $start += 1;
+    $solr_param = [
+      'rows' => $rows,
+      'fl' => format_string('!date, !sequence, PID, fgs_label_s', [
+        '!date' => $date_field,
+        '!sequence' => $sequence_field,
+      ]),
+      'start' => ($rows * $start),
+      'hl' => 'false',
+      'facet' => 'false',
+    ];
+
+    $solr_build->buildQuery($solr_query, $solr_param);
+    $solr_build->solrParams = array_replace_recursive($solr_build->solrParams, $solr_param);
+
+    try {
+      $solr_build->executeQuery();
+      $count = $solr_build->islandoraSolrResult['response']['numFound'];
+      $results = array_merge($results, $solr_build->islandoraSolrResult['response']['objects']);
+    }
+    catch (Exception $error) {
+      drupal_set_message(check_plain(t('Error searching Solr index')) . ' ' . $error->getMessage(), 'error');
+    }
+
+  } while ($count > ($rows * $start + $rows) && !isset($error));
+
+  // Check the Solr doc array top and inside 'solr_doc'.
+  $check_fn = function ($o, $name) {
+    $value = "";
+    if (isset($o[$name])) {
+      $value = $o[$name];
+    }
+    elseif (isset($o['solr_doc'][$name])) {
+      $value = $o['solr_doc'][$name];
+    }
+    if (is_array($value)) {
+      return reset($value);
+    }
+    else {
+      return $value;
+    }
   };
-  $pids = array_map($get_pid, $issues);
-  // Make the PIDs the keys.
-  return count($pids) ? array_combine($pids, $issues) : array();
+
+  // Map the results using a default Datetime for missing issued dates.
+  $map_results = function ($o) use ($date_field, $check_fn, $sequence_field) {
+    try {
+      @$issued = new DateTime($check_fn($o, $date_field));
+    }
+    catch (Exception $e) {
+      // Use the current time as a place holder.
+      $issued = new DateTime();
+      $msg = 'Failed to get issued date from SPARQL query for @pid';
+      $vars = array('@pid' => $o['PID']);
+      watchdog_exception('islandora_newspaper', $e, $msg, $vars, WATCHDOG_ERROR);
+    }
+    $sequence = $check_fn($o, $sequence_field);
+    if (empty($sequence)) {
+      $sequence = 0;
+    }
+    return array(
+      'pid' => $o['PID'],
+      'label' => $o['object_label'],
+      'sequence' => $sequence,
+      'issued' => $issued,
+    );
+  };
+  $issues = array_map($map_results, $results);
+
+  return $issues;
 }
 
 /**

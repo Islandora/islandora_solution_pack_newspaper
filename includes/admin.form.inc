@@ -39,13 +39,60 @@ function islandora_newspaper_admin_settings_form(array $form, array &$form_state
     ),
   );
 
-  $form['islandora_newspaper_parent_issue_solr_field'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Parent Solr Field'),
-    '#description' => t("Solr field containing the parent issue's PID."),
-    '#default_value' => variable_get('islandora_newspaper_parent_issue_solr_field', 'RELS_EXT_isMemberOf_uri_ms'),
-    '#size' => 30,
+  $form['islandora_newspaper_solr_options'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Solr settings'),
+    'islandora_newspaper_parent_issue_solr_field' => array(
+      '#type' => 'textfield',
+      '#title' => t('Parent Solr Field'),
+      '#description' => t("Solr field containing the parent issue's PID."),
+      '#default_value' => variable_get('islandora_newspaper_parent_issue_solr_field', 'RELS_EXT_isMemberOf_uri_ms'),
+      '#size' => 50,
+    ),
+    'islandora_newspaper_use_solr' => array(
+      '#type' => 'checkbox',
+      '#title' => t('Use Solr for queries.'),
+      '#disabled' => (!module_exists('islandora_solr')),
+      '#description' => t('Use Solr instead of the resource index to generate issue and page lists.'),
+      '#default_value' => (module_exists('islandora_solr') ? variable_get('islandora_newspaper_use_solr', FALSE) :
+                            FALSE),
+    ),
+    'islandora_newspaper_solr_wrapper' => array(
+      '#type' => 'container',
+      '#states' => array(
+        'visible' => array(
+          ':input[name="islandora_newspaper_use_solr"]' => array('checked' => TRUE),
+        ),
+      ),
+      'islandora_newspaper_solr_date_field' => array(
+        '#type' => 'textfield',
+        '#title' => t('Issued date field'),
+        '#description' => t('Solr field that contains the date issued of the newspaper.'),
+        '#size' => 100,
+        '#default_value' => variable_get('islandora_newspaper_solr_date_field', ''),
+        '#autocomplete_path' => 'islandora_solr/autocomplete_luke',
+        '#states' => array(
+          'required' => array(
+            ':input[name="islandora_newspaper_use_solr"]' => array('checked' => TRUE),
+          ),
+        ),
+      ),
+      'islandora_newspaper_solr_sequence_field' => array(
+        '#type' => 'textfield',
+        '#title' => t('Sequence field'),
+        '#description' => t('Solr field that contains the sequence number of the issue/page.'),
+        '#size' => 100,
+        '#default_value' => variable_get('islandora_newspaper_solr_sequence_field', 'RELS_EXT_isSequenceNumber_literal_ms'),
+        '#autocomplete_path' => 'islandora_solr/autocomplete_luke',
+        '#states' => array(
+          'required' => array(
+            ':input[name="islandora_newspaper_use_solr"]' => array('checked' => TRUE),
+          ),
+        ),
+      ),
+    ),
   );
+  $form['#validate'][] = 'islandora_newspaper_admin_settings_form_validate';
 
   module_load_include('inc', 'islandora', 'includes/solution_packs');
   $form += islandora_viewers_form('islandora_newspaper_issue_viewers', array('application/pdf'), 'islandora:newspaperIssueCModel');
@@ -57,6 +104,27 @@ function islandora_newspaper_admin_settings_form(array $form, array &$form_state
   $form['page_viewers']['#title'] = t('Page Viewers');
   unset($form['viewers']);
   return system_settings_form($form);
+}
+
+/**
+ * Implements hook_FORM_ID_validate().
+ */
+function islandora_newspaper_admin_settings_form_validate(array $form, array &$form_state) {
+  $error = array();
+  if (isset($form_state['values']['islandora_newspaper_use_solr']) &&
+    $form_state['values']['islandora_newspaper_use_solr']) {
+    if (empty($form_state['values']['islandora_newspaper_solr_date_field'])) {
+      $error['islandora_newspaper_solr_date_field'] = t('You must set the date issued field.');
+    }
+    if (empty($form_state['values']['islandora_newspaper_solr_sequence_field'])) {
+      $error['islandora_newspaper_solr_sequence_field'] = t('You must set the sequence field.');
+    }
+  }
+  if (count($error) > 0) {
+    foreach ($error as $field => $message) {
+      form_set_error($field, $message);
+    }
+  }
 }
 
 /**
