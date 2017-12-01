@@ -194,7 +194,7 @@ function islandora_newspaper_get_issues_solr(AbstractObject $object) {
   $results = array();
 
   $solr_build = new IslandoraSolrQueryProcessor();
-  $solr_query = format_string('!parent_field:("info:fedora/!pid" "!pid") AND'
+  $solr_query = format_string('!parent_field:("info:fedora/!pid" OR "!pid") AND'
     . ' RELS_EXT_hasModel_uri_ms:"info:fedora/islandora:newspaperIssueCModel"',
     array(
       '!parent_field' => $parent_field,
