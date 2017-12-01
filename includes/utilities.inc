@@ -184,7 +184,7 @@ EOQ;
  */
 function islandora_newspaper_get_issues_solr(AbstractObject $object) {
   $parent_field = variable_get('islandora_newspaper_parent_issue_solr_field', 'RELS_EXT_isMemberOf_uri_ms');
-  $date_field = variable_get('islandora_newspaper_solr_date_field', '');
+  $date_field = variable_get('islandora_newspaper_solr_date_field', 'RELS_EXT_dateIssued_literal_ms');
   $sequence_field = variable_get('islandora_newspaper_solr_sequence_field', 'RELS_EXT_isSequenceNumber_literal_ms');
   // Counter for looping the start.
   $start = -1;
@@ -323,7 +323,7 @@ function islandora_newspaper_get_date_issued_from_mods(AbstractDatastream $datas
       $out = new DateTime($result);
     }
     catch (Exception $e) {
-      $msg  = 'Failed to get issued date from MODS for @pid';
+      $msg = 'Failed to get issued date from MODS for @pid';
       $vars = array('@pid' => $datastream->parent->id);
       watchdog_exception('islandora_newspaper', $e, $msg, $vars, WATCHDOG_ERROR);
     }
@@ -364,7 +364,7 @@ function islandora_newspaper_get_date_issued(AbstractObject $object) {
 /**
  * Fetch the issues of a newspaper that do not have a date.
  *
- * @param AbstractObject|NULL $object
+ * @param AbstractObject|null $object
  *   Newspaper object or empty for all issues.
  *
  * @return array
@@ -418,7 +418,7 @@ EOQ;
     '!filters' => implode(' ', array_map($filter_map, $query_filters)),
   ));
   $results = $tuque->repository->ri->sparqlQuery($query);
-  $map_results = function($o) {
+  $map_results = function ($o) {
     return array(
       'pid' => $o['object']['value'],
       'label' => $o['label']['value'],
@@ -462,7 +462,7 @@ function islandora_newspaper_set_mods_date_issued(AbstractDatastream $datastream
       $out = TRUE;
     }
     catch (Exception $e) {
-      $msg  = 'Failed to get save MODS datastream for @pid';
+      $msg = 'Failed to get save MODS datastream for @pid';
       $vars = array('@pid' => $datastream->parent->id);
       watchdog_exception('islandora_newspaper', $e, $msg, $vars, WATCHDOG_ERROR);
     }

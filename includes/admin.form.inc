@@ -17,7 +17,7 @@
  *   The Drupal form definition.
  */
 function islandora_newspaper_admin_settings_form(array $form, array &$form_state) {
-  $get_default_value = function($name, $default) use(&$form_state) {
+  $get_default_value = function ($name, $default) use (&$form_state) {
     return isset($form_state['values'][$name]) ? $form_state['values'][$name] : variable_get($name, $default);
   };
   $form = array(
@@ -47,13 +47,14 @@ function islandora_newspaper_admin_settings_form(array $form, array &$form_state
       '#title' => t('Parent Solr Field'),
       '#description' => t("Solr field containing the parent issue's PID."),
       '#default_value' => variable_get('islandora_newspaper_parent_issue_solr_field', 'RELS_EXT_isMemberOf_uri_ms'),
-      '#size' => 50,
+      '#size' => 100,
+      '#autocomplete_path' => 'islandora_solr/autocomplete_luke',
     ),
     'islandora_newspaper_use_solr' => array(
       '#type' => 'checkbox',
-      '#title' => t('Use Solr for queries.'),
+      '#title' => t('Use Solr for Newspaper display'),
       '#disabled' => (!module_exists('islandora_solr')),
-      '#description' => t('Use Solr instead of the resource index to generate issue and page lists.'),
+      '#description' => t('Use Solr to generate lists of issues for a newspaper object.'),
       '#default_value' => (module_exists('islandora_solr') ? variable_get('islandora_newspaper_use_solr', FALSE) :
                             FALSE),
     ),
@@ -64,12 +65,25 @@ function islandora_newspaper_admin_settings_form(array $form, array &$form_state
           ':input[name="islandora_newspaper_use_solr"]' => array('checked' => TRUE),
         ),
       ),
+      'islandora_newspaper_solr_newspaper_parent_field' => array(
+        '#type' => 'textfield',
+        '#title' => t('Newspaper issue parent field'),
+        '#description' => t('Solr field that contains the parent newspaper of the newspaper issue.'),
+        '#size' => 100,
+        '#default_value' => variable_get('islandora_newspaper_solr_newspaper_parent_field', 'RELS_EXT_isMemberOf_uri_ms'),
+        '#autocomplete_path' => 'islandora_solr/autocomplete_luke',
+        '#states' => array(
+          'required' => array(
+            ':input[name="islandora_newspaper_use_solr"]' => array('checked' => TRUE),
+          ),
+        ),
+      ),
       'islandora_newspaper_solr_date_field' => array(
         '#type' => 'textfield',
         '#title' => t('Issued date field'),
-        '#description' => t('Solr field that contains the date issued of the newspaper.'),
+        '#description' => t('Solr field that contains the date issued of the newspaper issue.'),
         '#size' => 100,
-        '#default_value' => variable_get('islandora_newspaper_solr_date_field', ''),
+        '#default_value' => variable_get('islandora_newspaper_solr_date_field', 'RELS_EXT_dateIssued_literal_ms'),
         '#autocomplete_path' => 'islandora_solr/autocomplete_luke',
         '#states' => array(
           'required' => array(
@@ -80,7 +94,7 @@ function islandora_newspaper_admin_settings_form(array $form, array &$form_state
       'islandora_newspaper_solr_sequence_field' => array(
         '#type' => 'textfield',
         '#title' => t('Sequence field'),
-        '#description' => t('Solr field that contains the sequence number of the issue/page.'),
+        '#description' => t('Solr field that contains the sequence number of the issues in a newspaper.'),
         '#size' => 100,
         '#default_value' => variable_get('islandora_newspaper_solr_sequence_field', 'RELS_EXT_isSequenceNumber_literal_ms'),
         '#autocomplete_path' => 'islandora_solr/autocomplete_luke',
@@ -113,6 +127,9 @@ function islandora_newspaper_admin_settings_form_validate(array $form, array &$f
   $error = array();
   if (isset($form_state['values']['islandora_newspaper_use_solr']) &&
     $form_state['values']['islandora_newspaper_use_solr']) {
+    if (empty($form_state['values']['islandora_newspaper_solr_newspaper_parent_field'])) {
+      $error['islandora_newspaper_solr_newspaper_parent_field'] = t('Your must set the Newspaper issue parent field');
+    }
     if (empty($form_state['values']['islandora_newspaper_solr_date_field'])) {
       $error['islandora_newspaper_solr_date_field'] = t('You must set the date issued field.');
     }
