@@ -74,7 +74,7 @@ function islandora_newspaper_get_newspaper($object) {
  *     - pid: The unique persistent identifier for the issue.
  *     - label: A descriptive label for the issue.
  *     - sequence: The sequence number of the issue, starts at 1.
- *     - issued: A DateTime object repersenting the date the issue was released.
+ *     - issued: A DateTime object representing the date the issue was released.
  */
 function islandora_newspaper_get_issues(AbstractObject $object) {
 
@@ -109,7 +109,7 @@ function islandora_newspaper_get_issues(AbstractObject $object) {
  *     - pid: The unique persistent identifier for the issue.
  *     - label: A descriptive label for the issue.
  *     - sequence: The sequence number of the issue, starts at 1.
- *     - issued: A DateTime object repersenting the date the issue was released.
+ *     - issued: A DateTime object representing the date the issue was released.
  */
 function islandora_newspaper_get_issues_sparql(AbstractObject $object) {
   $query = <<<EOQ
@@ -180,7 +180,7 @@ EOQ;
  *     - pid: The unique persistent identifier for the issue.
  *     - label: A descriptive label for the issue.
  *     - sequence: The sequence number of the issue, starts at 1.
- *     - issued: A DateTime object repersenting the date the issue was released.
+ *     - issued: A DateTime object representing the date the issue was released.
  */
 function islandora_newspaper_get_issues_solr(AbstractObject $object) {
   $parent_field = variable_get('islandora_newspaper_parent_issue_solr_field', 'RELS_EXT_isMemberOf_uri_ms');
@@ -190,6 +190,7 @@ function islandora_newspaper_get_issues_solr(AbstractObject $object) {
   $start = -1;
   // Number of records to return at once.
   $rows = 10000;
+  $count = 0;
   $results = array();
 
   $solr_build = new IslandoraSolrQueryProcessor();
@@ -253,7 +254,7 @@ function islandora_newspaper_get_issues_solr(AbstractObject $object) {
     catch (Exception $e) {
       // Use the current time as a place holder.
       $issued = new DateTime();
-      $msg = 'Failed to get issued date from SPARQL query for @pid';
+      $msg = 'Failed to get issued date from Solr query for @pid';
       $vars = array('@pid' => $o['PID']);
       watchdog_exception('islandora_newspaper', $e, $msg, $vars, WATCHDOG_ERROR);
     }

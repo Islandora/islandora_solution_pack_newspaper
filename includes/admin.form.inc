@@ -55,8 +55,7 @@ function islandora_newspaper_admin_settings_form(array $form, array &$form_state
       '#title' => t('Use Solr for Newspaper display'),
       '#disabled' => (!module_exists('islandora_solr')),
       '#description' => t('Use Solr to generate lists of issues for a newspaper object.'),
-      '#default_value' => (module_exists('islandora_solr') ? variable_get('islandora_newspaper_use_solr', FALSE) :
-                            FALSE),
+      '#default_value' => variable_get('islandora_newspaper_use_solr', FALSE),
     ),
     'islandora_newspaper_solr_wrapper' => array(
       '#type' => 'container',
@@ -127,6 +126,9 @@ function islandora_newspaper_admin_settings_form_validate(array $form, array &$f
   $error = array();
   if (isset($form_state['values']['islandora_newspaper_use_solr']) &&
     $form_state['values']['islandora_newspaper_use_solr']) {
+    if (!module_exists('islandora_solr')) {
+      $error['islandora_newspaper_use_solr'] = t('This option requires the Islandora Solr Search module.');
+    }
     if (empty($form_state['values']['islandora_newspaper_solr_newspaper_parent_field'])) {
       $error['islandora_newspaper_solr_newspaper_parent_field'] = t('Your must set the Newspaper issue parent field');
     }
@@ -139,7 +141,7 @@ function islandora_newspaper_admin_settings_form_validate(array $form, array &$f
   }
   if (count($error) > 0) {
     foreach ($error as $field => $message) {
-      form_set_error($field, $message);
+      form_set_error($field, check_plain($message));
     }
   }
 }
