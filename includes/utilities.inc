@@ -206,6 +206,7 @@ function islandora_newspaper_get_issues_solr(AbstractObject $object) {
     $start += 1;
     $solr_param = [
       'rows' => $rows,
+      'limit' => $rows,
       'fl' => format_string('!date, !sequence, PID, fgs_label_s', [
         '!date' => $date_field,
         '!sequence' => $sequence_field,
