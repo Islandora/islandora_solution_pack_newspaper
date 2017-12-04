@@ -204,17 +204,17 @@ function islandora_newspaper_get_issues_solr(AbstractObject $object) {
 
   do {
     $start += 1;
-    $solr_param = [
+    $solr_param = array(
       'rows' => $rows,
       'limit' => $rows,
-      'fl' => format_string('!date, !sequence, PID, fgs_label_s', [
+      'fl' => format_string('!date, !sequence, PID, fgs_label_s', array(
         '!date' => $date_field,
         '!sequence' => $sequence_field,
-      ]),
+      )),
       'start' => ($rows * $start),
       'hl' => 'false',
       'facet' => 'false',
-    ];
+    );
 
     $solr_build->buildQuery($solr_query, $solr_param);
     $solr_build->solrParams = array_replace_recursive(islandora_solr_remove_base_filters($solr_build->solrParams), $solr_param);
