@@ -103,6 +103,12 @@ function islandora_newspaper_admin_settings_form(array $form, array &$form_state
           ),
         ),
       ),
+      'islandora_newspaper_solr_remove_base_filters' => array(
+        '#type' => 'checkbox',
+        '#title' => t('Remove base Solr filters'),
+        '#description' => t('This option removes your configured Solr base filters from these queries. If you want your filters to be applied even though they could affect which newspaper issue objects are returned in the list, uncheck this option.'),
+        '#default_value' => variable_get('islandora_newspaper_solr_remove_base_filters', TRUE),
+      ),
     ),
   );
   $form['#validate'][] = 'islandora_newspaper_admin_settings_form_validate';

@@ -217,8 +217,11 @@ function islandora_newspaper_get_issues_solr(AbstractObject $object) {
     );
 
     $solr_build->buildQuery($solr_query, $solr_param);
-    $solr_build->solrParams = array_replace_recursive(islandora_solr_remove_base_filters($solr_build->solrParams), $solr_param);
-
+    $solr_build->solrParams = array_replace_recursive($solr_build->solrParams, $solr_param);
+    if (variable_get('islandora_newspaper_solr_remove_base_filters', 1)) {
+      module_load_include('inc', 'islandora_solr', 'includes/utilities');
+      $solr_build->solrParams = islandora_solr_remove_base_filters($solr_build->solrParams);
+    }
     try {
       $solr_build->executeQuery(FALSE);
       $count = $solr_build->islandoraSolrResult['response']['numFound'];
