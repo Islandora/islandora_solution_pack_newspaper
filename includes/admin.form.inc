@@ -47,6 +47,13 @@ function islandora_newspaper_admin_settings_form(array $form, array &$form_state
     '#size' => 30,
   );
 
+  $form['islandora_newspaper_use_ajax_loader'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Use AJAX to populate the year of issues for Newspaper view.'),
+    '#description' => t('When enabled, this should improve performance when a given Newspaper has many issues.'),
+    '#default_value' => variable_get('islandora_newspaper_use_ajax_loader', 0),
+  );
+
   module_load_include('inc', 'islandora', 'includes/solution_packs');
   $form += islandora_viewers_form('islandora_newspaper_issue_viewers', array('application/pdf'), 'islandora:newspaperIssueCModel');
   $form['issue_viewers'] = $form['viewers'];
