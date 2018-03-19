@@ -29,7 +29,7 @@ function islandora_newspaper_uninstall() {
     'islandora_newspaper_solr_newspaper_parent_field',
     'islandora_newspaper_solr_date_field',
     'islandora_newspaper_solr_sequence_field',
-    'islandora_newspaper_solr_remove_base_filters'
+    'islandora_newspaper_solr_remove_base_filters',
   );
   array_walk($variables, 'variable_del');
 }
