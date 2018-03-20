@@ -21,10 +21,24 @@ Install as usual, see [this](https://drupal.org/documentation/install/modules-th
 
 ## Configuration
 
-Select configuration options for page derivatives, Parent Solr Field, and select a viewer for the issue view and page view in  Administration » Islandora » Solution pack configuration » Newspapers (admin/islandora/solution_pack_config/newspaper).
+Configuration options are found at Administration » Islandora » Solution pack configuration » Newspapers (admin/islandora/solution_pack_config/newspaper).
 
+Select configuration options for which issue and page derivatives are created locally.
+Select the **Parent Solr Field** which holds the parent issue PID for a newspaper page.
 
-![Configuration](https://camo.githubusercontent.com/00b3d34d5927b733689ce0d1598a79c832082937/687474703a2f2f692e696d6775722e636f6d2f56764b6a6479462e706e67)
+Select the **Use Solr** option to switch from using the resource index to using Solr to generate the issue list for a newspaper.
+This also reveals three required Solr fields for this option.
+ * Newspaper issue parent field
+ * Issued date field
+ * Sequence field
+
+**Note**: The above three fields are for Solr records of newspaper **issues** in your repository. 
+
+![Derivative and solr configuration options](https://user-images.githubusercontent.com/2857697/33495867-b94dffc4-d68d-11e7-9002-ed419dbeec64.jpg)
+
+Also select a viewer for the newspaper issue view and page view.
+
+![Issue view and page view configuration options](https://user-images.githubusercontent.com/2857697/33495870-bcc7f2ae-d68d-11e7-834d-cade66be45b4.jpg)
 
 ## Documentation
 :warning: <br/>Deleting a newspaper object directly (Manage > Properties >  Delete Newspaper) will delete all its child Issue objects, and their associated Page objects. Highlighted in red in this diagram shows all that will be deleted if the newspaper Locusta Newspaper is deleted. 

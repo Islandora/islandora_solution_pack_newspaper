@@ -17,7 +17,7 @@
  *   The Drupal form definition.
  */
 function islandora_newspaper_admin_settings_form(array $form, array &$form_state) {
-  $get_default_value = function($name, $default) use(&$form_state) {
+  $get_default_value = function ($name, $default) use (&$form_state) {
     return isset($form_state['values'][$name]) ? $form_state['values'][$name] : variable_get($name, $default);
   };
   $form = array(
@@ -39,13 +39,79 @@ function islandora_newspaper_admin_settings_form(array $form, array &$form_state
     ),
   );
 
-  $form['islandora_newspaper_parent_issue_solr_field'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Parent Solr Field'),
-    '#description' => t("Solr field containing the parent issue's PID."),
-    '#default_value' => variable_get('islandora_newspaper_parent_issue_solr_field', 'RELS_EXT_isMemberOf_uri_ms'),
-    '#size' => 30,
+  $form['islandora_newspaper_solr_options'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Solr settings'),
+    'islandora_newspaper_parent_issue_solr_field' => array(
+      '#type' => 'textfield',
+      '#title' => t('Parent Solr Field'),
+      '#description' => t("Solr field containing the parent issue's PID."),
+      '#default_value' => variable_get('islandora_newspaper_parent_issue_solr_field', 'RELS_EXT_isMemberOf_uri_ms'),
+      '#size' => 100,
+      '#autocomplete_path' => 'islandora_solr/autocomplete_luke',
+    ),
+    'islandora_newspaper_use_solr' => array(
+      '#type' => 'checkbox',
+      '#title' => t('Use Solr for Newspaper display'),
+      '#disabled' => (!module_exists('islandora_solr')),
+      '#description' => t('Use Solr to generate lists of issues for a newspaper object.'),
+      '#default_value' => variable_get('islandora_newspaper_use_solr', FALSE),
+    ),
+    'islandora_newspaper_solr_wrapper' => array(
+      '#type' => 'container',
+      '#states' => array(
+        'visible' => array(
+          ':input[name="islandora_newspaper_use_solr"]' => array('checked' => TRUE),
+        ),
+      ),
+      'islandora_newspaper_solr_newspaper_parent_field' => array(
+        '#type' => 'textfield',
+        '#title' => t('Newspaper issue parent field'),
+        '#description' => t('Solr field that contains the parent newspaper of the newspaper issue.'),
+        '#size' => 100,
+        '#default_value' => variable_get('islandora_newspaper_solr_newspaper_parent_field', 'RELS_EXT_isMemberOf_uri_ms'),
+        '#autocomplete_path' => 'islandora_solr/autocomplete_luke',
+        '#states' => array(
+          'required' => array(
+            ':input[name="islandora_newspaper_use_solr"]' => array('checked' => TRUE),
+          ),
+        ),
+      ),
+      'islandora_newspaper_solr_date_field' => array(
+        '#type' => 'textfield',
+        '#title' => t('Issued date field'),
+        '#description' => t('Solr field that contains the date issued of the newspaper issue.'),
+        '#size' => 100,
+        '#default_value' => variable_get('islandora_newspaper_solr_date_field', 'RELS_EXT_dateIssued_literal_ms'),
+        '#autocomplete_path' => 'islandora_solr/autocomplete_luke',
+        '#states' => array(
+          'required' => array(
+            ':input[name="islandora_newspaper_use_solr"]' => array('checked' => TRUE),
+          ),
+        ),
+      ),
+      'islandora_newspaper_solr_sequence_field' => array(
+        '#type' => 'textfield',
+        '#title' => t('Sequence field'),
+        '#description' => t('Solr field that contains the sequence number of the issues in a newspaper.'),
+        '#size' => 100,
+        '#default_value' => variable_get('islandora_newspaper_solr_sequence_field', 'RELS_EXT_isSequenceNumber_literal_ms'),
+        '#autocomplete_path' => 'islandora_solr/autocomplete_luke',
+        '#states' => array(
+          'required' => array(
+            ':input[name="islandora_newspaper_use_solr"]' => array('checked' => TRUE),
+          ),
+        ),
+      ),
+      'islandora_newspaper_solr_remove_base_filters' => array(
+        '#type' => 'checkbox',
+        '#title' => t('Remove base Solr filters'),
+        '#description' => t('This option removes your configured Solr base filters from these queries. If you want your filters to be applied even though they could affect which newspaper issue objects are returned in the list, uncheck this option.'),
+        '#default_value' => variable_get('islandora_newspaper_solr_remove_base_filters', TRUE),
+      ),
+    ),
   );
+  $form['#validate'][] = 'islandora_newspaper_admin_settings_form_validate';
 
   module_load_include('inc', 'islandora', 'includes/solution_packs');
   $form += islandora_viewers_form('islandora_newspaper_issue_viewers', array('application/pdf'), 'islandora:newspaperIssueCModel');
@@ -57,6 +123,33 @@ function islandora_newspaper_admin_settings_form(array $form, array &$form_state
   $form['page_viewers']['#title'] = t('Page Viewers');
   unset($form['viewers']);
   return system_settings_form($form);
+}
+
+/**
+ * Implements hook_FORM_ID_validate().
+ */
+function islandora_newspaper_admin_settings_form_validate(array $form, array &$form_state) {
+  $error = array();
+  if (isset($form_state['values']['islandora_newspaper_use_solr']) &&
+    $form_state['values']['islandora_newspaper_use_solr']) {
+    if (!module_exists('islandora_solr')) {
+      $error['islandora_newspaper_use_solr'] = t('This option requires the Islandora Solr Search module.');
+    }
+    if (empty($form_state['values']['islandora_newspaper_solr_newspaper_parent_field'])) {
+      $error['islandora_newspaper_solr_newspaper_parent_field'] = t('Your must set the Newspaper issue parent field');
+    }
+    if (empty($form_state['values']['islandora_newspaper_solr_date_field'])) {
+      $error['islandora_newspaper_solr_date_field'] = t('You must set the date issued field.');
+    }
+    if (empty($form_state['values']['islandora_newspaper_solr_sequence_field'])) {
+      $error['islandora_newspaper_solr_sequence_field'] = t('You must set the sequence field.');
+    }
+  }
+  if (count($error) > 0) {
+    foreach ($error as $field => $message) {
+      form_set_error($field, check_plain($message));
+    }
+  }
 }
 
 /**
