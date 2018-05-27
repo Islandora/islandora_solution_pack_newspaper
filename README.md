@@ -34,7 +34,7 @@ This also reveals three required Solr fields for this option.
 
 **Note**: The above three fields are for Solr records of newspaper **issues** in your repository. 
 
-![Derivative and solr configuration options](https://user-images.githubusercontent.com/2857697/33495867-b94dffc4-d68d-11e7-9002-ed419dbeec64.jpg)
+![Derivative and solr configuration options](https://user-images.githubusercontent.com/2738244/40319734-293d1fbe-5cf7-11e8-906a-04ce3cbc3986.png)
 
 Also select a viewer for the newspaper issue view and page view.
 
