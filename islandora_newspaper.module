@@ -116,6 +116,15 @@ function islandora_newspaper_menu() {
       'access callback' => 'islandora_newspaper_issue_page_access',
       'access arguments' => array(2),
     ),
+    // AJAX handler to render a year of issues per newspaper.
+    'islandora/object/%islandora_object/newspaper/get_year/%' => array(
+      'page callback' => 'islandora_newspaper_ajax_get_year',
+      'page arguments' => array(2, 5),
+      'file' => 'includes/ajax_handler.inc',
+      'type' => MENU_CALLBACK,
+      'access callback' => 'islandora_object_access',
+      'access arguments' => array(ISLANDORA_VIEW_OBJECTS, 2),
+    ),
   );
 }
 
@@ -164,6 +173,10 @@ function islandora_newspaper_theme($existing, $type, $theme, $path) {
     'islandora_newspaper_page_img_print' => array(
       'template' => 'theme/islandora-newspaper-page-img-print',
       'variables' => array('islandora_content' => NULL),
+    ),
+    'islandora_newspaper_single_year_issues' => array(
+      'template' => 'theme/islandora-newspaper-single-year-issues',
+      'variables' => array('tabs' => NULL),
     ),
   );
 }
@@ -665,4 +678,19 @@ function islandora_newspaper_islandora_paged_content_content_model_registry() {
       ),
     ),
   );
+}
+
+/**
+ * If this is on the Newspaper object page, add the javascript for ajax loading.
+ */
+function islandora_newspaper_preprocess_page(&$vars) {
+  $islandora_object = menu_get_object('islandora_object', 2);
+  if (is_object($islandora_object)) {
+    if (!(array_search('islandora:newspaperCModel', $islandora_object->models) === FALSE)) {
+      $path = drupal_get_path('module', 'islandora_newspaper');
+      drupal_add_js($path . '/js/ajax_newspaper_loader.js');
+    }
+    else {
+    }
+  }
 }
