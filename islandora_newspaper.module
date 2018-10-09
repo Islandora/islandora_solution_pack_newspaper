@@ -666,3 +666,21 @@ function islandora_newspaper_islandora_paged_content_content_model_registry() {
     ),
   );
 }
+
+/**
+ * Implements hook_islandora_solution_pack_child_relationships().
+ */
+function islandora_newspaper_islandora_solution_pack_child_relationships($cmodels) {
+  $relationships = array('predicate' => array(), 'prefix' => array());
+
+  if ($cmodels === 'all' || in_array('islandora:newspaperCModel', $cmodels)) {
+    $relationships['predicate'][] = '<fedora-rels-ext:isMemberOf>';
+  }
+
+  if ($cmodels === 'all' || in_array('islandora:newspaperIssueCModel', $cmodels)) {
+    $relationships['prefix'][] = 'PREFIX islandora: <http://islandora.ca/ontology/relsext#>';
+    $relationships['predicate'][] = '<islandora:isPageOf>';
+  }
+
+  return $relationships;
+}
