@@ -132,10 +132,8 @@ function template_preprocess_islandora_newspaper_issue(array &$variables) {
   $object = $variables['object'];
   $pages = islandora_paged_content_get_pages($object);
   $variables['pages'] = array_keys($pages);
-
   // Get viewer id.
   $variables['viewer_id'] = islandora_get_viewer_id('islandora_newspaper_issue_viewers');
-
   // Get viewer content.
   $variables['viewer_params'] = array(
     'object' => $object,
@@ -160,8 +158,14 @@ function template_preprocess_islandora_newspaper_issue(array &$variables) {
  *     viewer.
  */
 function template_process_islandora_newspaper_issue(array &$variables) {
+  module_load_include('inc', 'islandora', 'includes/solution_packs');
   $variables['viewer'] = NULL;
   if ($variables['viewer_id'] && $variables['viewer_id'] != 'none') {
+    $default_viewer = islandora_get_viewer_id('islandora_newspaper_issue_viewers');
+    if($variables['viewer_id'] != $default_viewer){
+        //check using default view or not
+        $variables['viewer_id'] = $default_viewer;
+    }
     $viewer_callback = islandora_get_viewer_callback($variables['viewer_id']);
     if (function_exists($viewer_callback)) {
       $viewer = $viewer_callback($variables['viewer_params'], $variables['object']);
