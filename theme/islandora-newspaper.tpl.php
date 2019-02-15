@@ -2,11 +2,12 @@
 
 /**
  * @file
- * This is the template file for the object page for newspaper
+ * This is the template file for the object page for newspaper.
  *
  * Available variables:
  * - $islandora_content: A rendered vertical tabbed newspapper issue browser.
- * - $parent_collections: An array containing parent collection IslandoraFedoraObject(s).
+ * - $parent_collections: An array containing parent collection
+ *                        IslandoraFedoraObject(s).
  * - $description: Rendered metadata descripton for the object.
  * - $metadata: Rendered metadata display for the binary object.
  *
