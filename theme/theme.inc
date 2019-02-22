@@ -77,10 +77,10 @@ function template_preprocess_islandora_newspaper(array &$variables) {
             '#prefix' => '<div>',
             '#suffix' => '</div>',
             '#text' => t("@month @day, @year", array(
-                '@year' => $year,
-                '@month' => $month_name,
-                '@day' => $day,
-                )),
+              '@year' => $year,
+              '@month' => $month_name,
+              '@day' => $day,
+            )),
             '#path' => "islandora/object/{$issue['pid']}",
             '#options' => array(
               'attributes' => array(),
@@ -246,11 +246,20 @@ function theme_islandora_newspaper_page_select(array $variables) {
   foreach ($pages as $pid => $page) {
     $variables['#options'][$pid] = $page['page'];
   }
-  $prefix = '<strong>' . t('Image') . ':</strong> ';
-  return $prefix . t('!page_selector of @total', array(
-    '!page_selector' => theme('select', array('element' => $variables)),
-    '@total' => count($pages),
-  ));
+  $prefix = array(
+    'image' => array(
+      '#prefix' => '<strong>',
+      '#markup' => t('Image'),
+      '#suffix' => '</strong>',
+    ),
+    'select' => array(
+      '#markup' => t('!page_selector of @total', array(
+        '!page_selector' => theme('select', array('element' => $variables)),
+        '@total' => count($pages),
+      )),
+    ),
+  );
+  return drupal_render($prefix);
 }
 
 /**
@@ -259,7 +268,6 @@ function theme_islandora_newspaper_page_select(array $variables) {
 function template_preprocess_islandora_newspaper_page_controls(array &$variables) {
   module_load_include('inc', 'islandora', 'includes/datastream');
   module_load_include('inc', 'islandora', 'includes/utilities');
-  global $base_url;
   $view_prefix = '<strong>' . t('View:') . ' </strong>';
   $download_prefix = '<strong>' . t('Download:') . ' </strong>';
   $object = $variables['object'];

@@ -17,7 +17,7 @@ function islandora_newspaper_delete_newspaper_batch_operation($pid) {
   module_load_include('inc', 'islandora_paged_content', 'includes/utilities');
   module_load_include('inc', 'islandora', 'includes/datastream');
   $object = islandora_object_load($pid);
-  $get_pid = function($o) {
+  $get_pid = function ($o) {
     return $o['pid'];
   };
   $issues = islandora_newspaper_get_issues($object);
@@ -45,7 +45,9 @@ function islandora_newspaper_delete_newspaper_batch(AbstractObject $object) {
   return array(
     'operations' => array(
       array('islandora_newspaper_delete_newspaper_batch_operation', array(
-        $object->id)),
+        $object->id,
+      ),
+      ),
     ),
     'title' => t('Deleting newspaper object and all its children'),
     'init_message' => t('Preparing to delete newspaper object and all its children...'),

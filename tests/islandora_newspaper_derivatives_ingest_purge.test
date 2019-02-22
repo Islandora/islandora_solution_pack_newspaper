@@ -5,6 +5,9 @@
  * Attempts to ingest a newspaper issue and page into a random collection.
  */
 
+/**
+ * Class IslandoraNewspaperPageIngestTestCase.
+ */
 class IslandoraNewspaperPageIngestTestCase extends IslandoraCollectionWebTestCase {
 
   /**
@@ -145,4 +148,5 @@ class IslandoraNewspaperPageIngestTestCase extends IslandoraCollectionWebTestCas
     );
     $this->validateDatastreams($page_pid, $datastreams);
   }
+
 }
