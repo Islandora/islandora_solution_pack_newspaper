@@ -29,7 +29,7 @@ function islandora_newspaper_manage_newspaper(AbstractObject $object) {
  *   The form object.
  * @param array $form_state
  *   The form state.
- * @param AbstractObject|NULL $object
+ * @param AbstractObject|null $object
  *   The parent of the issues missing dates or NULL for all issues.
  *
  * @return array
@@ -199,8 +199,8 @@ function islandora_newspaper_ingest_issue(AbstractObject $newspaper) {
   $issue->relationships->add(ISLANDORA_RELS_EXT_URI, 'isSequenceNumber', (string) $num_issues, TRUE);
   drupal_set_title(t('Add issue to @newspaper', array('@newspaper' => $newspaper->label)));
   return drupal_get_form('islandora_ingest_form', array(
-      'models' => array('islandora:newspaperIssueCModel'),
-      'objects' => array($issue),
-      'parent' => $newspaper->id,
-    ));
+    'models' => array('islandora:newspaperIssueCModel'),
+    'objects' => array($issue),
+    'parent' => $newspaper->id,
+  ));
 }

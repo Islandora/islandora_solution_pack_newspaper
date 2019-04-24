@@ -10,13 +10,13 @@ require_once dirname(__FILE__) . '/utilities.inc';
 /**
  * Local menu action, that gets the ingest page form.
  *
- * @global $user
- *
  * @param AbstractObject $issue
  *   The newspaper to ingest into.
  *
- * @return sting
+ * @return string
  *   The HTML repersentation of the ingest page form.
+ *
+ * @global $user
  */
 function islandora_newspaper_ingest_page(AbstractObject $issue) {
   global $user;
@@ -28,11 +28,14 @@ function islandora_newspaper_ingest_page(AbstractObject $issue) {
   $page->label = 'New Page';
   $page->models = 'islandora:newspaperPageCModel';
   $newspaper = islandora_object_load(islandora_newspaper_get_newspaper($issue));
-  drupal_set_title(t('Add page to @newspaper issue @issue', array('@newspaper' => $newspaper->label, '@issue' => $issue->label)));
+  drupal_set_title(t('Add page to @newspaper issue @issue', array(
+    '@newspaper' => $newspaper->label,
+    '@issue' => $issue->label,
+  )));
   return drupal_get_form('islandora_ingest_form', array(
-      'models' => array('islandora:newspaperPageCModel'),
-      'issue' => $issue,
-      'objects' => array($page),
-      'parent' => $issue->id,
-    ));
+    'models' => array('islandora:newspaperPageCModel'),
+    'issue' => $issue,
+    'objects' => array($page),
+    'parent' => $issue->id,
+  ));
 }
