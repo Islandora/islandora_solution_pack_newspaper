@@ -284,7 +284,8 @@ function template_preprocess_islandora_newspaper_page_controls(array &$variables
       theme('islandora_newspaper_issue_navigator', array('object' => $issue)) :
       ''),
   );
-
+  // To hide below info in page view
+/*
   // Text view.
   if (isset($object['OCR']) && islandora_datastream_access(ISLANDORA_VIEW_OBJECTS, $object['OCR'])) {
     $url = islandora_datastream_get_url($object['OCR'], 'view');
@@ -319,7 +320,7 @@ function template_preprocess_islandora_newspaper_page_controls(array &$variables
     $url = islandora_datastream_get_url($object['OBJ'], 'download');
     $attributes = array('attributes' => array('title' => t('Download TIFF')));
     $controls['tiff_download'] = $download_prefix . l($text, $url, $attributes);
-  }
+  }*/
   $variables['controls'] = $controls;
 }
 
