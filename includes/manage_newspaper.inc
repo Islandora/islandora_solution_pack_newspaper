@@ -38,6 +38,7 @@ function islandora_newspaper_manage_newspaper(AbstractObject $object) {
 function islandora_newspaper_empty_issue_date_form(array $form, array &$form_state, $object) {
   $empty_issues = islandora_newspaper_get_empty_dates($object);
   $form = array();
+  $form['#tree'] = TRUE;
   $form['dates_table'] = array(
     '#type' => 'fieldset',
     '#title' => t('Issues missing a dateIssued field.'),
@@ -50,7 +51,6 @@ function islandora_newspaper_empty_issue_date_form(array $form, array &$form_sta
         $escaped_pid = $issue['pid'];
         $form['dates_table'][$escaped_pid] = array(
           '#type' => 'textfield',
-          '#name' => "issue_dates[$escaped_pid]",
           '#prefix' => '<div class="islandora-newspaper-empty-issues">',
           '#suffix' => t('<a target="_new" href="@url">@label (@pid)</a></div>',
             array(
@@ -60,10 +60,10 @@ function islandora_newspaper_empty_issue_date_form(array $form, array &$form_sta
             )
           ),
           '#attributes' => array('class' => array('datepicker')),
-          '#default_value' => (isset($form_state['input']['issue_dates'][$escaped_pid]) ? $form_state['input']['issue_dates'][$escaped_pid] : ""),
           '#disabled' => (!islandora_user_access($issue_obj, array(ISLANDORA_METADATA_EDIT), array('islandora:newspaperIssueCModel'))),
           '#size' => 20,
           '#maxlength' => 10,
+          '#element_validate' => array('islandora_newspaper_empty_issue_date_validate'),
         );
       }
     }
@@ -71,9 +71,7 @@ function islandora_newspaper_empty_issue_date_form(array $form, array &$form_sta
       '#type' => 'submit',
       '#value' => t('Save'),
     );
-    $form['issue_dates'] = array(
-      '#type' => 'value',
-    );
+
     $form['#after_build'] = array(
       'islandora_newspaper_empty_issue_date_datepicker',
     );
@@ -106,36 +104,44 @@ function islandora_newspaper_empty_issue_date_datepicker(array $form, array $for
 }
 
 /**
- * Implements hook_form_validate().
- *
- * Validate the dates entered on the form.
+ * Element validate for date format.
  */
-function islandora_newspaper_empty_issue_date_form_validate($form, &$form_state) {
-  $errors = FALSE;
-  $updates = 0;
-  foreach ($form_state['values']['issue_dates'] as $key => $date) {
-    if (trim($date) != "") {
-      $updates += 1;
-      if (!preg_match('/^\d{4}-\d{1,2}-\d{1,2}$/', $date)) {
-        form_set_error("$key");
-        $errors = TRUE;
+function islandora_newspaper_empty_issue_date_validate($element, &$form_state) {
+  $error = FALSE;
+  if (!empty($element['#value'])) {
+    $date = $element['#value'];
+    if (!preg_match('/^\d{4}-\d{1,2}-\d{1,2}$/', $date)) {
+      $error = TRUE;
+    }
+    else {
+      try {
+        $dt = new DateTime($date);
       }
-      else {
-        try {
-          $dt = new DateTime($date);
-        }
-        catch (Exception $e) {
-          form_set_error("$key");
-          $errors = TRUE;
-        }
+      catch (Exception $e) {
+        $error = TRUE;
       }
     }
   }
-  if ($errors) {
-    drupal_set_message(t("Invalid date(s), please enter a valid date of the format YYYY-MM-DD."), "error");
+  if ($error) {
+    form_error($element, t("Invalid date(s), please enter a valid date of the format YYYY-MM-DD."));
   }
-  elseif ($updates == 0) {
-    drupal_set_message(t("You did not submit any dates."), "error");
+}
+
+/**
+ * Implements hook_form_validate().
+ *
+ * Validate the empty fields on the form.
+ */
+function islandora_newspaper_empty_issue_date_form_validate($form, &$form_state) {
+  $updates = 0;
+  foreach ($form_state['values']['dates_table'] as $key => $date) {
+    if (trim($date) != "") {
+      $updates += 1;
+    }
+  }
+
+  if ($updates == 0) {
+    form_set_error("dates_table", t("You did not submit any dates."));
   }
 }
 
@@ -147,7 +153,7 @@ function islandora_newspaper_empty_issue_date_form_validate($form, &$form_state)
 function islandora_newspaper_empty_issue_date_form_submit($form, &$form_state) {
   module_load_include('inc', 'islandora_newspaper', 'includes/utilities');
   $out = TRUE;
-  foreach ($form_state['values']['issue_dates'] as $key => $date) {
+  foreach ($form_state['values']['dates_table'] as $key => $date) {
     if (trim($date) != "") {
       $object = islandora_object_load($key);
       if ($object) {
