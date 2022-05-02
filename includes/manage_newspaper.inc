@@ -134,7 +134,7 @@ function islandora_newspaper_empty_issue_date_validate($element, &$form_state) {
  */
 function islandora_newspaper_empty_issue_date_form_validate($form, &$form_state) {
   $updates = 0;
-  foreach ($form_state['values']['dates_table'] as $key => $date) {
+  foreach ($form_state['values']['dates_table'] as $date) {
     if (trim($date) != "") {
       $updates += 1;
     }
