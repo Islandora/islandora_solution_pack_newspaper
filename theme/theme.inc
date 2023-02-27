@@ -31,7 +31,7 @@ function template_preprocess_islandora_newspaper(array &$variables) {
       '#links' => array(
         array(
           'title' => t('Expand all months'),
-          'href' => "javascript://void(0)",
+          'href' => "javascript:void(0)",
           'html' => TRUE,
           'external' => TRUE,
           'attributes' => array(
@@ -40,7 +40,7 @@ function template_preprocess_islandora_newspaper(array &$variables) {
         ),
         array(
           'title' => t('Collapse all months'),
-          'href' => "javascript://void(0)",
+          'href' => "javascript:void(0)",
           'html' => TRUE,
           'external' => TRUE,
           'attributes' => array(
